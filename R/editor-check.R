@@ -31,48 +31,8 @@ editor_check <- function (path) {
 
     eic_instr <- c (eic_instr,
                     srr_checks (check_data),
-                    pkgstats_checks (check_data))
-
-    # function call network
-    cache_dir <- Sys.getenv ("cache_dir")
-    visjs_dir <- file.path (cache_dir, "static") # in api.R
-    repo <- ifelse (!is.null (check_data$url),
-                    utils::tail (strsplit (check_data$url, "/") [[1]], 1),
-                    check_data$package)
-
-    # clean up any older ones
-    flist <- list.files (visjs_dir,
-                         pattern = paste0 (repo, "_pkgstats"),
-                         full.names = TRUE)
-    if (!check_data$network_file %in% flist) {
-        unlink (flist, recursive = TRUE)
-        visjs_ptn <- basename (check_data$network_file)
-        visjs_ptn <- tools::file_path_sans_ext (visjs_ptn)
-        flist <- list.files (dirname (check_data$network_file),
-                             pattern = visjs_ptn,
-                             full.names = TRUE)
-
-        file.copy (flist, visjs_dir, recursive = TRUE)
-    }
-
-    visjs_url <- paste0 (Sys.getenv ("pkgcheck_url"), "/assets/",
-                         basename (check_data$network_file))
-
-    network_vis <- c ("",
-                      "### Network visualisation",
-                      "",
-                      paste0 ("[Click here](",
-                              visjs_url,
-                              ") for interactive network visualisation ",
-                              "of calls between objects in package."))
-
-
-    stats_rep <- pkgstats_checks (check_data)
-
-    eic_instr <- c (eic_instr,
-                    stats_rep,
-                    network_vis,
-                    "")
+                    pkgstats_checks (check_data),
+                    pkg_network (check_data))
 
     if (!is.null (check_data$badges)) {
 
@@ -376,4 +336,39 @@ pkg_stat_desc <- function (x) {
     }
 
     return (out)
+}
+
+pkg_network <- function (x) {
+
+    cache_dir <- Sys.getenv ("cache_dir")
+    visjs_dir <- file.path (cache_dir, "static") # in api.R
+    repo <- ifelse (!is.null (x$url),
+                    utils::tail (strsplit (x$url, "/") [[1]], 1),
+                    x$package)
+
+    # clean up any older ones
+    flist <- list.files (visjs_dir,
+                         pattern = paste0 (repo, "_pkgstats"),
+                         full.names = TRUE)
+    if (!x$network_file %in% flist) {
+        unlink (flist, recursive = TRUE)
+        visjs_ptn <- basename (x$network_file)
+        visjs_ptn <- tools::file_path_sans_ext (visjs_ptn)
+        flist <- list.files (dirname (x$network_file),
+                             pattern = visjs_ptn,
+                             full.names = TRUE)
+
+        file.copy (flist, visjs_dir, recursive = TRUE)
+    }
+
+    visjs_url <- paste0 (Sys.getenv ("pkgcheck_url"), "/assets/",
+                         basename (x$network_file))
+
+    c ("",
+       "### 2a. Network visualisation",
+       "",
+       paste0 ("[Click here](",
+               visjs_url,
+               ") for interactive network visualisation ",
+               "of calls between objects in package."))
 }
