@@ -35,8 +35,23 @@ editor_check <- function (path) {
                     srr_checks (check_data),
                     stats_rep,
                     pkg_network (check_data),
+                    "",
+                    "---",
+                    "",
+                    "## 3. `goodpractice` and other checks",
+                    "",
+                    "<details>",
+                    "<summary>click to see</summary>",
+                    "<p>",
+                    "",
                     ci_checks (check_data),
-                    goodpractice_checks (check_data))
+                    "",
+                    "---",
+                    "",
+                    goodpractice_checks (check_data),
+                    "",
+                    "</p>",
+                    "</details>")
 
     eic_instr <- paste0 (eic_instr, collapse = "\n")
     attr (eic_instr, "is_noteworthy") <- attr (stats_rep, "is_noteworthy")
@@ -346,7 +361,7 @@ ci_checks <- function (x) {
             x$badges <- "(There do not appear to be any)"
 
         out <- c (out,
-                  "**Continuous Integration Badges**",
+                  "### 3a. Continuous Integration Badges",
                   "",
                   x$badges,
                   "")
