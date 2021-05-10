@@ -219,8 +219,9 @@ function (u) {
                  strsplit (gp, "\n") [[1]])
 
     noteworthy <- ifelse (is_noteworthy,
-                          c (paste0 ("This package has some noteworthy properties, ",
-                                     "see 'Package Statistics' details below"),
+                          c (paste0 ("This package has some noteworthy ",
+                                     "properties, see 'Package Statistics' ",
+                                     "details below"),
                              ""),
                           "")
     i <- grep ("\\#\\#\\# Package Statistics", chk_gp) - 1
