@@ -2,7 +2,6 @@
 
 <!-- badges: start -->
 [![R build status](https://github.com/ropenscilabs/roreviewapi/workflows/R-CMD-check/badge.svg)](https://github.com/ropenscilabs/roreviewapi/actions?query=workflow%3AR-CMD-check)
-[![gitlab push](https://github.com/ropenscilabs/roreviewapi/workflows/push-to-gitlab/badge.svg)](https://github.com/ropenscilabs/roreviewapi/actions?query=workflow%3Apush-to-gitlab)
 [![Project Status: Concept](https://www.repostatus.org/badges/latest/concept.svg)](https://www.repostatus.org/#concept)
 <!-- badges: end -->
 
