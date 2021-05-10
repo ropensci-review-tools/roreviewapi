@@ -28,7 +28,7 @@ editor_check <- function (path) {
                     "",
                     "---",
                     "")
-                
+
     stats_rep <- pkgstats_checks (check_data)
 
     eic_instr <- c (eic_instr,
@@ -196,9 +196,10 @@ pkgstats_checks <- function (x) {
 
     is_noteworthy <- any (x$pkgstats$noteworthy == "TRUE")
     note <- ifelse (is_noteworthy,
-                    paste0 ("This package features some noteworthy statistical ",
-                            "properties which may need to be clarified by a ",
-                            "handling editor prior to progressing."),
+                    paste0 ("This package features some noteworthy ",
+                            "statistical properties which may need to be ",
+                            "clarified by a handling editor prior to ",
+                            "progressing."),
                     paste0 ("The statistical properties of this package are ",
                             "all within expected ranges."))
 
@@ -265,7 +266,8 @@ pkg_stat_desc <- function (x) {
     langs_last <- langs [length (langs)]
     if (length (langs) > 1) {
         langs_first <- paste0 (", ",
-                               paste0 (langs [-length (langs)], collapse = ", "))
+                               paste0 (langs [-length (langs)],
+                                       collapse = ", "))
     }
     out <- paste0 (code, langs_first, " and ", langs_last)
 
@@ -285,26 +287,37 @@ pkg_stat_desc <- function (x) {
               summarise_one (s, "num_data", "internal", "data file"),
               summarise_one (s, "imported_pkgs", "imported", "package"),
               summarise_one (s, "num_exported_fns", "exported", "function"))
+
     if (length (s$loc_exported_fns) > 0L) {
         out [length (out)] <- paste0 (out [length (out)],
                                       " (median ",
                                       s$loc_exported_fns,
                                       " lines of code)")
     }
+
     out <- c (out,
-              summarise_one (s, "num_non_exported_fns", "non-exported", "function"))
+              summarise_one (s, "num_non_exported_fns",
+                             "non-exported",
+                             "function"))
     out [length (out)] <- paste0 (out [length (out)], " in R")
+
     if (length (s$num_non_exported_fns) > 0L) {
         out [length (out)] <- paste0 (out [length (out)],
                                       " (median ",
                                       s$loc_non_exported_fns,
                                       " lines of code)")
     }
+
     if (s$num_src_fns > 0L) {
         lang_names <- gsub ("\\s.*$", "", langs)
         out <- c (out,
-                  paste0 (summarise_one (s, "num_src_fns", lang_names, "function"),
-                          " (median ", s$loc_src_fns, " lines of code)"))
+                  paste0 (summarise_one (s,
+                                         "num_src_fns",
+                                         lang_names,
+                                         "function"),
+                          " (median ",
+                          s$loc_src_fns,
+                          " lines of code)"))
     }
 
     return (out)
