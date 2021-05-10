@@ -1,0 +1,15 @@
+^README\.Rmd$
+^\.travis\.yml$
+^_pkgdown\.yml$
+^README\.md$
+^Dockerfile$
+^makefile$
+^appveyor\.yml$
+^aaa.Rmd$
+^vignettes/makefile$
+^.*\.Rproj$
+^\.Rproj\.user$
+^\.github$
+^codemeta\.json$
+^\.pre-commit-config\.yaml$
+.ropensci-staff
