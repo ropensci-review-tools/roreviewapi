@@ -1,25 +1,3 @@
-#' process 'goodpractice' report
-#'
-#' Extract various components from 'goodpractice' report and convert into format
-#' to be returned by endpoint
-#' @param gp A 'goodpractice' object as returned by \pkg{goodpractice}
-#' @param control A named list of parameters potentially including
-#' `cyclocomp_threshold`, `covr_threshold`, and `covr_digits`, where
-#' reports are generated for cyclocomplexity values above threshold, and
-#' coverage values below threshold (given as percentage). `digits` controls the
-#' number of digits printed in coverage reports.
-#' @return Markdown-formatted report
-#' @export
-process_gp <- function (gp,
-                        control = list (cyclocomp_threshold = 15,
-                                        covr_threshold = 70,
-                                        digits = 2)) {
-
-    gp <- extract_gp_components (gp)
-
-    return (convert_gp_components (gp, control = control))
-}
-
 
 extract_gp_components <- function (gp) {
 
@@ -100,8 +78,12 @@ extract_gp_components <- function (gp) {
 
 #' Convert \pkg{goodpractice} components into templated report
 #'
-#' @inheritParams process_gp
 #' @param x List of components of \pkg{goodpractice} report
+#' @param control A named list of parameters potentially including
+#' `cyclocomp_threshold`, `covr_threshold`, and `covr_digits`, where
+#' reports are generated for cyclocomplexity values above threshold, and
+#' coverage values below threshold (given as percentage). `digits` controls the
+#' number of digits printed in coverage reports.
 #' @return Markdown-formatted report of contents of `x`
 #' @export
 convert_gp_components <- function (x,

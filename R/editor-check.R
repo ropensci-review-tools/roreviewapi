@@ -380,18 +380,24 @@ ci_checks <- function (x) {
 
 #' Report on goodpractice checks
 #' @inheritParams collate_checks
+#' @param control A named list of parameters potentially including
+#' `cyclocomp_threshold`, `covr_threshold`, and `covr_digits`, where
+#' reports are generated for cyclocomplexity values above threshold, and
+#' coverage values below threshold (given as percentage). `digits` controls the
+#' number of digits printed in coverage reports.
 #' @noRd
-goodpractice_checks <- function (x) {
+goodpractice_checks <- function (x,
+                                 control = list (cyclocomp_threshold = 15,
+                                                 covr_threshold = 70,
+                                                 digits = 2)) {
 
-    control <- list (cyclocomp_threshold = 15,
-                     covr_threshold = 70,
-                     digits = 2)
+    gp <- extract_gp_components (x$gp)
 
 
     c ("",
        "### 3b. `goodpractice` results",
        "",
        "",
-       process_gp (check_data$gp, control = control),
+       convert_gp_components (gp, control = control),
        "")
 }
