@@ -10,6 +10,23 @@ editor_check <- function (path) {
 
     eic_chks <- collate_checks (check_data)
 
+    eic_instr <- c (paste0 ("## Checks for [", check_data$package,
+                            " (v", check_data$version, ")](",
+                            check_data$url, ")"),
+                    "",
+                    paste0 ("git hash: [",
+                            substring (check_data$git$HEAD, 1, 8),
+                            "](",
+                            check_data$url,
+                            "/tree/",
+                            check_data$git$HEAD,
+                            ")"),
+                    "",
+                    eic_chks,
+                    "",
+                    paste0 ("Package License: ", check_data$license),
+                    "")
+
     # function call network
     cache_dir <- Sys.getenv ("cache_dir")
     visjs_dir <- file.path (cache_dir, "static") # in api.R
@@ -23,7 +40,8 @@ editor_check <- function (path) {
                          full.names = TRUE)
     if (!check_data$network_file %in% flist) {
         unlink (flist, recursive = TRUE)
-        visjs_ptn <- tools::file_path_sans_ext (basename (check_data$network_file))
+        visjs_ptn <- basename (check_data$network_file)
+        visjs_ptn <- tools::file_path_sans_ext (visjs_ptn)
         flist <- list.files (dirname (check_data$network_file),
                              pattern = visjs_ptn,
                              full.names = TRUE)
@@ -45,22 +63,7 @@ editor_check <- function (path) {
 
     stats_rep <- pkgstats_checks (check_data$pkgstats)
 
-    eic_instr <- c (paste0 ("## Checks for [", check_data$package,
-                            " (v", check_data$version, ")](",
-                            check_data$url, ")"),
-                    "",
-                    paste0 ("git hash: [",
-                            substring (check_data$git$HEAD, 1, 8),
-                            "](",
-                            check_data$url,
-                            "/tree/",
-                            check_data$git$HEAD,
-                            ")"),
-                    "",
-                    eic_chks,
-                    "",
-                    paste0 ("Package License: ", check_data$license),
-                    "",
+    eic_instr <- c (eic_instr,
                     stats_rep,
                     network_vis,
                     "")
@@ -124,42 +127,45 @@ editor_check <- function (path) {
     return (eic_instr)
 }
 
-collate_checks <- function (all_checks) {
+#' Collate main checklist items for editor report
+#' @param x Result of \package{pkgreport} 'pkgreport' function
+#' @noRd
+collate_checks <- function (x) {
 
-    uses_roxy <- ifelse (all_checks$file_list$uses_roxy,
+    uses_roxy <- ifelse (x$file_list$uses_roxy,
                          paste0 ("- ", symbol_tck (),
                                  " Package uses 'roxygen2'"),
                          paste0 ("- ", symbol_crs (),
                                  " Package does not use 'roxygen2'"))
 
-    has_lifecycle <- ifelse (all_checks$file_list$has_lifecycle,
+    has_lifecycle <- ifelse (x$file_list$has_lifecycle,
                              paste0 ("- ", symbol_tck (),
                                      " Package has a life cycle statement"),
                              paste0 ("- ", symbol_crs (),
                                      " Package does not have a ",
                                      "life cycle statement"))
-    has_contrib <- ifelse (all_checks$file_list$has_contrib,
+    has_contrib <- ifelse (x$file_list$has_contrib,
                              paste0 ("- ", symbol_tck (),
                                      " Package has a 'contributing.md' file"),
                              paste0 ("- ", symbol_crs (),
                                      " Package does not have a ",
                                      "'contributing.md' file"))
 
-    fn_exs <- ifelse (all (all_checks$fn_exs),
+    fn_exs <- ifelse (all (x$fn_exs),
                       paste0 ("- ", symbol_tck (),
                               " All functions have examples"),
                       paste0 ("- ", symbol_crs (),
                               " These funtions do not have examples: [",
-                              paste0 (names (all_checks$fn_exs) [which (!all_checks$fn_exs)]),
+                              paste0 (names (x$fn_exs) [which (!x$fn_exs)]),
                               "]"))
 
     la_out <- NULL
-    if (all_checks$left_assign$global) {
+    if (x$left_assign$global) {
         la_out <- paste0 ("- ", symbol_crs (),
                           " Package uses global assignment operator ('<<-')")
     }
-    if (length (which (all_checks$left_assign$usage == 0)) == 0) {
-        la <- all_checks$left_assign$usage
+    if (length (which (x$left_assign$usage == 0)) == 0) {
+        la <- x$left_assign$usage
         la_out <- c (la_out,
                      paste0 ("- ", symbol_crs (),
                              " Package uses inconsistent ",
@@ -168,13 +174,13 @@ collate_checks <- function (all_checks) {
                              la [names (la) == "="], " '=')"))
     }
 
-    has_url <- ifelse (all_checks$file_list$has_url,
+    has_url <- ifelse (x$file_list$has_url,
                        paste0 ("- ", symbol_tck (),
                                " Package 'DESCRIPTION' has a URL field"),
                        paste0 ("- ", symbol_crs (),
                                " Package 'DESCRIPTION' does not ",
                                "have a URL field"))
-    has_bugs <- ifelse (all_checks$file_list$has_bugs,
+    has_bugs <- ifelse (x$file_list$has_bugs,
                         paste0 ("- ", symbol_tck (),
                                 " Package 'DESCRIPTION' has a ",
                                 "BugReports field"),
@@ -186,7 +192,7 @@ collate_checks <- function (all_checks) {
     # -----------------   BADGES + OTHER STUFF   -----------------
     # ------------------------------------------------------------
 
-    if (is.null (all_checks$badges)) {
+    if (is.null (x$badges)) {
 
         ci_txt <- paste0 ("- ", symbol_crs (),
                           " Package has no continuous integration checks")
@@ -215,6 +221,9 @@ collate_checks <- function (all_checks) {
     attr (eic_chks, "checks_okay") <- checks_okay
 
     return (eic_chks)
+}
+
+srr_checks <- function (x) {
 }
 
 #' Format \pkg{pkgstats} data
