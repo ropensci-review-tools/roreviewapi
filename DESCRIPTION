@@ -1,6 +1,6 @@
 Package: roreviewapi
 Title: Plumber API to report package structure and function
-Version: 0.0.0.012
+Version: 0.0.0.013
 Authors@R: 
     person(given = "Mark",
            family = "Padgham",

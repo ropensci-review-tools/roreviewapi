@@ -28,64 +28,15 @@ editor_check <- function (path) {
                     "",
                     "---",
                     "")
+                
+    stats_rep <- pkgstats_checks (check_data)
 
     eic_instr <- c (eic_instr,
                     srr_checks (check_data),
-                    pkgstats_checks (check_data),
-                    pkg_network (check_data))
-
-    if (!is.null (check_data$badges)) {
-
-        if (is.na (check_data$badges [1]))
-            check_data$badges <- "(There do not appear to be any)"
-
-        eic_instr <- c (eic_instr,
-                        "**Continuous Integration Badges**",
-                        "",
-                        check_data$badges,
-                        "")
-
-        if (!is.null (check_data$github_workflows)) {
-
-            eic_instr <- c (eic_instr,
-                            "**GitHub Workflow Results**",
-                            "",
-                            knitr::kable (check_data$github_workflows))
-        }
-    }
-
-    # ------------------------------------------------------------
-    # ---------------------   GOODPRACTICE   ---------------------
-    # ------------------------------------------------------------
-
-    control <- list (cyclocomp_threshold = 15,
-                     covr_threshold = 70,
-                     digits = 2)
-
-    gp <- process_gp (check_data$gp, control = control)
-
-    gp <- c ("",
-             "### goodpractice results",
-             "",
-             "",
-             gp,
-             "")
-
-    eic_instr <- c (eic_instr, gp)
-
-    if (!attr (eic_chks, "checks_okay")) {
-
-        eic_instr <- c (eic_instr,
-                        paste0 ("Processing may not proceed until the ",
-                                "items marked with ",
-                                symbol_crs (),
-                                " have been resolved."))
-    } else {
-
-        eic_instr <- c (eic_instr,
-                        paste0 ("This package is in top shape and may ",
-                                "be passed on to a handling editor"))
-    }
+                    stats_rep,
+                    pkg_network (check_data),
+                    ci_checks (check_data),
+                    goodpractice_checks (check_data))
 
     eic_instr <- paste0 (eic_instr, collapse = "\n")
     attr (eic_instr, "is_noteworthy") <- attr (stats_rep, "is_noteworthy")
@@ -380,4 +331,52 @@ pkg_network <- function (x) {
                visjs_url,
                ") for interactive network visualisation ",
                "of calls between objects in package."))
+}
+
+#' Report on continuous integration checks
+#' @inheritParams collate_checks
+#' @noRd
+ci_checks <- function (x) {
+
+    out <- NULL
+
+    if (!is.null (x$badges)) {
+
+        if (is.na (x$badges [1]))
+            x$badges <- "(There do not appear to be any)"
+
+        out <- c (out,
+                  "**Continuous Integration Badges**",
+                  "",
+                  x$badges,
+                  "")
+
+        if (!is.null (x$github_workflows)) {
+
+            out <- c (out,
+                      "**GitHub Workflow Results**",
+                      "",
+                      knitr::kable (x$github_workflows))
+        }
+    }
+
+    return (out)
+}
+
+#' Report on goodpractice checks
+#' @inheritParams collate_checks
+#' @noRd
+goodpractice_checks <- function (x) {
+
+    control <- list (cyclocomp_threshold = 15,
+                     covr_threshold = 70,
+                     digits = 2)
+
+
+    c ("",
+       "### 3b. `goodpractice` results",
+       "",
+       "",
+       process_gp (check_data$gp, control = control),
+       "")
 }
