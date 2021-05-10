@@ -189,6 +189,9 @@ collate_checks <- function (x) {
     return (eic_chks)
 }
 
+#' Report on \package{srr} compliance
+#' @inheritParams collate_checks
+#' @noRd
 srr_checks <- function (x) {
 
     cat_plural <- ifelse (length (x$srr$categories == 1),
@@ -275,6 +278,9 @@ pkgstats_checks <- function (x) {
     return (stats_rep)
 }
 
+#' Initial description of structural properties of package
+#' @inheritParams collate_checks
+#' @noRd
 pkg_stat_desc <- function (x) {
 
     stats <- x$pkgstats
@@ -338,6 +344,9 @@ pkg_stat_desc <- function (x) {
     return (out)
 }
 
+#' Output text and URL link to function call network as 'vis.js' file.
+#' @inheritParams collate_checks
+#' @noRd
 pkg_network <- function (x) {
 
     cache_dir <- Sys.getenv ("cache_dir")
