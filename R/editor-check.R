@@ -123,7 +123,9 @@ editor_check <- function (path) {
                has_url,
                has_bugs,
                ci_txt)
-    if (any (grepl (symbol_crs (), eic_chks))) {
+
+    checks_okay <- !any (grepl (symbol_crs (), eic_chks))
+    if (!checks_okay) {
         eic_chks <- c (eic_chks,
                        "",
                        paste0 ("**Important:** All failing checks above ",
@@ -132,50 +134,83 @@ editor_check <- function (path) {
     
     stats_rep <- pkgstats_checks (rep$pkgstats)
 
-    res <- c (paste0 ("## Checks for [", rep$package,
-                      " (v", rep$version, ")](",
-                      rep$url, ")"),
-              "",
-              paste0 ("git hash: [",
-                      substring (rep$git$HEAD, 1, 8),
-                      "](",
-                      rep$url,
-                      "/tree/",
-                      rep$git$HEAD,
-                      ")"),
-              "",
-              eic_chks,
-              "",
-              paste0 ("Package License: ", rep$license),
-              "",
-              stats_rep,
-              network_vis,
-              "")
+    eic_instr <- c (paste0 ("## Checks for [", rep$package,
+                            " (v", rep$version, ")](",
+                            rep$url, ")"),
+                    "",
+                    paste0 ("git hash: [",
+                            substring (rep$git$HEAD, 1, 8),
+                            "](",
+                            rep$url,
+                            "/tree/",
+                            rep$git$HEAD,
+                            ")"),
+                    "",
+                    eic_chks,
+                    "",
+                    paste0 ("Package License: ", rep$license),
+                    "",
+                    stats_rep,
+                    network_vis,
+                    "")
 
     if (!is.null (rep$badges)) {
 
         if (is.na (rep$badges [1]))
             rep$badges <- "(There do not appear to be any)"
 
-        res <- c (res,
-                  "**Continuous Integration Badges**",
-                  "",
-                  rep$badges,
-                  "")
+        eic_instr <- c (eic_instr,
+                        "**Continuous Integration Badges**",
+                        "",
+                        rep$badges,
+                        "")
         
         if (!is.null (rep$github_workflows)) {
 
-            res <- c (res,
-                      "**GitHub Workflow Results**",
-                      "",
-                      knitr::kable (rep$github_workflows))
+            eic_instr <- c (eic_instr,
+                            "**GitHub Workflow Results**",
+                            "",
+                            knitr::kable (rep$github_workflows))
         }
     }
 
-    ret <- paste0 (res, collapse = "\n")
-    attr (ret, "is_noteworthy") <- attr (stats_rep, "is_noteworthy")
+    # ------------------------------------------------------------
+    # ---------------------   GOODPRACTICE   ---------------------
+    # ------------------------------------------------------------
 
-    return (ret)
+    control <- list (cyclocomp_threshold = 15,
+                     covr_threshold = 70,
+                     digits = 2)
+
+    gp <- process_gp (rep$gp, control = control)
+
+    gp <- c ("",
+             "### goodpractice results",
+             "",
+             "",
+             gp,
+             "")
+
+    eic_instr <- c (eic_instr, gp)
+
+    if (!checks_okay) {
+
+        eic_instr <- c (eic_instr,
+                        paste0 ("Processing may not proceed until the ",
+                                "items marked with ",
+                                symbol_crs (),
+                                " have been resolved."))
+    } else {
+
+        eic_instr <- c (eic_instr,
+                        paste0 ("This package is in top shape and may ",
+                                "be passed on to a handling editor"))
+    }
+
+    eic_instr <- paste0 (eic_instr, collapse = "\n")
+    attr (eic_instr, "is_noteworthy") <- attr (stats_rep, "is_noteworthy")
+
+    return (eic_instr)
 }
 
 #' Format \pkg{pkgstats} data
