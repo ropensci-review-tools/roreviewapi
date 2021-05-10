@@ -6,79 +6,25 @@
 #' @export
 editor_check <- function (path) {
 
-    rep <- pkgcheck::pkgcheck (path)
+    check_data <- pkgcheck::pkgcheck (path)
 
-    uses_roxy <- ifelse (rep$file_list$uses_roxy,
-                         paste0 ("- ", symbol_tck (),
-                                 " Package uses 'roxygen2'"),
-                         paste0 ("- ", symbol_crs (),
-                                 " Package does not use 'roxygen2'"))
-
-    has_lifecycle <- ifelse (rep$file_list$has_lifecycle,
-                             paste0 ("- ", symbol_tck (),
-                                     " Package has a life cycle statement"),
-                             paste0 ("- ", symbol_crs (),
-                                     " Package does not have a ",
-                                     "life cycle statement"))
-    has_contrib <- ifelse (rep$file_list$has_contrib,
-                             paste0 ("- ", symbol_tck (),
-                                     " Package has a 'contributing.md' file"),
-                             paste0 ("- ", symbol_crs (),
-                                     " Package does not have a ",
-                                     "'contributing.md' file"))
-
-    fn_exs <- ifelse (all (rep$fn_exs),
-                      paste0 ("- ", symbol_tck (),
-                              " All functions have examples"),
-                      paste0 ("- ", symbol_crs (),
-                              " These funtions do not have examples: [",
-                              paste0 (names (rep$fn_exs) [which (!rep$fn_exs)]),
-                              "]"))
-
-    la_out <- NULL
-    if (rep$left_assign$global) {
-        la_out <- paste0 ("- ", symbol_crs (),
-                          " Package uses global assignment operator ('<<-')")
-    }
-    if (length (which (rep$left_assign$usage == 0)) == 0) {
-        la <- rep$left_assign$usage
-        la_out <- c (la_out,
-                     paste0 ("- ", symbol_crs (),
-                             " Package uses inconsistent ",
-                             "assignment operators (",
-                             la [names (la) == "<-"], " '<-' and ",
-                             la [names (la) == "="], " '=')"))
-    }
-
-    has_url <- ifelse (rep$file_list$has_url,
-                       paste0 ("- ", symbol_tck (),
-                               " Package 'DESCRIPTION' has a URL field"),
-                       paste0 ("- ", symbol_crs (),
-                               " Package 'DESCRIPTION' does not ",
-                               "have a URL field"))
-    has_bugs <- ifelse (rep$file_list$has_bugs,
-                        paste0 ("- ", symbol_tck (),
-                                " Package 'DESCRIPTION' has a ",
-                                "BugReports field"),
-                        paste0 ("- ", symbol_crs (),
-                                " Package 'DESCRIPTION' does not ",
-                                "have a BugReports field"))
+    eic_chks <- collate_checks (check_data)
 
     # function call network
     cache_dir <- Sys.getenv ("cache_dir")
     visjs_dir <- file.path (cache_dir, "static") # in api.R
-    repo <- ifelse (!is.null (rep$url),
-                    utils::tail (strsplit (rep$url, "/") [[1]], 1),
-                    rep$package)
+    repo <- ifelse (!is.null (check_data$url),
+                    utils::tail (strsplit (check_data$url, "/") [[1]], 1),
+                    check_data$package)
 
     # clean up any older ones
     flist <- list.files (visjs_dir,
                          pattern = paste0 (repo, "_pkgstats"),
                          full.names = TRUE)
-    if (!rep$network_file %in% flist) {
+    if (!check_data$network_file %in% flist) {
         unlink (flist, recursive = TRUE)
-        visjs_ptn <- tools::file_path_sans_ext (basename (rep$network_file))
-        flist <- list.files (dirname (rep$network_file),
+        visjs_ptn <- tools::file_path_sans_ext (basename (check_data$network_file))
+        flist <- list.files (dirname (check_data$network_file),
                              pattern = visjs_ptn,
                              full.names = TRUE)
 
@@ -86,7 +32,7 @@ editor_check <- function (path) {
     }
 
     visjs_url <- paste0 (Sys.getenv ("pkgcheck_url"), "/assets/",
-                         basename (rep$network_file))
+                         basename (check_data$network_file))
 
     network_vis <- c ("",
                       "### Network visualisation",
@@ -96,15 +42,154 @@ editor_check <- function (path) {
                               ") for interactive network visualisation ",
                               "of calls between objects in package."))
 
+
+    stats_rep <- pkgstats_checks (check_data$pkgstats)
+
+    eic_instr <- c (paste0 ("## Checks for [", check_data$package,
+                            " (v", check_data$version, ")](",
+                            check_data$url, ")"),
+                    "",
+                    paste0 ("git hash: [",
+                            substring (check_data$git$HEAD, 1, 8),
+                            "](",
+                            check_data$url,
+                            "/tree/",
+                            check_data$git$HEAD,
+                            ")"),
+                    "",
+                    eic_chks,
+                    "",
+                    paste0 ("Package License: ", check_data$license),
+                    "",
+                    stats_rep,
+                    network_vis,
+                    "")
+
+    if (!is.null (check_data$badges)) {
+
+        if (is.na (check_data$badges [1]))
+            check_data$badges <- "(There do not appear to be any)"
+
+        eic_instr <- c (eic_instr,
+                        "**Continuous Integration Badges**",
+                        "",
+                        check_data$badges,
+                        "")
+
+        if (!is.null (check_data$github_workflows)) {
+
+            eic_instr <- c (eic_instr,
+                            "**GitHub Workflow Results**",
+                            "",
+                            knitr::kable (check_data$github_workflows))
+        }
+    }
+
+    # ------------------------------------------------------------
+    # ---------------------   GOODPRACTICE   ---------------------
+    # ------------------------------------------------------------
+
+    control <- list (cyclocomp_threshold = 15,
+                     covr_threshold = 70,
+                     digits = 2)
+
+    gp <- process_gp (check_data$gp, control = control)
+
+    gp <- c ("",
+             "### goodpractice results",
+             "",
+             "",
+             gp,
+             "")
+
+    eic_instr <- c (eic_instr, gp)
+
+    if (!attr (eic_chks, "checks_okay")) {
+
+        eic_instr <- c (eic_instr,
+                        paste0 ("Processing may not proceed until the ",
+                                "items marked with ",
+                                symbol_crs (),
+                                " have been resolved."))
+    } else {
+
+        eic_instr <- c (eic_instr,
+                        paste0 ("This package is in top shape and may ",
+                                "be passed on to a handling editor"))
+    }
+
+    eic_instr <- paste0 (eic_instr, collapse = "\n")
+    attr (eic_instr, "is_noteworthy") <- attr (stats_rep, "is_noteworthy")
+
+    return (eic_instr)
+}
+
+collate_checks <- function (all_checks) {
+
+    uses_roxy <- ifelse (all_checks$file_list$uses_roxy,
+                         paste0 ("- ", symbol_tck (),
+                                 " Package uses 'roxygen2'"),
+                         paste0 ("- ", symbol_crs (),
+                                 " Package does not use 'roxygen2'"))
+
+    has_lifecycle <- ifelse (all_checks$file_list$has_lifecycle,
+                             paste0 ("- ", symbol_tck (),
+                                     " Package has a life cycle statement"),
+                             paste0 ("- ", symbol_crs (),
+                                     " Package does not have a ",
+                                     "life cycle statement"))
+    has_contrib <- ifelse (all_checks$file_list$has_contrib,
+                             paste0 ("- ", symbol_tck (),
+                                     " Package has a 'contributing.md' file"),
+                             paste0 ("- ", symbol_crs (),
+                                     " Package does not have a ",
+                                     "'contributing.md' file"))
+
+    fn_exs <- ifelse (all (all_checks$fn_exs),
+                      paste0 ("- ", symbol_tck (),
+                              " All functions have examples"),
+                      paste0 ("- ", symbol_crs (),
+                              " These funtions do not have examples: [",
+                              paste0 (names (all_checks$fn_exs) [which (!all_checks$fn_exs)]),
+                              "]"))
+
+    la_out <- NULL
+    if (all_checks$left_assign$global) {
+        la_out <- paste0 ("- ", symbol_crs (),
+                          " Package uses global assignment operator ('<<-')")
+    }
+    if (length (which (all_checks$left_assign$usage == 0)) == 0) {
+        la <- all_checks$left_assign$usage
+        la_out <- c (la_out,
+                     paste0 ("- ", symbol_crs (),
+                             " Package uses inconsistent ",
+                             "assignment operators (",
+                             la [names (la) == "<-"], " '<-' and ",
+                             la [names (la) == "="], " '=')"))
+    }
+
+    has_url <- ifelse (all_checks$file_list$has_url,
+                       paste0 ("- ", symbol_tck (),
+                               " Package 'DESCRIPTION' has a URL field"),
+                       paste0 ("- ", symbol_crs (),
+                               " Package 'DESCRIPTION' does not ",
+                               "have a URL field"))
+    has_bugs <- ifelse (all_checks$file_list$has_bugs,
+                        paste0 ("- ", symbol_tck (),
+                                " Package 'DESCRIPTION' has a ",
+                                "BugReports field"),
+                        paste0 ("- ", symbol_crs (),
+                                " Package 'DESCRIPTION' does not ",
+                                "have a BugReports field"))
+
     # ------------------------------------------------------------
     # -----------------   BADGES + OTHER STUFF   -----------------
     # ------------------------------------------------------------
 
-    if (is.null (rep$badges)) {
+    if (is.null (all_checks$badges)) {
 
         ci_txt <- paste0 ("- ", symbol_crs (),
                           " Package has no continuous integration checks")
-        rep$badges <- NA_character_
     } else {
 
         ci_txt <- paste0 ("- ", symbol_tck (),
@@ -127,85 +212,9 @@ editor_check <- function (path) {
                                "must be addressed prior to proceeding"))
     }
 
-    stats_rep <- pkgstats_checks (rep$pkgstats)
+    attr (eic_chks, "checks_okay") <- checks_okay
 
-    eic_instr <- c (paste0 ("## Checks for [", rep$package,
-                            " (v", rep$version, ")](",
-                            rep$url, ")"),
-                    "",
-                    paste0 ("git hash: [",
-                            substring (rep$git$HEAD, 1, 8),
-                            "](",
-                            rep$url,
-                            "/tree/",
-                            rep$git$HEAD,
-                            ")"),
-                    "",
-                    eic_chks,
-                    "",
-                    paste0 ("Package License: ", rep$license),
-                    "",
-                    stats_rep,
-                    network_vis,
-                    "")
-
-    if (!is.null (rep$badges)) {
-
-        if (is.na (rep$badges [1]))
-            rep$badges <- "(There do not appear to be any)"
-
-        eic_instr <- c (eic_instr,
-                        "**Continuous Integration Badges**",
-                        "",
-                        rep$badges,
-                        "")
-
-        if (!is.null (rep$github_workflows)) {
-
-            eic_instr <- c (eic_instr,
-                            "**GitHub Workflow Results**",
-                            "",
-                            knitr::kable (rep$github_workflows))
-        }
-    }
-
-    # ------------------------------------------------------------
-    # ---------------------   GOODPRACTICE   ---------------------
-    # ------------------------------------------------------------
-
-    control <- list (cyclocomp_threshold = 15,
-                     covr_threshold = 70,
-                     digits = 2)
-
-    gp <- process_gp (rep$gp, control = control)
-
-    gp <- c ("",
-             "### goodpractice results",
-             "",
-             "",
-             gp,
-             "")
-
-    eic_instr <- c (eic_instr, gp)
-
-    if (!checks_okay) {
-
-        eic_instr <- c (eic_instr,
-                        paste0 ("Processing may not proceed until the ",
-                                "items marked with ",
-                                symbol_crs (),
-                                " have been resolved."))
-    } else {
-
-        eic_instr <- c (eic_instr,
-                        paste0 ("This package is in top shape and may ",
-                                "be passed on to a handling editor"))
-    }
-
-    eic_instr <- paste0 (eic_instr, collapse = "\n")
-    attr (eic_instr, "is_noteworthy") <- attr (stats_rep, "is_noteworthy")
-
-    return (eic_instr)
+    return (eic_chks)
 }
 
 #' Format \pkg{pkgstats} data
