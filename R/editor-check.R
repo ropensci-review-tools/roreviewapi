@@ -58,7 +58,8 @@ editor_check <- function (path) {
                                "have a URL field"))
     has_bugs <- ifelse (rep$file_list$has_bugs,
                         paste0 ("- ", symbol_tck (),
-                                " Package 'DESCRIPTION' has a BugReports field"),
+                                " Package 'DESCRIPTION' has a ",
+                                "BugReports field"),
                         paste0 ("- ", symbol_crs (),
                                 " Package 'DESCRIPTION' does not ",
                                 "have a BugReports field"))
@@ -69,12 +70,6 @@ editor_check <- function (path) {
     repo <- ifelse (!is.null (rep$url),
                     utils::tail (strsplit (rep$url, "/") [[1]], 1),
                     rep$package)
-                    
-    #repo <- utils::tail (strsplit (u, "/") [[1]], 1)
-    #org <- utils::tail (strsplit (u, "/") [[1]], 2) [1]
-    #commit <- pkgcheck::get_latest_commit (org, repo)
-    #oid <- substring (commit$oid, 1, 8)
-    #visjs_file <- paste0 (repo, "_pkgstats", oid, ".html")
 
     # clean up any older ones
     flist <- list.files (visjs_dir,
@@ -131,7 +126,7 @@ editor_check <- function (path) {
                        paste0 ("**Important:** All failing checks above ",
                                "must be addressed prior to proceeding"))
     }
-    
+
     stats_rep <- pkgstats_checks (rep$pkgstats)
 
     eic_instr <- c (paste0 ("## Checks for [", rep$package,
@@ -164,7 +159,7 @@ editor_check <- function (path) {
                         "",
                         rep$badges,
                         "")
-        
+
         if (!is.null (rep$github_workflows)) {
 
             eic_instr <- c (eic_instr,
