@@ -25,7 +25,11 @@ editor_check <- function (path) {
                     eic_chks,
                     "",
                     paste0 ("Package License: ", check_data$license),
+                    "",
+                    "---",
                     "")
+
+    eic_instr <- c (eic_instr, srr_checks (check_data))
 
     # function call network
     cache_dir <- Sys.getenv ("cache_dir")
@@ -224,6 +228,33 @@ collate_checks <- function (x) {
 }
 
 srr_checks <- function (x) {
+
+    cat_plural <- ifelse (length (x$srr$categories == 1),
+                          "category",
+                          "categories")
+    srr_msg <- ifelse (x$srr$okay,
+                       paste0 (symbol_tck (), " ", x$srr$message),
+                       paste0 (symbol_crs (), " ", x$srr$message))
+    base_url <- Sys.getenv ("roreviewapi_url")
+
+    c ("## 1. srr",
+       "",
+       paste0 ("This package is in the following ", cat_plural, ":"),
+       paste0 ("*", x$srr$categories, "*"),
+       "",
+       srr_msg,
+       "",
+       paste0 ("[Click here to view output of 'srr_report'](",
+               base_url, "/assets/", x$package, "_srr",
+               substring (x$git$HEAD, 1, 8), ".html), ",
+               "which can be re-generated locally by running the ",
+               "[`srr_report() function](https://ropenscilabs.github.io/",
+               "srr/reference/srr_report.html) from within a local clone ",
+               "of the repository."),
+       "",
+       "---",
+       "")
+
 }
 
 #' Format \pkg{pkgstats} data

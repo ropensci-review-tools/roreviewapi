@@ -28,16 +28,16 @@ serve_api <- function(
                       os_release = "20.04") {
 
     base_url <- paste0 (base_url, ":", published)
-    Sys.setenv ("pkgcheck_url" = base_url)
+    Sys.setenv ("roreviewapi_url" = base_url)
 
-    Sys.setenv ("pkgcheck_os" = os)
-    Sys.setenv ("pkgcheck_os_release" = os_release)
+    Sys.setenv ("roreviewapi_os" = os)
+    Sys.setenv ("roreviewapi_os_release" = os_release)
 
     ip <- data.frame (utils::installed.packages())
 
     f <- file.path(
-                   ip$LibPath [ip$Package == "pkgcheck"],
-                   "pkgcheck", "plumber.R"
+                   ip$LibPath [ip$Package == "roreviewapi"],
+                   "roreviewapi", "plumber.R"
     )
 
     # ----------cache_dir set up----------
@@ -57,7 +57,7 @@ serve_api <- function(
     if (!fs::dir_exists (log_dir))
         fs::dir_create (log_dir)
 
-    log_file <- tempfile ("pkgcheck_", log_dir, ".log")
+    log_file <- tempfile ("roreviewapi_", log_dir, ".log")
     Sys.setenv ("log_file" = log_file)
     logger::log_appender (logger::appender_tee (log_file))
 
