@@ -13,9 +13,6 @@
     <loc>/reference/check_cache.html</loc>
   </url>
   <url>
-    <loc>/reference/convert_gp_components.html</loc>
-  </url>
-  <url>
     <loc>/reference/dl_gh_repo.html</loc>
   </url>
   <url>
@@ -23,9 +20,6 @@
   </url>
   <url>
     <loc>/reference/index.html</loc>
-  </url>
-  <url>
-    <loc>/reference/num_ex_lines.html</loc>
   </url>
   <url>
     <loc>/reference/pkgrep_install_deps.html</loc>
