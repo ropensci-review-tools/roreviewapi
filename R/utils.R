@@ -1,6 +1,4 @@
 
-get_Rd_meta <- utils::getFromNamespace (".Rd_get_metadata", "tools") # nolint
-
 #' Tick symbol, exported for direct use in plumber API
 #' @export
 symbol_tck <- function () {
