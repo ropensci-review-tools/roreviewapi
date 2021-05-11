@@ -43,13 +43,16 @@ serve_api <- function(
     # ----------cache_dir set up----------
     if (is.null (cache_dir)) { # allows tempdir() to be passed for CRAN tests
 
-        cache_dir <- file.path (rappdirs::user_cache_dir (), "pkgcheck")
+        cache_dir <- ifelse ("pkgcheck_cache_dir" %in% names (Sys.getenv ()),
+                             Sys.getenv ("pkgcheck_cache_dir"),
+                             file.path (rappdirs::user_cache_dir (), "pkgcheck"))
+
         if (!file.exists (cache_dir)) {
             dir.create (cache_dir, recursive = TRUE)
         }
     }
 
-    Sys.setenv ("cache_dir" = cache_dir)
+    Sys.setenv ("pkgcheck_cache_dir" = cache_dir)
 
     # ----------log_dir set up----------
     log_dir <- here::here ("logs")
