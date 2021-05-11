@@ -9,5 +9,8 @@ editor_check <- function (path) {
     checks <- pkgcheck::pkgcheck (path)
     checks_md <- pkgcheck::checks_to_markdown (checks, render = FALSE)
 
-    return (paste0 (checks_md, collapse = "\n"))
+    ret <- paste0 (checks_md, collapse = "\n")
+    attributes (ret) <- attributes (checks_md)
+
+    return (ret)
 }
