@@ -1,6 +1,6 @@
 Package: roreviewapi
 Title: Plumber API to report package structure and function
-Version: 0.0.0.021
+Version: 0.0.0.022
 Authors@R: 
     person(given = "Mark",
            family = "Padgham",
@@ -13,16 +13,9 @@ BugReports: https://github.com/ropenscilabs/roreviewapi/issues
 Depends: 
     R (>= 3.4.0)
 Imports:
-    callr,
-    covr,
     fs,
     gert,
-    ghql,
-    glue,
-    goodpractice,
     here,
-    httr,
-    jsonlite,
     logger,
     magrittr,
     methods,
@@ -33,8 +26,7 @@ Imports:
     remotes,
     roxygen2,
     srr,
-    tictoc,
-    withr
+    tictoc
 Suggests: 
     knitr,
     rmarkdown
