@@ -61,14 +61,16 @@ move1file <- function (path) {
     if (!dir.exists (f_to))
         dir.create (f_to, recursive = TRUE)
     ret <- unique (file.copy (f_from, f_to, recursive = TRUE))
-    
+
     if (length (ret) > 1)
         warning ("Files only able to be partially copied")
+
     return (ret [1])
 
 }
 
 path_to_url <- function (path) {
 
-    paste0 ("https://ropenscilabs.github.io/roreviewapi/static/", path)
+    paste0 ("https://ropenscilabs.github.io/roreviewapi/static/",
+            basename (path))
 }
