@@ -6,7 +6,8 @@
 <meta http-equiv="X-UA-Compatible" content="IE=edge">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-<title>check_cache — check_cache • roreviewapi</title>
+<title>Push static html files to gh-pages branch of this repo to serve via
+GitHub pages. — push_to_gh_pages • roreviewapi</title>
 
 
 <!-- jquery -->
@@ -39,9 +40,10 @@
 
 
 
-<meta property="og:title" content="check_cache — check_cache" />
-<meta property="og:description" content="Check whether a package has been cached, and if so, whether commits have been
-added to the github repo since cached version." />
+<meta property="og:title" content="Push static html files to gh-pages branch of this repo to serve via
+GitHub pages. — push_to_gh_pages" />
+<meta property="og:description" content="Push static html files to gh-pages branch of this repo to serve via
+GitHub pages." />
 
 
 
@@ -109,43 +111,31 @@ added to the github repo since cached version." />
 <div class="row">
   <div class="col-md-9 contents">
     <div class="page-header">
-    <h1>check_cache</h1>
-    <small class="dont-index">Source: <a href='https://github.com/ropenscilabs/roreviewapi/blob/master/R/cache.R'><code>R/cache.R</code></a></small>
-    <div class="hidden name"><code>check_cache.Rd</code></div>
+    <h1>Push static <code>html</code> files to <code>gh-pages</code> branch of this repo to serve via
+GitHub pages.</h1>
+    <small class="dont-index">Source: <a href='https://github.com/ropenscilabs/roreviewapi/blob/master/R/gh-pages.R'><code>R/gh-pages.R</code></a></small>
+    <div class="hidden name"><code>push_to_gh_pages.Rd</code></div>
     </div>
 
     <div class="ref-description">
-    <p>Check whether a package has been cached, and if so, whether commits have been
-added to the github repo since cached version.</p>
+    <p>Push static <code>html</code> files to <code>gh-pages</code> branch of this repo to serve via
+GitHub pages.</p>
     </div>
 
-    <pre class="usage"><span class='fu'>check_cache</span><span class='op'>(</span><span class='va'>org</span>, <span class='va'>repo</span>, cache_dir <span class='op'>=</span> <span class='fu'><a href='https://rdrr.io/r/base/tempfile.html'>tempdir</a></span><span class='op'>(</span><span class='op'>)</span><span class='op'>)</span></pre>
+    <pre class="usage"><span class='fu'>push_to_gh_pages</span><span class='op'>(</span><span class='va'>check</span><span class='op'>)</span></pre>
 
     <h2 class="hasAnchor" id="arguments"><a class="anchor" href="#arguments"></a>Arguments</h2>
     <table class="ref-arguments">
     <colgroup><col class="name" /><col class="desc" /></colgroup>
     <tr>
-      <th>org</th>
-      <td><p>Github organization</p></td>
-    </tr>
-    <tr>
-      <th>repo</th>
-      <td><p>Github repository</p></td>
-    </tr>
-    <tr>
-      <th>cache_dir</th>
-      <td><p>Directory in which packages are cached</p></td>
+      <th>check</th>
+      <td><p>Return result of <a href='editor_check.html'>editor_check</a> function.</p></td>
     </tr>
     </table>
 
     <h2 class="hasAnchor" id="value"><a class="anchor" href="#value"></a>Value</h2>
 
-    <p>FALSE If a package has previously been cached, and the github repo
-has not changed; otherwise TRUE.</p>
-    <h2 class="hasAnchor" id="note"><a class="anchor" href="#note"></a>Note</h2>
-
-    <p>This function is not intended to be called directly, and is only
-exported to enable it to be used within the <span class="pkg">plumber</span> API.</p>
+    <p>Vector of two paths containing URLs of the <code>srr</code> and <code>network</code> files.</p>
 
   </div>
   <div class="col-md-3 hidden-xs hidden-sm" id="pkgdown-sidebar">
