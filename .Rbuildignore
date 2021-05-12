@@ -13,3 +13,5 @@
 ^codemeta\.json$
 ^\.pre-commit-config\.yaml$
 .ropensci-staff
+^docs$
+^pkgdown$

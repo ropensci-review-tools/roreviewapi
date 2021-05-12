@@ -10,7 +10,7 @@
   "codeRepository": "https://github.com/ropenscilabs/roreviewapi",
   "issueTracker": "https://github.com/ropenscilabs/roreviewapi/issues",
   "license": "https://spdx.org/licenses/GPL-3.0",
-  "version": "0.0.0.23",
+  "version": "0.0.0.024",
   "programmingLanguage": {
     "@type": "ComputerLanguage",
     "name": "R",
@@ -213,7 +213,8 @@
       "sameAs": "https://CRAN.R-project.org/package=tictoc"
     }
   ],
-  "fileSize": "54.779KB",
+  "fileSize": "54.87KB",
   "developmentStatus": "https://www.repostatus.org/#concept",
-  "readme": "https://github.com/ropenscilabs/roreviewapi/blob/main/README.md"
+  "readme": "https://github.com/ropenscilabs/roreviewapi/blob/main/README.md",
+  "relatedLink": "https://ropenscilabs.github.io/roreviewapi"
 }
