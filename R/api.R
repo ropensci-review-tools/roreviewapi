@@ -5,30 +5,20 @@
 #' functionality.
 #'
 #' @param port Port for API to be exposed on
-#' @param published Port for API to be published on (see Note)
 #' @param cache_dir Directory where previously downloaded repositories are
 #' cached
-#' @param base_url Base URL of server; used to link static files.
 #' @param os Name of operating system, passed to \pkg{remotes} package to
 #' install system dependencies.
 #' @param os_release Name of operating system release, passed to \pkg{remotes}
 #' package to install system dependencies.
 #' @return Nothing; calling this starts a blocking process.
 #'
-#' @note The 'port' and 'published' parameters are the respective arguments used
-#' to run the docker container as 'docker run -p \<port\>:\<published\>'. The
-#' latter is needed to construct URLs for statically-served files.
 #' @export
 serve_api <- function(
                       port = 8000L,
-                      published = 8000L,
                       cache_dir = NULL,
-                      base_url = "http://127.0.0.1",
                       os = "ubuntu",
                       os_release = "20.04") {
-
-    base_url <- paste0 (base_url, ":", published)
-    Sys.setenv ("roreviewapi_url" = base_url)
 
     Sys.setenv ("roreviewapi_os" = os)
     Sys.setenv ("roreviewapi_os_release" = os_release)

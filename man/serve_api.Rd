@@ -4,24 +4,13 @@
 \alias{serve_api}
 \title{serve plumber API to report on packages}
 \usage{
-serve_api(
-  port = 8000L,
-  published = 8000L,
-  cache_dir = NULL,
-  base_url = "http://127.0.0.1",
-  os = "ubuntu",
-  os_release = "20.04"
-)
+serve_api(port = 8000L, cache_dir = NULL, os = "ubuntu", os_release = "20.04")
 }
 \arguments{
 \item{port}{Port for API to be exposed on}
 
-\item{published}{Port for API to be published on (see Note)}
-
 \item{cache_dir}{Directory where previously downloaded repositories are
 cached}
-
-\item{base_url}{Base URL of server; used to link static files.}
 
 \item{os}{Name of operating system, passed to \pkg{remotes} package to
 install system dependencies.}
@@ -36,9 +25,4 @@ Nothing; calling this starts a blocking process.
 The API exposes the single POST points of \code{report} to download software from
 the given URL and return a textual analysis of its structure and
 functionality.
-}
-\note{
-The 'port' and 'published' parameters are the respective arguments used
-to run the docker container as 'docker run -p \<port\>:\<published\>'. The
-latter is needed to construct URLs for statically-served files.
 }
