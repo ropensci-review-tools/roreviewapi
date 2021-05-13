@@ -11,6 +11,7 @@ editor_check <- function (path) {
 
     ret <- paste0 (checks_md, collapse = "\n")
     attributes (ret) <- attributes (checks_md)
+    attr (ret, "srr_okay") <- checks$srr$okay
 
     return (ret)
 }
