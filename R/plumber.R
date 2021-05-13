@@ -47,9 +47,6 @@ function (u) {
                                 "be passed on to a handling editor"))
     }
 
-    message ("unlinking ", local_repo)
-    junk <- unlink (local_repo, recursive = TRUE)
-
     noteworthy <- ifelse (a$is_noteworthy,
                           c (paste0 ("This package has some noteworthy ",
                                      "properties, see 'Package Statistics' ",
