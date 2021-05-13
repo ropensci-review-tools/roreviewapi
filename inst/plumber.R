@@ -10,12 +10,10 @@
 #* @post /editorcheck
 function (u) {
 
-    cache_dir <- Sys.getenv ("cache_dir")
+    cache_dir <- Sys.getenv ("pkgcheck_cache_dir")
     local_repo <- roreviewapi::dl_gh_repo (u)
-    local_zip <- paste0 (local_repo, ".zip")
-    flist <- unzip (local_zip, exdir = cache_dir)
 
-    check <- roreviewapi::editor_check (path)
+    check <- roreviewapi::editor_check (local_repo)
     a <- attributes (check)
     u <- roreviewapi::push_to_gh_pages (check)
     check <- strsplit (check, "\n") [[1]]
@@ -79,7 +77,7 @@ function (u) {
     repo <- tail (strsplit (u, "/") [[1]], 1)
     org <- tail (strsplit (u, "/") [[1]], 2) [1]
 
-    cache_dir <- Sys.getenv ("cache_dir")
+    cache_dir <- Sys.getenv ("pkgcheck_cache_dir")
     updated <- pkgcheck::check_cache (org, repo, cache_dir)
 
     oids <- readRDS (file.path (cache_dir, "commit_oids.Rds"))

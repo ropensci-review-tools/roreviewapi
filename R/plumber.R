@@ -12,10 +12,8 @@ function (u) {
 
     cache_dir <- Sys.getenv ("pkgcheck_cache_dir")
     local_repo <- roreviewapi::dl_gh_repo (u)
-    local_zip <- paste0 (local_repo, ".zip")
-    flist <- unzip (local_zip, exdir = cache_dir)
 
-    check <- roreviewapi::editor_check (path)
+    check <- roreviewapi::editor_check (local_repo)
     a <- attributes (check)
     u <- roreviewapi::push_to_gh_pages (check)
     check <- strsplit (check, "\n") [[1]]
