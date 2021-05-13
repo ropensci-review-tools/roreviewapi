@@ -74,7 +74,7 @@ functionality." />
       </button>
       <span class="navbar-brand">
         <a class="navbar-link" href="../index.html">roreviewapi</a>
-        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="Released version">0.0.0.026</span>
+        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="Released version">0.0.0.029</span>
       </span>
     </div>
 
@@ -121,14 +121,7 @@ the given URL and return a textual analysis of its structure and
 functionality.</p>
     </div>
 
-    <pre class="usage"><span class='fu'>serve_api</span><span class='op'>(</span>
-  port <span class='op'>=</span> <span class='fl'>8000L</span>,
-  published <span class='op'>=</span> <span class='fl'>8000L</span>,
-  cache_dir <span class='op'>=</span> <span class='cn'>NULL</span>,
-  base_url <span class='op'>=</span> <span class='st'>"http://127.0.0.1"</span>,
-  os <span class='op'>=</span> <span class='st'>"ubuntu"</span>,
-  os_release <span class='op'>=</span> <span class='st'>"20.04"</span>
-<span class='op'>)</span></pre>
+    <pre class="usage"><span class='fu'>serve_api</span><span class='op'>(</span>port <span class='op'>=</span> <span class='fl'>8000L</span>, cache_dir <span class='op'>=</span> <span class='cn'>NULL</span>, os <span class='op'>=</span> <span class='st'>"ubuntu"</span>, os_release <span class='op'>=</span> <span class='st'>"20.04"</span><span class='op'>)</span></pre>
 
     <h2 class="hasAnchor" id="arguments"><a class="anchor" href="#arguments"></a>Arguments</h2>
     <table class="ref-arguments">
@@ -138,17 +131,9 @@ functionality.</p>
       <td><p>Port for API to be exposed on</p></td>
     </tr>
     <tr>
-      <th>published</th>
-      <td><p>Port for API to be published on (see Note)</p></td>
-    </tr>
-    <tr>
       <th>cache_dir</th>
       <td><p>Directory where previously downloaded repositories are
 cached</p></td>
-    </tr>
-    <tr>
-      <th>base_url</th>
-      <td><p>Base URL of server; used to link static files.</p></td>
     </tr>
     <tr>
       <th>os</th>
@@ -165,11 +150,6 @@ package to install system dependencies.</p></td>
     <h2 class="hasAnchor" id="value"><a class="anchor" href="#value"></a>Value</h2>
 
     <p>Nothing; calling this starts a blocking process.</p>
-    <h2 class="hasAnchor" id="note"><a class="anchor" href="#note"></a>Note</h2>
-
-    <p>The 'port' and 'published' parameters are the respective arguments used
-to run the docker container as 'docker run -p \&lt;port\&gt;:\&lt;published\&gt;'. The
-latter is needed to construct URLs for statically-served files.</p>
 
   </div>
   <div class="col-md-3 hidden-xs hidden-sm" id="pkgdown-sidebar">
