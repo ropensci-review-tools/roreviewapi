@@ -27,7 +27,7 @@ dl_gh_repo <- function (u) {
 
     f <- file.path (cache_dir, repo)
 
-    if (!file.exists (f) | repo_updated) {
+    if (!dir.exists (f) | repo_updated) {
 
         message ("Cloning repo ...")
         f <- clone_repo (u, repo, branch)
