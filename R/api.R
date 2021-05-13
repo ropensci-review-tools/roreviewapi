@@ -33,6 +33,8 @@ serve_api <- function(
     # ----------cache_dir set up----------
     if (is.null (cache_dir)) { # allows tempdir() to be passed for CRAN tests
 
+        requireNamespace ("pkgcheck")
+
         cache_dir <- ifelse ("pkgcheck_cache_dir" %in% names (Sys.getenv ()),
                              Sys.getenv ("pkgcheck_cache_dir"),
                              file.path (rappdirs::user_cache_dir (), "pkgcheck"))
