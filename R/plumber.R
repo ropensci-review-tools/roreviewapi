@@ -26,7 +26,11 @@ function (u) {
                     "## Editor-in-Chief Instructions:",
                     "")
 
-    if (!a$srr_okay) {
+    srr_okay <- !"srr_okay" %in% names (a)
+    if (!srr_okay)
+        srr_okay <- a$srr_okay
+
+    if (!srr_okay) {
 
         eic_instr <- c (eic_instr,
                         paste0 ("Processing may not proceed until the 'srr' ",
