@@ -7,65 +7,100 @@
 #' @export
 push_to_gh_pages <- function (check) {
 
-    wd <- setwd (here::here ())
-    sdir <- file.path (here::here (), "static")
+    cache_dir <- Sys.getenv ("pkgcheck_cache_dir")
+    rorev_dir <- file.path (cache_dir, "roreviewapi")
+    static_dir <- file.path (rorev_dir, "static")
+    if (!dir.exists (rorev_dir)) {
 
-    gert::git_branch_checkout ("gh-pages")
-    gert::git_pull ()
-
-    updated <- vapply (c ("network_file", "srr_report_file"),
-                       function (i) move1file (attr (check, i)),
-                       logical (1))
-
-    if (all (updated)) {
-
-        flist <- file.path ("static", list.files (sdir, recursive = TRUE))
-        for (f in flist)
-            system2 ("dos2unix", f)
-        gert::git_add (flist)
-        nm <- gsub ("pkgstats|\\.html$", "",
-                    basename (attr (check, "network_file")))
-        gert::git_commit (message = nm)
-        gert::git_push ()
+        gert::git_clone (url = "https://github.com/ropenscilabs/roreviewapi",
+                         path = rorev_dir)
     }
 
-    gert::git_branch_checkout ("main")
+    gert::git_branch_checkout ("gh-pages", repo = rorev_dir)
+    gert::git_pull (repo = rorev_dir)
 
-    setwd (wd)
+    files <- "network_file"
+    out <- path_to_url (attr (check, "network_file"))
+    if ("srr_report_file" %in% names (attributes (check))) {
+        files <- c (files, "srr_report_file")
+        out <- c (out,
+                  path_to_url (attr (check, "srr_report_file")))
+    }
 
-    return (c (path_to_url (attr (check, "network_file")),
-               path_to_url (attr (check, "srr_report_file"))))
+    files <- lapply (files,
+                     function (i) move1file (attr (check, i), rorev_dir))
+    files <- gsub (rorev_dir, "", unlist (files))
+    files <- gsub (paste0 ("^", .Platform$file.sep), "", files)
+
+    git_files <- gert::git_ls (repo = rorev_dir)
+    git_files <- gsub (rorev_dir,
+                       "",
+                       git_files$path)
+
+    files <- files [which (!files %in% git_files)]
+
+    if (length (files) > 0) {
+
+        files_full <- normalizePath (file.path (rorev_dir, files))
+        for (f in files_full)
+            system2 ("dos2unix", f)
+
+        a <- gert::git_add (files, repo = rorev_dir)
+
+        if (nrow (a) > 0) {
+            nm <- gsub ("pkgstats|\\.html$", "",
+                        basename (attr (check, "network_file")))
+            gert::git_commit (message = nm, repo = rorev_dir)
+            gert::git_push (repo = rorev_dir)
+        }
+    }
+
+    gert::git_branch_checkout ("main", repo = rorev_dir)
+
+    return (out)
 }
 
 #' Move one local file or directory to "static" directory of this repository.
 #' @param path Path to local file or directory
 #' @return Binary value(s) indicating whether file copying was successful.
 #' @noRd
-move1file <- function (path) {
+move1file <- function (path, rorev_dir) {
 
     fname <- basename (path)
-    f_to <- file.path (here::here (), "static")
-    if (fname %in% list.files (f_to)) {
-        return (FALSE)
+    dir_to <- file.path (rorev_dir, "static")
+
+    if (fname %in% list.files (dir_to)) {
+        return (NULL)
     }
 
-    if (grepl ("pkgstats", fname)) {
-        fall <- file.path (dirname (path),
-                           tools::file_path_sans_ext (fname))
-        flist <- list.files (dirname (path), full.names = TRUE)
-        f_from <- grep (fall, flist, value = TRUE)
-    } else {
-        f_from <- path
-    }
+    base_path <- dirname (path)
+    static_path <- file.path (rorev_dir, "static")
+    flist <- list.files (base_path,
+                         full.names = TRUE)
+    fptn <- tools::file_path_sans_ext (path)
+    f_from <- grep (fptn, flist, value = TRUE)
+    f_to <- gsub (base_path,
+                  dir_to,
+                  f_from)
 
-    if (!dir.exists (f_to))
-        dir.create (f_to, recursive = TRUE)
-    ret <- unique (file.copy (f_from, f_to, recursive = TRUE))
+    if (!dir.exists (dir_to))
+        dir.create (dir_to, recursive = TRUE)
 
-    if (length (ret) > 1)
-        warning ("Files only able to be partially copied")
+    file_index <- which (!dir.exists (f_from))
+    dir_index <- which (dir.exists (f_from))
+    chk <- file.copy (f_from [file_index],
+                      f_to [file_index],
+                      recursive = FALSE)
+    chk <- file.copy (f_from [dir_index],
+                      dirname (f_to [dir_index]),
+                      recursive = TRUE)
 
-    return (ret [1])
+    f_added <- c (f_to [file_index],
+                  list.files (f_to [dir_index],
+                              full.names = TRUE,
+                              recursive = TRUE))
+
+    return (f_added)
 
 }
 
