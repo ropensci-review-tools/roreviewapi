@@ -37,6 +37,28 @@ push_to_gh_pages <- function (check) {
                        "",
                        git_files$path)
 
+    # rm any older files:
+    older_files <- gsub ("\\.html$",
+                         "",
+                         basename (attr (check, "network_file")))
+    if ("srr_report_file" %in% names (attributes (check))) {
+        older_files <- c (older_files,
+                          gsub ("\\.html$",
+                                "",
+                                basename (attr (check, "srr_report_file"))))
+    }
+
+    index <- lapply (older_files, function (i) grep (i, git_files))
+    index <- sort (unique (unlist (index)))
+
+    git_updated <- FALSE
+
+    if (length (index) > 0) {
+        r <- gert::git_rm (git_files [index], repo = rorev_dir)
+        git_updated <- TRUE
+    }
+
+    # then add any new files:
     files <- files [which (!files %in% git_files)]
 
     if (length (files) > 0) {
@@ -46,13 +68,15 @@ push_to_gh_pages <- function (check) {
             system2 ("dos2unix", f)
 
         a <- gert::git_add (files, repo = rorev_dir)
+        git_updated <- git_updated | nrow (a) > 0
+    }
 
-        if (nrow (a) > 0) {
-            nm <- gsub ("pkgstats|\\.html$", "",
-                        basename (attr (check, "network_file")))
-            gert::git_commit (message = nm, repo = rorev_dir)
-            gert::git_push (repo = rorev_dir)
-        }
+    if (git_updated) {
+
+        nm <- gsub ("pkgstats|\\.html$", "",
+                    basename (attr (check, "network_file")))
+        gert::git_commit (message = nm, repo = rorev_dir)
+        gert::git_push (repo = rorev_dir)
     }
 
     gert::git_branch_checkout ("main", repo = rorev_dir)
