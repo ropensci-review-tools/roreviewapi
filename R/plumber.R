@@ -14,8 +14,9 @@ function (u) {
     local_repo <- roreviewapi::dl_gh_repo (u)
 
     check <- roreviewapi::editor_check (local_repo)
-    a <- attributes (check)
     u <- roreviewapi::push_to_gh_pages (check)
+
+    a <- attributes (check)
     check <- strsplit (check, "\n") [[1]]
     check <- gsub (a$network_file, u [1], check)
     check <- gsub (a$srr_report_file, u [2], check)
