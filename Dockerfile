@@ -136,11 +136,12 @@ RUN install2.r \
   visNetwork \
 && installGithub.r \
       ropenscilabs/pkgstats \
-      ropenscilabs/pkgreport
+      ropenscilabs/pkgcheck \
+      ropenscilabs/roreviewapi
 
 EXPOSE 8000
 
-RUN echo "#!/bin/bash\nRscript -e 'pkgreport::serve_api(port=8000L)'" > /server_api.sh \
+RUN echo "#!/bin/bash\nRscript -e 'roreviewapi::serve_api(port=8000L)'" > /server_api.sh \
   && chmod a+x /server_api.sh
 
 CMD /server_api.sh
