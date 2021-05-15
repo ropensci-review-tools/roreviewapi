@@ -13,9 +13,7 @@
 #* @post /editorcheck
 function (repourl, repo, issue_id, post_to_issue) {
 
-    cache_dir <- Sys.getenv ("pkgcheck_cache_dir")
     local_repo <- roreviewapi::dl_gh_repo (repourl)
-
     check <- roreviewapi::editor_check (local_repo)
     u <- roreviewapi::push_to_gh_pages (check)
 
