@@ -19,7 +19,8 @@ function (u) {
     a <- attributes (check)
     check <- strsplit (check, "\n") [[1]]
     check <- gsub (a$network_file, u [1], check)
-    check <- gsub (a$srr_report_file, u [2], check)
+    if ("srr_report_file" %in% names (a))
+        check <- gsub (a$srr_report_file, u [2], check)
 
     eic_instr <- c ("",
                     "---",
@@ -60,7 +61,6 @@ function (u) {
                           "")
 
     out <- paste0 (c (check, eic_instr), collapse = "\n")
-
 
     return (out)
 }
