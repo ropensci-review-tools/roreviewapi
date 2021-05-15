@@ -6,12 +6,12 @@
 # --------------------------------------------------
 
 #* Run full range of editor checks
-#* @param u The URL for a repo
+#* @param repourl The URL for a repo
 #* @post /editorcheck
-function (u) {
+function (repourl) {
 
     cache_dir <- Sys.getenv ("pkgcheck_cache_dir")
-    local_repo <- roreviewapi::dl_gh_repo (u)
+    local_repo <- roreviewapi::dl_gh_repo (repourl)
 
     check <- roreviewapi::editor_check (local_repo)
     u <- roreviewapi::push_to_gh_pages (check)
