@@ -19,6 +19,22 @@ push_to_gh_pages <- function (check) {
     gert::git_branch_checkout ("gh-pages", repo = rorev_dir)
     gert::git_pull (repo = rorev_dir)
 
+    git_files <- gert::git_ls (repo = rorev_dir)
+    git_files <- gsub (rorev_dir,
+                       "",
+                       git_files$path)
+
+    # clean up any untracked files:
+    all_files <- list.files (rorev_dir,
+                             full.names = TRUE,
+                             recursive = TRUE)
+    all_files <- gsub (rorev_dir, "", all_files)
+    all_files <- gsub (paste0 ("^", .Platform$file.sep), "", all_files)
+    untracked <- all_files [which (!all_files %in% git_files)]
+    untracked <- file.path (rorev_dir, untracked)
+    chk <- file.remove (untracked)
+    # TODO# also need to unlink empty directories
+
     files <- "network_file"
     out <- path_to_url (attr (check, "network_file"))
     if ("srr_report_file" %in% names (attributes (check))) {
@@ -31,11 +47,6 @@ push_to_gh_pages <- function (check) {
                      function (i) move1file (attr (check, i), rorev_dir))
     files <- gsub (rorev_dir, "", unlist (files))
     files <- gsub (paste0 ("^", .Platform$file.sep), "", files)
-
-    git_files <- gert::git_ls (repo = rorev_dir)
-    git_files <- gsub (rorev_dir,
-                       "",
-                       git_files$path)
 
     # rm any older files:
     older_files <- gsub ("\\.html$",
