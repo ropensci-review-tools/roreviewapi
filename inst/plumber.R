@@ -6,9 +6,11 @@
 # --------------------------------------------------
 
 #* Run full range of editor checks
-#* @param repourl The URL for a repo
+#* @param repourl The URL for the repo being checked
+#* @param repo The 'context.repo' parameter defining the repository from which the command was invoked.
+#* @param issue_id The id of the issue form which the command was invoked
 #* @post /editorcheck
-function (repourl) {
+function (repourl, repo, issue_id) {
 
     cache_dir <- Sys.getenv ("pkgcheck_cache_dir")
     local_repo <- roreviewapi::dl_gh_repo (repourl)
