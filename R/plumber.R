@@ -13,6 +13,11 @@
 #* @post /editorcheck
 function (repourl, repo, issue_id, post_to_issue) {
 
+    repourl <- as.character (repourl) [1]
+    repo <- as.character (repo) [1]
+    issue_id <- as.integer (issue_id) [1]
+    post_to_issue <- as.logical (post_to_issue) [1]
+
     local_repo <- roreviewapi::dl_gh_repo (repourl)
     check <- roreviewapi::editor_check (local_repo)
     u <- roreviewapi::push_to_gh_pages (check)
