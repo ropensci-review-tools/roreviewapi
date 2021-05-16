@@ -68,6 +68,11 @@ function (repourl, repo, issue_id, post_to_issue) {
 
     out <- paste0 (c (check, eic_instr), collapse = "\n")
 
+    if (post_to_issue) {
+
+        roreviewapi::post_to_issue (out, repo, issue_id)
+    }
+
     return (out)
 }
 
