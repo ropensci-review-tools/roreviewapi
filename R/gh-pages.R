@@ -47,7 +47,7 @@ push_to_gh_pages <- function (check) {
     # get hash of current file to exclude from list of current files to be
     # removed
     this_hash <- utils::tail (strsplit (out [1], "pkgstats") [[1]], 1)
-    this_hash <- gsub ("\\.html$", "", this_file)
+    this_hash <- gsub ("\\.html$", "", this_hash)
 
     files <- lapply (files,
                      function (i) move1file (attr (check, i), rorev_dir))
