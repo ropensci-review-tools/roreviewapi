@@ -11,11 +11,16 @@ post_to_issue <- function (cmt, repo, issue_id) {
     if (grepl ("github", repo))
         repo <- gsub ("https://github.com/", "", repo)
 
+    # Pasting comments straight to `gh --body` fails with any internally nested
+    # single- or double-quotes, but all works well when read from file, so:
+    f <- tempfile (fileext = ".txt")
+    writeLines (cmt, f)
+
     args <- list ("issue",
                   "comment",
                   issue_id,
                   "--repo", repo,
-                  "--body", paste0 ("'", cmt, "'"))
+                  "--body-file", f)
 
     system2 ("gh", args = args, stdout = TRUE)
 }
