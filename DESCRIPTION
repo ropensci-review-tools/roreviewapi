@@ -1,6 +1,6 @@
 Package: roreviewapi
 Title: Plumber API to report package structure and function
-Version: 0.0.0.053
+Version: 0.0.0.054
 Authors@R: 
     person(given = "Mark",
            family = "Padgham",
@@ -14,6 +14,7 @@ BugReports: https://github.com/ropenscilabs/roreviewapi/issues
 Depends: 
     R (>= 3.4.0)
 Imports:
+    callr,
     fs,
     gert,
     here,

@@ -18,62 +18,13 @@ function (repourl, repo, issue_id, post_to_issue) {
     issue_id <- as.integer (issue_id) [1]
     post_to_issue <- as.logical (post_to_issue) [1]
 
-    local_repo <- roreviewapi::dl_gh_repo (repourl)
-    check <- roreviewapi::editor_check (local_repo)
-    u <- roreviewapi::push_to_gh_pages (check)
+    ps <- callr::r_bg (func = roreviewapi::editor_check,
+                       args = list (repourl = repourl,
+                                    repo = repo,
+                                    issue_id = issue_id,
+                                    post_to_issue = post_to_issue))
 
-    a <- attributes (check)
-    check <- strsplit (check, "\n") [[1]]
-    check <- gsub (a$network_file, u [1], check)
-    if ("srr_report_file" %in% names (a))
-        check <- gsub (a$srr_report_file, u [2], check)
-
-    eic_instr <- c ("",
-                    "---",
-                    "",
-                    "## Editor-in-Chief Instructions:",
-                    "")
-
-    srr_okay <- !"srr_okay" %in% names (a)
-    if (!srr_okay)
-        srr_okay <- a$srr_okay
-
-    if (!srr_okay) {
-
-        eic_instr <- c (eic_instr,
-                        paste0 ("Processing may not proceed until the 'srr' ",
-                                "issues identified above have been adressed."))
-    }
-
-    if (!a$checks_okay) {
-
-        eic_instr <- c (eic_instr,
-                        paste0 ("Processing may not proceed until the ",
-                                "items marked with ",
-                                roreviewapi::symbol_crs (),
-                                " have been resolved."))
-    } else {
-
-        eic_instr <- c (eic_instr,
-                        paste0 ("This package is in top shape and may ",
-                                "be passed on to a handling editor"))
-    }
-
-    noteworthy <- ifelse (a$is_noteworthy,
-                          c (paste0 ("This package has some noteworthy ",
-                                     "properties, see 'Package Statistics' ",
-                                     "details below"),
-                             ""),
-                          "")
-
-    out <- paste0 (c (check, eic_instr), collapse = "\n")
-
-    if (post_to_issue) {
-
-        u <- roreviewapi::post_to_issue (out, repo, issue_id)
-    }
-
-    return (out)
+    return ("Editor check started")
 }
 
 
