@@ -9,20 +9,17 @@
 #* @param repourl The URL for the repo being checked
 #* @param repo The 'context.repo' parameter defining the repository from which the command was invoked.
 #* @param issue_id The id of the issue form which the command was invoked
-#* @param post_to_issue Integer value > 0 will post results back to issue (via gh' cli); otherwise just return character string with result.
 #* @post /editorcheck
-function (repourl, repo, issue_id, post_to_issue) {
+function (repourl, repo, issue_id) {
 
     repourl <- as.character (repourl) [1]
     repo <- as.character (repo) [1]
     issue_id <- as.integer (issue_id) [1]
-    post_to_issue <- as.logical (post_to_issue) [1]
 
     ps <- callr::r_bg (func = roreviewapi::editor_check,
                        args = list (repourl = repourl,
                                     repo = repo,
-                                    issue_id = issue_id,
-                                    post_to_issue = post_to_issue))
+                                    issue_id = issue_id))
 
     return ("Editor check started")
 }
