@@ -4,13 +4,21 @@
 \alias{editor_check}
 \title{Body of main 'editorcheck' response}
 \usage{
-editor_check(path)
+editor_check(repourl, repo, issue_id, post_to_issue = TRUE)
 }
 \arguments{
-\item{path}{Path to local source repository}
+\item{repourl}{The URL for the repo being checked}
+
+\item{repo}{The 'context.repo' parameter defining the repository from which the command was invoked.}
+
+\item{issue_id}{The id of the issue form which the command was invoked}
+
+\item{post_to_issue}{Integer value > 0 will post results back to issue (via gh' cli); otherwise just return character string with result.}
 }
 \value{
-Markdown-formatted response body from static package checks.
+If \code{!post_to_issue}, a markdown-formatted response body from static
+package checks, otherwise URL of the issue comment to which response body has
+been posted.
 }
 \description{
 Body of main 'editorcheck' response
