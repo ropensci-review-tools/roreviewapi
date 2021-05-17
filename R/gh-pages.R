@@ -32,7 +32,9 @@ push_to_gh_pages <- function (check) {
     all_files <- gsub (paste0 ("^", .Platform$file.sep), "", all_files)
     untracked <- all_files [which (!all_files %in% git_files)]
     untracked <- file.path (rorev_dir, untracked)
-    chk <- file.remove (untracked)
+
+    if (length (untracked) > 0)
+        chk <- file.remove (untracked)
     # TODO# also need to unlink empty directories
 
     files <- "network_file"
@@ -42,6 +44,10 @@ push_to_gh_pages <- function (check) {
         out <- c (out,
                   path_to_url (attr (check, "srr_report_file")))
     }
+    # get hash of current file to exclude from list of current files to be
+    # removed
+    this_hash <- utils::tail (strsplit (out [1], "pkgstats") [[1]], 1)
+    this_hash <- gsub ("\\.html$", "", this_file)
 
     files <- lapply (files,
                      function (i) move1file (attr (check, i), rorev_dir))
@@ -58,6 +64,7 @@ push_to_gh_pages <- function (check) {
                                 "",
                                 basename (attr (check, "srr_report_file"))))
     }
+    older_files <- older_files [which (!grep (this_hash, older_files))]
 
     index <- lapply (older_files, function (i) grep (i, git_files))
     index <- sort (unique (unlist (index)))
