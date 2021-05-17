@@ -9,11 +9,13 @@ editor_check(repourl, repo, issue_id, post_to_issue = TRUE)
 \arguments{
 \item{repourl}{The URL for the repo being checked}
 
-\item{repo}{The 'context.repo' parameter defining the repository from which the command was invoked.}
+\item{repo}{The 'context.repo' parameter defining the repository from which
+the command was invoked.}
 
 \item{issue_id}{The id of the issue form which the command was invoked}
 
-\item{post_to_issue}{Integer value > 0 will post results back to issue (via gh' cli); otherwise just return character string with result.}
+\item{post_to_issue}{Integer value > 0 will post results back to issue (via
+'gh' cli); otherwise just return character string with result.}
 }
 \value{
 If \code{!post_to_issue}, a markdown-formatted response body from static
