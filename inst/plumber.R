@@ -70,7 +70,7 @@ function (repourl, repo, issue_id, post_to_issue) {
 
     if (post_to_issue) {
 
-        roreviewapi::post_to_issue (out, repo, issue_id)
+        u <- roreviewapi::post_to_issue (out, repo, issue_id)
     }
 
     return (out)
