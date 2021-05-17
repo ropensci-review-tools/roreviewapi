@@ -13,6 +13,9 @@ post_to_issue(cmt, repo, issue_id)
 
 \item{issue_id}{The number of the issue to post to.}
 }
+\value{
+URL of the comment within the nominated issue
+}
 \description{
 Post review checks to GitHub issue
 }
