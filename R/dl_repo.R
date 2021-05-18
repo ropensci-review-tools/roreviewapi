@@ -9,14 +9,13 @@ dl_gh_repo <- function (u) {
     org <- utils::tail (strsplit (u, "/") [[1]], 2) [1]
 
     cache_dir <- Sys.getenv ("pkgcheck_cache_dir")
-    repo_updated <- check_cache (org, repo, cache_dir)
+    repo_updated <- roreviewapi::check_cache (org, repo, cache_dir)
     branch <- pkgcheck::get_default_branch (org, repo)
 
     clone_repo <- function (u, repo, branch) {
 
         if (substring (u, nchar (u), nchar (u)) == "/")
             u <- substring (u, 1, nchar (u) - 1)
-        #u <- paste0 (u, "/archive/", branch, ".zip")
 
         f <- file.path (cache_dir, repo)
         if (file.exists (f))
