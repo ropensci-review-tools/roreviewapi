@@ -16,10 +16,15 @@ function (repourl, repo, issue_id) {
     repo <- as.character (repo) [1]
     issue_id <- as.integer (issue_id) [1]
 
+    # https://github.com/r-lib/callr/issues/204
+    sout <- tempfile ()
+    serr <- tempfile ()
     ps <- callr::r_bg (func = roreviewapi::editor_check,
                        args = list (repourl = repourl,
                                     repo = repo,
-                                    issue_id = issue_id))
+                                    issue_id = issue_id),
+                       stdout = sout,
+                       stderr = serr)
 
     return ("Editor check started")
 }
