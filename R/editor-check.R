@@ -14,6 +14,12 @@
 editor_check <- function (repourl, repo, issue_id, post_to_issue = TRUE) {
 
     path <- roreviewapi::dl_gh_repo (repourl)
+    # Have to pre-install any system dependencies here because this is the
+    # single call point for the r_bg process
+    os <- Sys.getenv ("roreviewapi_os")
+    os_release <- Sys.getenv ("roreviewapi_os_release")
+    roreviewapi::pkgrep_install_deps (path, os, os_release)
+
     checks <- pkgcheck::pkgcheck (path)
     checks_md <- pkgcheck::checks_to_markdown (checks, render = FALSE)
 
