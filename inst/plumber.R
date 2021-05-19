@@ -164,3 +164,39 @@ function () {
             "Cache directory successfully removed",
             "Unable to remove cache directory")
 }
+
+#* Fetch stdout & stderr logs from main process for specified repo URL
+#* @param repourl The URL for the repo being checked
+#* @post /stdlogs
+function (repourl) {
+
+    logfiles <- roreviewapi::stdout_stderr_cache (repourl)
+
+    ret <- lapply (logfiles, function (i) {
+                       ifelse (file.exists (i),
+                               readLines (i),
+                               "")
+            })
+
+    for (i in c ("stdout", "stderr")) {
+        
+        if (sum (nchar (ret [[i]])) > 0) {
+
+            ret [[i]] <- c (paste0 ("# ---------   ",
+                                    toupper (i),
+                                    "   ----------"),
+                            "",
+                            ret [[i]])
+        }
+    }
+
+    ret <- paste0 (unlist (ret), collapse = "\n")
+
+    if (nchar (ret) <= 1) {
+
+        ret <- paste0 ("No stdout or stderr files found for ",
+                       repourl)
+    }
+
+    return (ret)
+}
