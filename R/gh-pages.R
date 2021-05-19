@@ -82,7 +82,7 @@ push_to_gh_pages <- function (check) {
     if (length (files) > 0) {
 
         files_full <- normalizePath (file.path (rorev_dir, files))
-        for (f in files_full)
+        for (f in files_full [which (!grepl ("\\.png$", files_full))])
             system2 ("dos2unix", f)
 
         a <- gert::git_add (files, repo = rorev_dir)
