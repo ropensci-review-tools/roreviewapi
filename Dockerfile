@@ -14,7 +14,7 @@ RUN add-apt-repository --yes "ppa:edd/r-4.0" \
         && chgrp 1000 /usr/local/lib/R/site-library \
         && install.r remotes
 
-#RUN echo "GITHUB_TOKEN='<my_github_token>'" > ~/.Renviron
+RUN echo "GITHUB_TOKEN='<my_github_token>'" > ~/.Renviron
 
 # Most but not all of the libraries from 
 # https://github.com/actions/virtual-environments/blob/main/images/linux/Ubuntu2004-README.md
@@ -121,6 +121,7 @@ RUN VERSION=`curl "https://api.github.com/repos/cli/cli/releases/latest" | grep 
 # https://github.com/tensorflow/haskell/issues/182
 RUN apt-get install -y \
   cargo \
+  dos2unix \
   global \
   libgit2-dev \
   libssl-dev \
