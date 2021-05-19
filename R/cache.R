@@ -1,5 +1,3 @@
-# cache latest commit oids from github.R functions
-
 
 #' check_cache
 #'
@@ -54,4 +52,41 @@ check_cache <- function (org, repo, cache_dir = tempdir ()) {
     }
 
     return (updated)
+}
+
+#' Set up stdout & stderr cache files for `r_bg` process
+#'
+#' @param repourl The URL of the repo being checked
+#' @return Vector of two strings holding respective local paths to `stdout` and
+#' `stderr` files for `r_bg` process controlling the main \link{editor_check}
+#' function.
+#'
+#' @note These files are needed for the \pkg{callr} `r_bg` process which
+#' controls the main \link{editor_check} call. See
+#' \url{https://github.com/r-lib/callr/issues/204}. The `stdout` and `stderr`
+#' pipes from the process are stored in the cache directory so they can be
+#' inspected via their own distinct endpoint calls.
+#' @export
+stdout_stderr_cache <- function (repourl) {
+
+    org <- utils::tail (strsplit (repourl, "/") [[1]], 2) [1]
+    repo <- utils::tail (strsplit (repourl, "/") [[1]], 1)
+
+    cmt <- pkgcheck::get_latest_commit (org = org, repo = repo)
+    oid <- substring (cmt$oid, 1, 8)
+
+    temp_dir <- file.path (Sys.getenv ("pkgcheck_cache_dir"), "templogs")
+    if (!dir.exists (temp_dir))
+        dir.create (temp_dir, recursive = TRUE)
+
+    sout <- file.path (temp_dir, paste0 (repo, "_", oid, "_stdout"))
+    serr <- file.path (temp_dir, paste0 (repo, "_", oid, "_stderr"))
+
+    otherlogs <- list.files (temp_dir,
+                             pattern = repo,
+                             full.names = TRUE)
+    if (length (otherlogs) > 0)
+        file.remove (otherlogs)
+
+    return (c (stdout = sout, stderr = serr))
 }
