@@ -25,6 +25,7 @@ The [`pkgstats`](https://github.com/ropenscilabs/pkgstats) package also
 requires both [`ctags`](https://ctags.io) and [GNU
 `global`](https://www.gnu.org/software/global/) to be installed. See package
 description and those links for how to install those libraries on your system.
+Also requires [`dos2unix`](https://sourceforge.net/projects/dos2unix/).
 
 Once both of these packages have been successfully installed, the `roreviewapi`
 package can then be loaded via a `library` call:
