@@ -1,6 +1,6 @@
 Package: roreviewapi
 Title: Plumber API to report package structure and function
-Version: 0.0.0.069
+Version: 0.0.0.070
 Authors@R: 
     person(given = "Mark",
            family = "Padgham",
@@ -42,4 +42,4 @@ LazyData: true
 NeedsCompilation: yes
 Roxygen: list(markdown = TRUE)
 RoxygenNote: 7.1.1
-SystemRequirements: gh
+SystemRequirements: gh, dos2unix
