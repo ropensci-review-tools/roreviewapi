@@ -14,10 +14,6 @@ RUN add-apt-repository --yes "ppa:edd/r-4.0" \
         && chgrp 1000 /usr/local/lib/R/site-library \
         && install.r remotes
 
-RUN echo "GITHUB_TOKEN='<my_github_token>'" > ~/.Renviron
-RUN git config --global user.name "username" \
-    && git config --global user.email "my.address@mail.com"
-
 
 # Most but not all of the libraries from 
 # https://github.com/actions/virtual-environments/blob/main/images/linux/Ubuntu2004-README.md
@@ -149,6 +145,11 @@ RUN install2.r \
       ropenscilabs/pkgstats \
       ropenscilabs/pkgcheck \
       ropenscilabs/roreviewapi
+
+RUN echo "GITHUB_TOKEN='<my_github_token>'" > ~/.Renviron \
+    && echo "GITHUB_PAT='<my_github_token>'" > ~/.Renviron \
+RUN git config --global user.name "username" \
+    && git config --global user.email "my.address@mail.com"
 
 EXPOSE 8000
 
