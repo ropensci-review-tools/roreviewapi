@@ -179,7 +179,7 @@ function (repourl) {
             })
 
     for (i in c ("stdout", "stderr")) {
-        
+
         if (sum (nchar (ret [[i]])) > 0) {
 
             ret [[i]] <- c (paste0 ("# ---------   ",
