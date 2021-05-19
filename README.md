@@ -32,7 +32,7 @@ variable named `GITHUB_TOKEN`, and not `GITHUB_PAT` or anything else;
 the `gh` cli only recognises the former name.
 
 The package also works by locally caching previously analysed packages,
-in a `roreviewapi` subdirectory of the location determined by
+in a `pkgcheck` subdirectory of the location determined by
 
 ``` r
 rappdirs::user_cache_dir()
