@@ -31,7 +31,7 @@
       </button>
       <span class="navbar-brand">
         <a class="navbar-link" href="index.html">roreviewapi</a>
-        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="Released version">0.0.0.069</span>
+        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="Released version">0.0.0.071</span>
       </span>
     </div>
 
@@ -71,32 +71,17 @@
 <a href="#roreviewapi" class="anchor"></a>roreviewapi</h1></div>
 <!-- badges: start -->
 
-<p>Plumber API to report on package structure and function. Uses functionality provided by the <a href="https://github.com/ropenscilabs/pkgcheck"><code>pkgcheck</code></a> and <a href="https://github.com/ropenscilabs/pkgstats"><code>pkgstats</code></a> packages which are not on CRAN and must first be installed by running either one of the following two chunks of code:</p>
-<div class="sourceCode" id="cb1"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span class="fu">remotes</span><span class="fu">::</span><span class="fu"><a href="https://remotes.r-lib.org/reference/install_github.html">install_github</a></span><span class="op">(</span><span class="st">"ropenscilabs/pkgstats"</span><span class="op">)</span>
-<span class="fu">remotes</span><span class="fu">::</span><span class="fu"><a href="https://remotes.r-lib.org/reference/install_github.html">install_github</a></span><span class="op">(</span><span class="st">"ropenscilabs/pkgcheck"</span><span class="op">)</span></code></pre></div>
-<p>or,</p>
-<div class="sourceCode" id="cb2"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span class="fu">pak</span><span class="fu">::</span><span class="fu">pkg_install</span><span class="op">(</span><span class="st">"ropenscilabs/pkgstats"</span><span class="op">)</span>
-<span class="fu">pak</span><span class="fu">::</span><span class="fu">pkg_install</span><span class="op">(</span><span class="st">"ropenscilabs/pkgcheck"</span><span class="op">)</span></code></pre></div>
-<p>The <a href="https://github.com/ropenscilabs/pkgstats"><code>pkgstats</code></a> package also requires both <a href="https://ctags.io"><code>ctags</code></a> and <a href="https://www.gnu.org/software/global/">GNU <code>global</code></a> to be installed. See package description and those links for how to install those libraries on your system. Also requires <a href="https://sourceforge.net/projects/dos2unix/"><code>dos2unix</code></a>.</p>
-<p>Once both of these packages have been successfully installed, the <code>roreviewapi</code> package can then be loaded via a <code>library</code> call:</p>
-<div class="sourceCode" id="cb3"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span class="kw"><a href="https://rdrr.io/r/base/library.html">library</a></span><span class="op">(</span><span class="va"><a href="https://ropenscilabs.github.io/roreviewapi">roreviewapi</a></span><span class="op">)</span></code></pre></div>
-<p>This package also uses the <a href="https://developer.github.com/v4">github GraphQL API</a> which requires a local github token to be stored with an unambiguous name including <code>GITHUB</code> and maybe <code>QL</code>, if alternative <code>GITHIB</code> tokens already exist. This can be obtained from github (via your user settings), and stored using</p>
-<div class="sourceCode" id="cb4"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span class="fu"><a href="https://rdrr.io/r/base/Sys.setenv.html">Sys.setenv</a></span><span class="op">(</span><span class="st">"GITHUB_QL"</span> <span class="op">=</span> <span class="st">"&lt;my_token&gt;"</span><span class="op">)</span></code></pre></div>
-<p>This can also be set permanently by putting this line in your <code>~/.Renviron</code> file (or creating this if it does not yet exist).</p>
+<p>Plumber API to generate reports on package structure and function for the <a href="https://github.com/ropensci-review-bot"><code>@ropensci-review-bot</code></a>. The package is not intended for general use, and these documents are primarily intended for maintainers of this package, although they may serve as useful templates for similar endeavours. Please contact us if you have any questions.</p>
+<p>Uses functionality provided by the <a href="https://github.com/ropenscilabs/pkgcheck"><code>pkgcheck</code></a> and <a href="https://github.com/ropenscilabs/pkgstats"><code>pkgstats</code></a> packages. This suite of three packages requires a few system installs, two for <a href="https://github.com/ropenscilabs/pkgstats"><code>pkgstats</code></a> of <a href="https://ctags.io"><code>ctags</code></a> and <a href="https://www.gnu.org/software/global/">GNU <code>global</code></a>. See package description and those links for how to install those libraries on your system. This package itself also requires both the <a href="https://cli.github.com/">GitHub command-line-interface (cli), <code>gh</code></a> and <a href="https://sourceforge.net/projects/dos2unix/"><code>dos2unix</code></a>.</p>
+<p>The package requires a local GitHub token to be stored as an environment variable named <code>GITHUB_TOKEN</code>, and not <code>GITHUB_PAT</code> or anything else; the <code>gh</code> cli only recognises the former name.</p>
 <p>The package also works by locally caching previously analysed packages, in a <code>roreviewapi</code> subdirectory of the location determined by</p>
-<div class="sourceCode" id="cb5"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb1"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="fu">rappdirs</span><span class="fu">::</span><span class="fu"><a href="https://rappdirs.r-lib.org/reference/user_cache_dir.html">user_cache_dir</a></span><span class="op">(</span><span class="op">)</span></code></pre></div>
 <p>You may manually erase the contents of this subdirectory at any time at no risk.</p>
-<div id="usage" class="section level2">
+<div id="dockerfile" class="section level2">
 <h2 class="hasAnchor">
-<a href="#usage" class="anchor"></a>Usage</h2>
-<p>The server associated with this package can be built by cloning this repository, and modifying the associated <a href="https://github.com/ropenscilabs/roreviewapi/blob/master/Dockerfile"><code>Dockerfile</code></a> by inserting a GitHub token (as <code>GITHUB_PAT</code>). Then in the local directory holding a clone of this repo:</p>
-<div class="sourceCode" id="cb6"><pre class="sourceCode R"><code class="sourceCode r"><span id="cb6-1"><a href="#cb6-1"></a>docker build <span class="op">-</span>t roreviewapi .</span>
-<span id="cb6-2"><a href="#cb6-2"></a>docker run <span class="op">-</span>it <span class="op">-</span>p <span class="dv">8000</span><span class="op">:</span><span class="dv">8000</span> <span class="op">--</span>rm roreviewapi</span></code></pre></div>
+<a href="#dockerfile" class="anchor"></a>Dockerfile</h2>
+<p>The server associated with this package can be built by cloning this repository, and modifying the associated <a href="https://github.com/ropenscilabs/roreviewapi/blob/master/Dockerfile"><code>Dockerfile</code></a> by inserting a GitHub token, and associated <code>git config</code> options.</p>
 </div>
 </div>
   </div>
