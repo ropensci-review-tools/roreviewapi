@@ -153,3 +153,14 @@ function (n = 10) {
 
     return (ret)
 }
+
+#* @get /clear_cache
+function () {
+
+    cache_dir <- Sys.getenv ("pkgcheck_cache_dir")
+    chk <- unlink (cache_dir, recursive = TRUE)
+
+    ifelse (chk == 0,
+            "Cache directory successfully removed",
+            "Unable to remove cache directory")
+}
