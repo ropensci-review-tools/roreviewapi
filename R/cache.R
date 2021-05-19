@@ -85,6 +85,7 @@ stdout_stderr_cache <- function (repourl) {
     otherlogs <- list.files (temp_dir,
                              pattern = repo,
                              full.names = TRUE)
+    otherlogs <- otherlogs [which (!grepl (oid, otherlogs))]
     if (length (otherlogs) > 0)
         file.remove (otherlogs)
 
