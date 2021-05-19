@@ -88,5 +88,5 @@ stdout_stderr_cache <- function (repourl) {
     if (length (otherlogs) > 0)
         file.remove (otherlogs)
 
-    return (c (stdout = sout, stderr = serr))
+    return (list (stdout = sout, stderr = serr))
 }
