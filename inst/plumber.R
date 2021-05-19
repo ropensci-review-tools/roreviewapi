@@ -7,7 +7,8 @@
 
 #* Run full range of editor checks
 #* @param repourl The URL for the repo being checked
-#* @param repo The 'context.repo' parameter defining the repository from which the command was invoked.
+#* @param repo The 'context.repo' parameter defining the repository from which
+#* the command was invoked.
 #* @param issue_id The id of the issue form which the command was invoked
 #* @post /editorcheck
 function (repourl, repo, issue_id) {
@@ -16,15 +17,14 @@ function (repourl, repo, issue_id) {
     repo <- as.character (repo) [1]
     issue_id <- as.integer (issue_id) [1]
 
-    # https://github.com/r-lib/callr/issues/204
-    sout <- tempfile ()
-    serr <- tempfile ()
+    logfiles <- roreviewapi::stdout_stderr_cache (repourl)
+
     ps <- callr::r_bg (func = roreviewapi::editor_check,
                        args = list (repourl = repourl,
                                     repo = repo,
                                     issue_id = issue_id),
-                       stdout = sout,
-                       stderr = serr)
+                       stdout = logfiles$stdout,
+                       stderr = logfiles$stderr)
 
     return ("Editor check started")
 }
