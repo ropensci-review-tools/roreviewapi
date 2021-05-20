@@ -172,13 +172,11 @@ function (repourl) {
 
     logfiles <- roreviewapi::stdout_stderr_cache (repourl)
 
-    ret <- lapply (logfiles, function (i) {
-                       ifelse (file.exists (i),
-                               readLines (i),
-                               "")
-            })
+    index <- which (vapply (logfiles, file.exists, logical (1)))
+    logfiles <- logfiles [index]
 
-    for (i in c ("stdout", "stderr")) {
+    ret <- lapply (logfiles, readLines)
+    for (i in names (logfiles)) {
 
         if (sum (nchar (ret [[i]])) > 0) {
 
