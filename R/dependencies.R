@@ -1,17 +1,17 @@
 
 #' Install all system and package dependencies of an R package
 #'
-#' @param local_repo Path to local package
+#' @param path Path to local package
 #' @inheritParams serve_api
 #' @export
-pkgrep_install_deps <- function (local_repo, os, os_release) {
+pkgrep_install_deps <- function (path, os, os_release) {
 
     sysreq <- remotes::system_requirements (os = os,
                                             os_release = os_release,
-                                            path = local_repo)
+                                            path = path)
     tmp <- lapply (sysreq, system) # nolint
 
-    remotes::install_deps (pkgdir = local_repo,
+    remotes::install_deps (pkgdir = path,
                            dependencies = TRUE,
                            upgrade = "always")
 }

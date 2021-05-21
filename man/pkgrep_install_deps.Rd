@@ -4,10 +4,10 @@
 \alias{pkgrep_install_deps}
 \title{Install all system and package dependencies of an R package}
 \usage{
-pkgrep_install_deps(local_repo, os, os_release)
+pkgrep_install_deps(path, os, os_release)
 }
 \arguments{
-\item{local_repo}{Path to local package}
+\item{path}{Path to local package}
 
 \item{os}{Name of operating system, passed to \pkg{remotes} package to
 install system dependencies.}
