@@ -15,3 +15,4 @@
 .ropensci-staff
 ^docs$
 ^pkgdown$
+^\.hooks$
