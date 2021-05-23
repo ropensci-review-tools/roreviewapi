@@ -27,9 +27,9 @@ package itself also requires both the [GitHub command-line-interface
 (cli), `gh`](https://cli.github.com/) and
 [`dos2unix`](https://sourceforge.net/projects/dos2unix/).
 
-The package requires a local GitHub token to be stored as an environment
-variable named `GITHUB_TOKEN`, and not `GITHUB_PAT` or anything else;
-the `gh` cli only recognises the former name.
+A local GitHub token also needs to be stored as an environment variable
+named `GITHUB_TOKEN`, and not `GITHUB_PAT` or anything else; the `gh`
+cli only recognises the former name.
 
 The package also works by locally caching previously analysed packages,
 in a `pkgcheck` subdirectory of the location determined by
