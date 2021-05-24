@@ -24,7 +24,8 @@ function (repourl, repo, issue_id) {
                                     repo = repo,
                                     issue_id = issue_id),
                        stdout = logfiles$stdout,
-                       stderr = logfiles$stderr)
+                       stderr = logfiles$stderr,
+                       supervise = TRUE)
 
     return ("Editor check started")
 }
