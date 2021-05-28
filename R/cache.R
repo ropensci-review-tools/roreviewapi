@@ -75,7 +75,7 @@ stdout_stderr_cache <- function (repourl) {
     cmt <- pkgcheck::get_latest_commit (org = org, repo = repo)
     oid <- substring (cmt$oid, 1, 8)
 
-    temp_dir <- file.path (Sys.getenv ("pkgcheck_cache_dir"), "templogs")
+    temp_dir <- file.path (Sys.getenv ("PKGCHECK_CACHE_DIR"), "templogs")
     if (!dir.exists (temp_dir))
         dir.create (temp_dir, recursive = TRUE)
 

@@ -44,7 +44,7 @@ function (u) {
     repo <- tail (strsplit (u, "/") [[1]], 1)
     org <- tail (strsplit (u, "/") [[1]], 2) [1]
 
-    cache_dir <- Sys.getenv ("pkgcheck_cache_dir")
+    cache_dir <- Sys.getenv ("PKGCHECK_CACHE_DIR")
     updated <- pkgcheck::check_cache (org, repo, cache_dir)
 
     oids <- readRDS (file.path (cache_dir, "commit_oids.Rds"))
@@ -142,8 +142,8 @@ function (n = 10) {
 #* @get /log
 function (n = 10) {
 
-    log_dir <- Sys.getenv ("log_dir")
-    log_file <- Sys.getenv ("log_file")
+    log_dir <- Sys.getenv ("LOG_DIR")
+    log_file <- Sys.getenv ("LOG_FILE")
 
     ret <- "no log file present"
 
@@ -158,7 +158,7 @@ function (n = 10) {
 #* @get /clear_cache
 function () {
 
-    cache_dir <- Sys.getenv ("pkgcheck_cache_dir")
+    cache_dir <- Sys.getenv ("PKGCHECK_CACHE_DIR")
     chk <- unlink (cache_dir, recursive = TRUE)
 
     ifelse (chk == 0,

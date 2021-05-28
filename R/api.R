@@ -20,8 +20,8 @@ serve_api <- function(
                       os = "ubuntu",
                       os_release = "20.04") {
 
-    Sys.setenv ("roreviewapi_os" = os)
-    Sys.setenv ("roreviewapi_os_release" = os_release)
+    Sys.setenv ("ROREVIEWAPI_OS" = os)
+    Sys.setenv ("ROREVIEWAPI_OS_RELEASE" = os_release)
 
     ip <- data.frame (utils::installed.packages())
 
@@ -35,8 +35,8 @@ serve_api <- function(
 
         requireNamespace ("pkgcheck")
 
-        cache_dir <- ifelse ("pkgcheck_cache_dir" %in% names (Sys.getenv ()),
-                             Sys.getenv ("pkgcheck_cache_dir"),
+        cache_dir <- ifelse ("PKGCHECK_CACHE_DIR" %in% names (Sys.getenv ()),
+                             Sys.getenv ("PKGCHECK_CACHE_DIR"),
                              file.path (rappdirs::user_cache_dir (), "pkgcheck"))
 
         if (!file.exists (cache_dir)) {
@@ -44,16 +44,16 @@ serve_api <- function(
         }
     }
 
-    Sys.setenv ("pkgcheck_cache_dir" = cache_dir)
+    Sys.setenv ("PKGCHECK_CACHE_DIR" = cache_dir)
 
     # ----------log_dir set up----------
     log_dir <- here::here ("logs")
-    Sys.setenv ("log_dir" = log_dir)
+    Sys.setenv ("LOG_DIR" = log_dir)
     if (!fs::dir_exists (log_dir))
         fs::dir_create (log_dir)
 
     log_file <- tempfile ("roreviewapi_", log_dir, ".log")
-    Sys.setenv ("log_file" = log_file)
+    Sys.setenv ("LOG_FILE" = log_file)
     logger::log_appender (logger::appender_tee (log_file))
 
     convert_empty <- function(string) {

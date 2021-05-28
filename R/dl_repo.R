@@ -8,7 +8,7 @@ dl_gh_repo <- function (u) {
     repo <- utils::tail (strsplit (u, "/") [[1]], 1)
     org <- utils::tail (strsplit (u, "/") [[1]], 2) [1]
 
-    cache_dir <- Sys.getenv ("pkgcheck_cache_dir")
+    cache_dir <- Sys.getenv ("PKGCHECK_CACHE_DIR")
     repo_updated <- roreviewapi::check_cache (org, repo, cache_dir)
     branch <- pkgcheck::get_default_branch (org, repo)
 
