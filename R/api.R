@@ -48,12 +48,12 @@ serve_api <- function(
 
     # ----------log_dir set up----------
     log_dir <- here::here ("logs")
-    Sys.setenv ("LOG_DIR" = log_dir)
+    Sys.setenv ("ROREVAPI_LOG_DIR" = log_dir)
     if (!fs::dir_exists (log_dir))
         fs::dir_create (log_dir)
 
     log_file <- tempfile ("roreviewapi_", log_dir, ".log")
-    Sys.setenv ("LOG_FILE" = log_file)
+    Sys.setenv ("ROREVAPI_LOG_FILE" = log_file)
     logger::log_appender (logger::appender_tee (log_file))
 
     convert_empty <- function(string) {

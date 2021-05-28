@@ -142,8 +142,8 @@ function (n = 10) {
 #* @get /log
 function (n = 10) {
 
-    log_dir <- Sys.getenv ("LOG_DIR")
-    log_file <- Sys.getenv ("LOG_FILE")
+    log_dir <- Sys.getenv ("ROREVAPI_LOG_DIR")
+    log_file <- Sys.getenv ("ROREVAPI_LOG_FILE")
 
     ret <- "no log file present"
 
