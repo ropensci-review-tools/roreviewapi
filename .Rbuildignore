@@ -16,3 +16,5 @@
 ^docs$
 ^pkgdown$
 ^\.hooks$
+^inst/precommit$
+^inst/WORDLIST$
