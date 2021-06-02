@@ -121,6 +121,8 @@ move1file <- function (path, rorev_dir) {
                          full.names = TRUE)
     fptn <- tools::file_path_sans_ext (path)
     f_from <- grep (fptn, flist, value = TRUE)
+    # exclude auto-generated .js lib directory:
+    f_from <- f_from [which (!dir.exists (f_from))]
     f_to <- gsub (base_path,
                   dir_to,
                   f_from)
