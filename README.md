@@ -21,10 +21,12 @@ Uses functionality provided by the
 suite of three packages requires a few system installs, two for
 [`pkgstats`](https://github.com/ropenscilabs/pkgstats) of
 [`ctags`](https://ctags.io) and [GNU
-`global`](https://www.gnu.org/software/global/). See package description
-and those links for how to install those libraries on your system. This
-package itself also requires both the [GitHub command-line-interface
-(cli), `gh`](https://cli.github.com/) and
+`global`](https://www.gnu.org/software/global/). Procedures to install
+these libraries on various operating systems are described in a
+[`pkgstats`
+vignette](https://ropenscilabs.github.io/pkgstats/articles/installation.html).
+This package itself also requires both the [GitHub
+command-line-interface (cli), `gh`](https://cli.github.com/) and
 [`dos2unix`](https://sourceforge.net/projects/dos2unix/).
 
 A local GitHub token also needs to be stored as an environment variable
