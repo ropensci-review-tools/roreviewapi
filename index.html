@@ -31,7 +31,7 @@
       </button>
       <span class="navbar-brand">
         <a class="navbar-link" href="index.html">roreviewapi</a>
-        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="Released version">0.0.0.094</span>
+        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="Released version">0.0.0.095</span>
       </span>
     </div>
 
@@ -49,7 +49,7 @@
       </ul>
 <ul class="nav navbar-nav navbar-right">
 <li>
-  <a href="https://github.com/ropenscilabs/roreviewapi/">
+  <a href="https://github.com/ropensci-review-tools/roreviewapi/">
     <span class="fab fa-github fa-lg"></span>
      
   </a>
@@ -72,7 +72,7 @@
 <!-- badges: start -->
 
 <p>Plumber API to generate reports on package structure and function for the <a href="https://github.com/ropensci-review-bot"><code>@ropensci-review-bot</code></a>. The package is not intended for general use, and these documents are primarily intended for maintainers of this package, although they may serve as useful templates for similar endeavours. Please contact us if you have any questions.</p>
-<p>Uses functionality provided by the <a href="https://github.com/ropenscilabs/pkgcheck"><code>pkgcheck</code></a> and <a href="https://github.com/ropenscilabs/pkgstats"><code>pkgstats</code></a> packages. This suite of three packages requires a few system installs, two for <a href="https://github.com/ropenscilabs/pkgstats"><code>pkgstats</code></a> of <a href="https://ctags.io"><code>ctags</code></a> and <a href="https://www.gnu.org/software/global/">GNU <code>global</code></a>. Procedures to install these libraries on various operating systems are described in a <a href="https://ropenscilabs.github.io/pkgstats/articles/installation.html"><code>pkgstats</code> vignette</a>. This package itself also requires both the <a href="https://cli.github.com/">GitHub command-line-interface (cli), <code>gh</code></a> and <a href="https://sourceforge.net/projects/dos2unix/"><code>dos2unix</code></a>.</p>
+<p>Uses functionality provided by the <a href="https://github.com/ropensci-review-tools/pkgcheck"><code>pkgcheck</code></a> and <a href="https://github.com/ropensci-review-tools/pkgstats"><code>pkgstats</code></a> packages. This suite of three packages requires a few system installs, two for <a href="https://github.com/ropensci-review-tools/pkgstats"><code>pkgstats</code></a> of <a href="https://ctags.io"><code>ctags</code></a> and <a href="https://www.gnu.org/software/global/">GNU <code>global</code></a>. Procedures to install these libraries on various operating systems are described in a <a href="https://ropensci-review-tools.github.io/pkgstats/articles/installation.html"><code>pkgstats</code> vignette</a>. This package itself also requires both the <a href="https://cli.github.com/">GitHub command-line-interface (cli), <code>gh</code></a> and <a href="https://sourceforge.net/projects/dos2unix/"><code>dos2unix</code></a>.</p>
 <p>A local GitHub token also needs to be stored as an environment variable named <code>GITHUB_TOKEN</code>, and not <code>GITHUB_PAT</code> or anything else; the <code>gh</code> cli only recognises the former name.</p>
 <p>The package also works by locally caching previously analysed packages, in a <code>pkgcheck</code> subdirectory of the location determined by</p>
 <div class="sourceCode" id="cb1"><pre class="downlit sourceCode r">
@@ -81,7 +81,7 @@
 <div id="dockerfile" class="section level2">
 <h2 class="hasAnchor">
 <a href="#dockerfile" class="anchor"></a>Dockerfile</h2>
-<p>The server associated with this package can be built by cloning this repository, and modifying the associated <a href="https://github.com/ropenscilabs/roreviewapi/blob/master/Dockerfile"><code>Dockerfile</code></a> by inserting a GitHub token, and associated <code>git config</code> options.</p>
+<p>The server associated with this package can be built by cloning this repository, and modifying the associated <a href="https://github.com/ropensci-review-tools/roreviewapi/blob/master/Dockerfile"><code>Dockerfile</code></a> by inserting a GitHub token, and associated <code>git config</code> options.</p>
 </div>
 </div>
   </div>
@@ -90,9 +90,9 @@
     <div class="links">
 <h2>Links</h2>
 <ul class="list-unstyled">
-<li>Browse source code at <br><a href="https://github.com/ropenscilabs/roreviewapi/">https://​github.com/​ropenscilabs/​roreviewapi/​</a>
+<li>Browse source code at <br><a href="https://github.com/ropensci-review-tools/roreviewapi/">https://​github.com/​ropensci-review-tools/​roreviewapi/​</a>
 </li>
-<li>Report a bug at <br><a href="https://github.com/ropenscilabs/roreviewapi/issues">https://​github.com/​ropenscilabs/​roreviewapi/​issues</a>
+<li>Report a bug at <br><a href="https://github.com/ropensci-review-tools/roreviewapi/issues">https://​github.com/​ropensci-review-tools/​roreviewapi/​issues</a>
 </li>
 </ul>
 </div>
@@ -112,7 +112,7 @@
   <div class="dev-status">
 <h2>Dev status</h2>
 <ul class="list-unstyled">
-<li><a href="https://github.com/ropenscilabs/roreviewapi/actions?query=workflow%3AR-CMD-check"><img src="https://github.com/ropenscilabs/roreviewapi/workflows/R-CMD-check/badge.svg" alt="R build status"></a></li>
+<li><a href="https://github.com/ropensci-review-tools/roreviewapi/actions?query=workflow%3AR-CMD-check"><img src="https://github.com/ropensci-review-tools/roreviewapi/workflows/R-CMD-check/badge.svg" alt="R build status"></a></li>
 <li><a href="https://www.repostatus.org/#concept"><img src="https://www.repostatus.org/badges/latest/concept.svg" alt="Project Status: Concept"></a></li>
 </ul>
 </div>
