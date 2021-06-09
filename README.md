@@ -3,7 +3,7 @@
 <!-- badges: start -->
 
 [![R build
-status](https://github.com/ropenscilabs/roreviewapi/workflows/R-CMD-check/badge.svg)](https://github.com/ropenscilabs/roreviewapi/actions?query=workflow%3AR-CMD-check)
+status](https://github.com/ropensci-review-tools/roreviewapi/workflows/R-CMD-check/badge.svg)](https://github.com/ropensci-review-tools/roreviewapi/actions?query=workflow%3AR-CMD-check)
 [![Project Status:
 Concept](https://www.repostatus.org/badges/latest/concept.svg)](https://www.repostatus.org/#concept)
 <!-- badges: end -->
@@ -16,15 +16,15 @@ serve as useful templates for similar endeavours. Please contact us if
 you have any questions.
 
 Uses functionality provided by the
-[`pkgcheck`](https://github.com/ropenscilabs/pkgcheck) and
-[`pkgstats`](https://github.com/ropenscilabs/pkgstats) packages. This
-suite of three packages requires a few system installs, two for
-[`pkgstats`](https://github.com/ropenscilabs/pkgstats) of
-[`ctags`](https://ctags.io) and [GNU
+[`pkgcheck`](https://github.com/ropensci-review-tools/pkgcheck) and
+[`pkgstats`](https://github.com/ropensci-review-tools/pkgstats)
+packages. This suite of three packages requires a few system installs,
+two for [`pkgstats`](https://github.com/ropensci-review-tools/pkgstats)
+of [`ctags`](https://ctags.io) and [GNU
 `global`](https://www.gnu.org/software/global/). Procedures to install
 these libraries on various operating systems are described in a
 [`pkgstats`
-vignette](https://ropenscilabs.github.io/pkgstats/articles/installation.html).
+vignette](https://ropensci-review-tools.github.io/pkgstats/articles/installation.html).
 This package itself also requires both the [GitHub
 command-line-interface (cli), `gh`](https://cli.github.com/) and
 [`dos2unix`](https://sourceforge.net/projects/dos2unix/).
@@ -47,5 +47,5 @@ no risk.
 
 The server associated with this package can be built by cloning this
 repository, and modifying the associated
-[`Dockerfile`](https://github.com/ropenscilabs/roreviewapi/blob/master/Dockerfile)
+[`Dockerfile`](https://github.com/ropensci-review-tools/roreviewapi/blob/master/Dockerfile)
 by inserting a GitHub token, and associated `git config` options.

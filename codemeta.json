@@ -7,10 +7,10 @@
   "identifier": "roreviewapi",
   "description": "Plumber API to report package structure and function.",
   "name": "roreviewapi: Plumber API to report package structure and function",
-  "codeRepository": "https://github.com/ropenscilabs/roreviewapi",
-  "issueTracker": "https://github.com/ropenscilabs/roreviewapi/issues",
+  "codeRepository": "https://github.com/ropensci-review-tools/roreviewapi",
+  "issueTracker": "https://github.com/ropensci-review-tools/roreviewapi/issues",
   "license": "https://spdx.org/licenses/GPL-3.0",
-  "version": "0.0.0.94",
+  "version": "0.0.0.95",
   "programmingLanguage": {
     "@type": "ComputerLanguage",
     "name": "R",
@@ -150,7 +150,7 @@
       "@type": "SoftwareApplication",
       "identifier": "pkgcheck",
       "name": "pkgcheck",
-      "sameAs": "https://github.com/ropenscilabs/pkgcheck"
+      "sameAs": "https://github.com/ropensci-review-tools/pkgcheck"
     },
     {
       "@type": "SoftwareApplication",
@@ -207,8 +207,10 @@
       "sameAs": "https://CRAN.R-project.org/package=tictoc"
     }
   ],
-  "fileSize": "783.047KB",
+  "fileSize": "783.137KB",
   "developmentStatus": "https://www.repostatus.org/#concept",
-  "readme": "https://github.com/ropenscilabs/roreviewapi/blob/main/README.md",
-  "relatedLink": "https://ropenscilabs.github.io/roreviewapi"
+  "readme": "https://github.com/ropensci-review-tools/roreviewapi/blob/main/README.md",
+  "relatedLink": [
+    "https://ropensci-review-tools.github.io/roreviewapi"
+  ]
 }

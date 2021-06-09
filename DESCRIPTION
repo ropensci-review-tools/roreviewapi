@@ -1,6 +1,6 @@
 Package: roreviewapi
 Title: Plumber API to report package structure and function
-Version: 0.0.0.094
+Version: 0.0.0.095
 Authors@R: 
     person(given = "Mark",
            family = "Padgham",
@@ -8,9 +8,9 @@ Authors@R:
            email = "mark.padgham@email.com")
 Description: Plumber API to report package structure and function.
 License: GPL-3
-URL: https://ropenscilabs.github.io/roreviewapi,
-    https://github.com/ropenscilabs/roreviewapi
-BugReports: https://github.com/ropenscilabs/roreviewapi/issues
+URL: https://ropensci-review-tools.github.io/roreviewapi,
+    https://github.com/ropensci-review-tools/roreviewapi
+BugReports: https://github.com/ropensci-review-tools/roreviewapi/issues
 Depends: 
     R (>= 3.4.0)
 Imports:
@@ -34,8 +34,8 @@ VignetteBuilder:
     knitr
 Remotes:
     mpadge/pkgstats,
-    ropenscilabs/pkgcheck,
-    ropenscilabs/srr
+    ropensci-review-tools/pkgcheck,
+    ropensci-review-tools/srr
 Encoding: UTF-8
 Language: en-GB
 LazyData: true

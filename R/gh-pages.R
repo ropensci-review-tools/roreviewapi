@@ -12,7 +12,7 @@ push_to_gh_pages <- function (check) {
     static_dir <- file.path (rorev_dir, "static")
     if (!dir.exists (rorev_dir)) {
 
-        gert::git_clone (url = "https://github.com/ropenscilabs/roreviewapi",
+        gert::git_clone (url = "https://github.com/ropensci-review-tools/roreviewapi",
                          path = rorev_dir)
     }
 
@@ -150,6 +150,6 @@ move1file <- function (path, rorev_dir) {
 
 path_to_url <- function (path) {
 
-    paste0 ("https://ropenscilabs.github.io/roreviewapi/static/",
+    paste0 ("https://ropensci-review-tools.github.io/roreviewapi/static/",
             basename (path))
 }

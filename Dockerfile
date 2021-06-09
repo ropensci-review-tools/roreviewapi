@@ -25,14 +25,18 @@ RUN install2.r \
   plumber \
   visNetwork \
 && installGithub.r \
-      ropenscilabs/pkgstats \
-      ropenscilabs/pkgcheck \
-      ropenscilabs/roreviewapi
+      ropensci-review-tools/pkgstats \
+      ropensci-review-tools/pkgcheck \
+      ropensci-review-tools/roreviewapi
 
-RUN echo "GITHUB_TOKEN='<my_github_token>'" > ~/.Renviron \
-    && echo "GITHUB_PAT='<my_github_token>'" > ~/.Renviron \
-RUN git config --global user.name "username" \
-    && git config --global user.email "my.address@mail.com"
+#RUN echo "GITHUB_TOKEN='<my_github_token>'" > ~/.Renviron \
+#    && echo "GITHUB_PAT='<my_github_token>'" > ~/.Renviron \
+#RUN git config --global user.name "username" \
+#    && git config --global user.email "my.address@mail.com"
+RUN echo "GITHUB_TOKEN='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'" > ~/.Renviron \
+    && echo "GITHUB_PAT='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'" >> ~/.Renviron
+RUN git config --global user.name "mpadge" \
+    && git config --global user.email "mark.padgham@email.com"
 
 EXPOSE 8000
 

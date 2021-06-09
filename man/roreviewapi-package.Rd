@@ -11,9 +11,9 @@ Plumber API to report package structure and function.
 \seealso{
 Useful links:
 \itemize{
-  \item \url{https://ropenscilabs.github.io/roreviewapi}
-  \item \url{https://github.com/ropenscilabs/roreviewapi}
-  \item Report bugs at \url{https://github.com/ropenscilabs/roreviewapi/issues}
+  \item \url{https://ropensci-review-tools.github.io/roreviewapi}
+  \item \url{https://github.com/ropensci-review-tools/roreviewapi}
+  \item Report bugs at \url{https://github.com/ropensci-review-tools/roreviewapi/issues}
 }
 
 }
