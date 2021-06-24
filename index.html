@@ -31,7 +31,7 @@
       </button>
       <span class="navbar-brand">
         <a class="navbar-link" href="index.html">roreviewapi</a>
-        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="Released version">0.0.0.097</span>
+        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="Released version">0.0.0.099</span>
       </span>
     </div>
 
@@ -72,7 +72,7 @@
 <!-- badges: start -->
 
 <p>Plumber API to generate reports on package structure and function for the <a href="https://github.com/ropensci-review-bot"><code>@ropensci-review-bot</code></a>. The package is not intended for general use, and these documents are primarily intended for maintainers of this package, although they may serve as useful templates for similar endeavours. Please contact us if you have any questions.</p>
-<p>Uses functionality provided by the <a href="https://github.com/ropensci-review-tools/pkgcheck"><code>pkgcheck</code></a> and <a href="https://github.com/ropensci-review-tools/pkgstats"><code>pkgstats</code></a> packages. This suite of three packages requires a few system installs, two for <a href="https://github.com/ropensci-review-tools/pkgstats"><code>pkgstats</code></a> of <a href="https://ctags.io"><code>ctags</code></a> and <a href="https://www.gnu.org/software/global/">GNU <code>global</code></a>. Procedures to install these libraries on various operating systems are described in a <a href="https://ropensci-review-tools.github.io/pkgstats/articles/installation.html"><code>pkgstats</code> vignette</a>. This package itself also requires both the <a href="https://cli.github.com/">GitHub command-line-interface (cli), <code>gh</code></a> and <a href="https://sourceforge.net/projects/dos2unix/"><code>dos2unix</code></a>.</p>
+<p>Uses functionality provided by the <a href="https://github.com/ropensci-review-tools/pkgcheck"><code>pkgcheck</code></a> and <a href="https://github.com/ropensci-review-tools/pkgstats"><code>pkgstats</code></a> packages. This suite of three packages requires a few system installs, two for <a href="https://github.com/ropensci-review-tools/pkgstats"><code>pkgstats</code></a> of <a href="https://ctags.io"><code>ctags</code></a> and <a href="https://www.gnu.org/software/global/">GNU <code>global</code></a>. Procedures to install these libraries on various operating systems are described in the <a href="https://docs.ropensci.org/pkgstats"><code>pkgstats</code> package</a>. This package itself also requires both the <a href="https://cli.github.com/">GitHub command-line-interface (cli), <code>gh</code></a> and <a href="https://sourceforge.net/projects/dos2unix/"><code>dos2unix</code></a>.</p>
 <p>A local GitHub token also needs to be stored as an environment variable named <code>GITHUB_TOKEN</code>, and not <code>GITHUB_PAT</code> or anything else; the <code>gh</code> cli only recognises the former name.</p>
 <p>The package also works by locally caching previously analysed packages, in a <code>pkgcheck</code> subdirectory of the location determined by</p>
 <div class="sourceCode" id="cb1"><pre class="downlit sourceCode r">
