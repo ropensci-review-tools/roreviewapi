@@ -1,6 +1,6 @@
 Package: roreviewapi
 Title: Plumber API to report package structure and function
-Version: 0.0.0.097
+Version: 0.0.0.098
 Authors@R: 
     person(given = "Mark",
            family = "Padgham",
@@ -8,7 +8,7 @@ Authors@R:
            email = "mark.padgham@email.com")
 Description: Plumber API to report package structure and function.
 License: GPL-3
-URL: https://ropensci-review-tools.github.io/roreviewapi,
+URL: https://docs.ropensci.org/roreviewapi,
     https://github.com/ropensci-review-tools/roreviewapi
 BugReports: https://github.com/ropensci-review-tools/roreviewapi/issues
 Depends: 
