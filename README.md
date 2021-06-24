@@ -22,11 +22,10 @@ packages. This suite of three packages requires a few system installs,
 two for [`pkgstats`](https://github.com/ropensci-review-tools/pkgstats)
 of [`ctags`](https://ctags.io) and [GNU
 `global`](https://www.gnu.org/software/global/). Procedures to install
-these libraries on various operating systems are described in a
-[`pkgstats`
-vignette](https://ropensci-review-tools.github.io/pkgstats/articles/installation.html).
-This package itself also requires both the [GitHub
-command-line-interface (cli), `gh`](https://cli.github.com/) and
+these libraries on various operating systems are described in the
+[`pkgstats` package](https://docs.ropensci.org/pkgstats). This package
+itself also requires both the [GitHub command-line-interface (cli),
+`gh`](https://cli.github.com/) and
 [`dos2unix`](https://sourceforge.net/projects/dos2unix/).
 
 A local GitHub token also needs to be stored as an environment variable
