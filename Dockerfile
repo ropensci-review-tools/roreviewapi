@@ -10,8 +10,8 @@ RUN install2.r \
       ropensci-review-tools/roreviewapi
 
 RUN echo "GITHUB_TOKEN='<my_github_token>'" > ~/.Renviron \
-    && echo "GITHUB_PAT='<my_github_token>'" > ~/.Renviron \
-RUN git config --global user.name "username" \
+    && echo "GITHUB_PAT='<my_github_token>'" >> ~/.Renviron \
+    && git config --global user.name "username" \
     && git config --global user.email "my.address@mail.com"
 
 EXPOSE 8000
