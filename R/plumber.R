@@ -36,7 +36,8 @@ function (repourl, repo, issue_id) {
 # --------------------------------------------------
 
 #* Alternative version of editorcheck endpoint that directly returns result,
-#* rather than than posting to GitHub issue
+#* rather than than posting to GitHub issue. Also runs as a blocking foreground
+#* process, rather than bg.
 #* @param repourl The URL for the repo being checked
 #* @get /editorcheck_contents
 function (repourl) {
