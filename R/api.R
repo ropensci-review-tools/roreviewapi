@@ -17,11 +17,13 @@
 serve_api <- function(
                       port = 8000L,
                       cache_dir = NULL,
-                      os = "ubuntu",
-                      os_release = "20.04") {
+                      os = "",
+                      os_release = "") {
 
-    Sys.setenv ("ROREVIEWAPI_OS" = os)
-    Sys.setenv ("ROREVIEWAPI_OS_RELEASE" = os_release)
+    if (os != "")
+        Sys.setenv ("ROREVIEWAPI_OS" = os)
+    if (os_release != "")
+        Sys.setenv ("ROREVIEWAPI_OS_RELEASE" = os_release)
 
     ip <- data.frame (utils::installed.packages())
 
