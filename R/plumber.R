@@ -10,7 +10,7 @@
 #* @param repo The 'context.repo' parameter defining the repository from which
 #* the command was invoked.
 #* @param issue_id The id of the issue form which the command was invoked
-#* @post /editorcheck
+#* @get /editorcheck
 function (repourl, repo, issue_id) {
 
     repourl <- as.character (repourl) [1]
@@ -38,7 +38,7 @@ function (repourl, repo, issue_id) {
 #* Check whether a package is good to go out to review (intended to be called by
 #8 handling editors).
 #* @param u The URL for a repo
-#* @post /goodtoreview
+#* @get /goodtoreview
 function (u) {
 
     repo <- tail (strsplit (u, "/") [[1]], 1)
@@ -168,7 +168,7 @@ function () {
 
 #* Fetch stdout & stderr logs from main process for specified repo URL
 #* @param repourl The URL for the repo being checked
-#* @post /stdlogs
+#* @get /stdlogs
 function (repourl) {
 
     logfiles <- roreviewapi::stdout_stderr_cache (repourl)
