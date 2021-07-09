@@ -16,7 +16,7 @@ RUN echo "GITHUB_TOKEN='<my_github_token>'" > ~/.Renviron \
 
 EXPOSE 8000
 
-RUN echo "#!/bin/bash\nRscript -e 'roreviewapi::serve_api(port=8000L)'" > /server_api.sh \
+RUN echo "#!/bin/bash\nRscript -e 'roreviewapi::serve_api(port=8000L,os='ubuntu',os_release='20.04')'" > /server_api.sh \
   && chmod a+x /server_api.sh
 
 CMD /server_api.sh
