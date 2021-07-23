@@ -19,7 +19,7 @@ function (repourl, repo, issue_id) {
 
     logfiles <- roreviewapi::stdout_stderr_cache (repourl)
 
-    ps <- callr::r_bg (func = roreviewapi::editor_check,
+    ps <<- callr::r_bg (func = roreviewapi::editor_check,
                        args = list (repourl = repourl,
                                     repo = repo,
                                     issue_id = issue_id),
