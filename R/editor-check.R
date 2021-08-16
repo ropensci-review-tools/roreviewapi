@@ -30,12 +30,12 @@ editor_check <- function (repourl, repo, issue_id, post_to_issue = TRUE) {
     attr (check, "srr_okay") <- checks$srr$okay
 
     a <- attributes (check)
-
     check <- strsplit (check, "\n") [[1]]
+    attributes (check) <- a
 
     u <- roreviewapi::push_to_gh_pages (check)
 
-    if (!is.null (u)) { # pkg has a network, and network_file
+    if (!is.null (a$network_file)) { # pkg has a network, and network_file
 
         check <- gsub (a$network_file, u [1], check)
     }
