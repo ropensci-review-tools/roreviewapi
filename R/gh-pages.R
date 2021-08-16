@@ -7,9 +7,7 @@
 #' @export
 push_to_gh_pages <- function (check) {
 
-    # pkgs with no networks do not have 'network_file' attribute:
-    if (!"network_file" %in% attributes (check))
-        return (NULL)
+    out <- list ()
 
     cache_dir <- Sys.getenv ("PKGCHECK_CACHE_DIR")
     rorev_dir <- file.path (cache_dir, "roreviewapi")
@@ -41,17 +39,27 @@ push_to_gh_pages <- function (check) {
         chk <- file.remove (untracked)
     # TODO# also need to unlink empty directories
 
-    files <- "network_file"
-    out <- path_to_url (attr (check, "network_file"))
+    files <- NULL
+    # pkgs with no networks do not have 'network_file' attribute:
+    if ("network_file" %in% names (attributes (check))) {
+
+        files <- "network_file"
+        out$network_file <- path_to_url (attr (check, "network_file"))
+        # get hash of current file to exclude from list of current files to be
+        # removed
+        this_hash <- utils::tail (strsplit (out [1], "pkgstats") [[1]], 1)
+        this_hash <- gsub ("\\.html$", "", this_hash)
+
+    } else {
+
+        this_id <- gert::git_commit_info (repo = path)$id
+        this_hash <- substring (this_id, 1, 8)
+    }
+
     if ("srr_report_file" %in% names (attributes (check))) {
         files <- c (files, "srr_report_file")
-        out <- c (out,
-                  path_to_url (attr (check, "srr_report_file")))
+        out$srr_report_file <- path_to_url (attr (check, "srr_report_file"))
     }
-    # get hash of current file to exclude from list of current files to be
-    # removed
-    this_hash <- utils::tail (strsplit (out [1], "pkgstats") [[1]], 1)
-    this_hash <- gsub ("\\.html$", "", this_hash)
 
     files <- lapply (files,
                      function (i) move1file (attr (check, i), rorev_dir))
@@ -59,15 +67,22 @@ push_to_gh_pages <- function (check) {
     files <- gsub (paste0 ("^", .Platform$file.sep), "", files)
 
     # rm any older files:
-    older_files <- gsub ("\\.html$",
-                         "",
-                         basename (attr (check, "network_file")))
+    older_files <- NULL
+    if ("network_file" %in% names (attributes (checks))) {
+
+        older_files <- gsub ("\\.html$",
+                             "",
+                             basename (attr (check, "network_file")))
+    }
+
     if ("srr_report_file" %in% names (attributes (check))) {
+
         older_files <- c (older_files,
                           gsub ("\\.html$",
                                 "",
                                 basename (attr (check, "srr_report_file"))))
     }
+
     older_files <- older_files [which (!grep (this_hash, older_files))]
 
     index <- lapply (older_files, function (i) grep (i, git_files))
@@ -76,6 +91,7 @@ push_to_gh_pages <- function (check) {
     git_updated <- FALSE
 
     if (length (index) > 0) {
+
         r <- gert::git_rm (git_files [index], repo = rorev_dir)
         git_updated <- TRUE
     }
