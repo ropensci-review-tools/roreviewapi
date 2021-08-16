@@ -47,7 +47,7 @@ push_to_gh_pages <- function (check) {
         out$network_file <- path_to_url (attr (check, "network_file"))
         # get hash of current file to exclude from list of current files to be
         # removed
-        this_hash <- utils::tail (strsplit (out [1], "pkgstats") [[1]], 1)
+        this_hash <- utils::tail (strsplit (out$network_file, "pkgstats") [[1]], 1)
         this_hash <- gsub ("\\.html$", "", this_hash)
 
     } else {
