@@ -1,3 +1,13 @@
+---
+title: "roreviewapi"
+output:
+  md_document:
+    variant: gfm
+
+  rmarkdown::html_vignette:
+    self_contained: no
+---
+
 # roreviewapi
 
 <!-- badges: start -->
