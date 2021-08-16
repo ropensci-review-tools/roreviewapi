@@ -29,11 +29,17 @@ editor_check <- function (repourl, repo, issue_id, post_to_issue = TRUE) {
     attributes (check) <- attributes (checks_md)
     attr (check, "srr_okay") <- checks$srr$okay
 
+    a <- attributes (check)
+
+    check <- strsplit (check, "\n") [[1]]
+
     u <- roreviewapi::push_to_gh_pages (check)
 
-    a <- attributes (check)
-    check <- strsplit (check, "\n") [[1]]
-    check <- gsub (a$network_file, u [1], check)
+    if (!is.null (u)) { # pkg has a network, and network_file
+
+        check <- gsub (a$network_file, u [1], check)
+    }
+
     if ("srr_report_file" %in% names (a))
         check <- gsub (a$srr_report_file, u [2], check)
 
