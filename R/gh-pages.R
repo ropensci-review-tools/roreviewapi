@@ -7,6 +7,10 @@
 #' @export
 push_to_gh_pages <- function (check) {
 
+    # pkgs with no networks do not have 'network_file' attribute:
+    if (!"network_file" %in% attributes (check))
+        return (NULL)
+
     cache_dir <- Sys.getenv ("PKGCHECK_CACHE_DIR")
     rorev_dir <- file.path (cache_dir, "roreviewapi")
     static_dir <- file.path (rorev_dir, "static")
