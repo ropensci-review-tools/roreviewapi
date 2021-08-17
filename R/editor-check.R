@@ -26,10 +26,9 @@ editor_check <- function (repourl, repo, issue_id, post_to_issue = TRUE) {
     checks_md <- pkgcheck::checks_to_markdown (checks, render = FALSE)
 
     check <- paste0 (checks_md, collapse = "\n")
-    attributes (check) <- attributes (checks_md)
+    a <- attributes (check) <- attributes (checks_md)
     attr (check, "srr_okay") <- checks$srr$okay
 
-    a <- attributes (check)
     check <- strsplit (check, "\n") [[1]]
     attributes (check) <- a
 
