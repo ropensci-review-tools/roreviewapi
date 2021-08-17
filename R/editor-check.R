@@ -39,8 +39,10 @@ editor_check <- function (repourl, repo, issue_id, post_to_issue = TRUE) {
         check <- gsub (a$network_file, u [1], check)
     }
 
-    if ("srr_report_file" %in% names (a))
+    if (!is.null (a$srr_report_file)) {
+
         check <- gsub (a$srr_report_file, u [2], check)
+    }
 
     eic_instr <- c ("",
                     "---",
