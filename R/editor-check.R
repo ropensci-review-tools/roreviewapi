@@ -36,12 +36,12 @@ editor_check <- function (repourl, repo, issue_id, post_to_issue = TRUE) {
 
     if (!is.null (a$network_file)) { # pkg has a network, and network_file
 
-        check <- gsub (a$network_file, u [1], check)
+        check <- gsub (a$network_file, u$network_file, check)
     }
 
     if (!is.null (a$srr_report_file)) {
 
-        check <- gsub (a$srr_report_file, u [2], check)
+        check <- gsub (a$srr_report_file, u$srr_report_file, check)
     }
 
     eic_instr <- c ("",
