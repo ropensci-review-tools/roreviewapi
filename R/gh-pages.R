@@ -68,7 +68,7 @@ push_to_gh_pages <- function (check) {
 
     # rm any older files:
     older_files <- NULL
-    if ("network_file" %in% names (attributes (checks))) {
+    if ("network_file" %in% names (attributes (check))) {
 
         older_files <- gsub ("\\.html$",
                              "",
