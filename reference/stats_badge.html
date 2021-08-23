@@ -6,7 +6,7 @@
 <meta http-equiv="X-UA-Compatible" content="IE=edge">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-<title>Cross symbol, exported for direct use in plumber API — symbol_crs • roreviewapi</title>
+<title>Get stats badge grade and standards version for a submission — stats_badge • roreviewapi</title>
 
 
 <!-- jquery -->
@@ -39,8 +39,8 @@
 
 
 
-<meta property="og:title" content="Cross symbol, exported for direct use in plumber API — symbol_crs" />
-<meta property="og:description" content="Cross symbol, exported for direct use in plumber API" />
+<meta property="og:title" content="Get stats badge grade and standards version for a submission — stats_badge" />
+<meta property="og:description" content="Get stats badge grade and standards version for a submission" />
 
 
 
@@ -108,18 +108,34 @@
 <div class="row">
   <div class="col-md-9 contents">
     <div class="page-header">
-    <h1>Cross symbol, exported for direct use in plumber API</h1>
-    <small class="dont-index">Source: <a href='https://github.com/ropensci-review-tools/roreviewapi/blob/master/R/utils.R'><code>R/utils.R</code></a></small>
-    <div class="hidden name"><code>symbol_crs.Rd</code></div>
+    <h1>Get stats badge grade and standards version for a submission</h1>
+    <small class="dont-index">Source: <a href='https://github.com/ropensci-review-tools/roreviewapi/blob/master/R/srr.R'><code>R/srr.R</code></a></small>
+    <div class="hidden name"><code>stats_badge.Rd</code></div>
     </div>
 
     <div class="ref-description">
-    <p>Cross symbol, exported for direct use in plumber API</p>
+    <p>Get stats badge grade and standards version for a submission</p>
     </div>
 
-    <pre class="usage"><span class='fu'>symbol_crs</span><span class='op'>(</span><span class='op'>)</span></pre>
+    <pre class="usage"><span class='fu'>stats_badge</span><span class='op'>(</span>repo <span class='op'>=</span> <span class='st'>"ropensci/software-review"</span>, issue_num <span class='op'>=</span> <span class='fl'>258</span><span class='op'>)</span></pre>
 
+    <h2 class="hasAnchor" id="arguments"><a class="anchor" href="#arguments"></a>Arguments</h2>
+    <table class="ref-arguments">
+    <colgroup><col class="name" /><col class="desc" /></colgroup>
+    <tr>
+      <th>repo</th>
+      <td><p>The submission repo</p></td>
+    </tr>
+    <tr>
+      <th>issue_num</th>
+      <td><p>GitHub issue number of submission</p></td>
+    </tr>
+    </table>
 
+    <h2 class="hasAnchor" id="value"><a class="anchor" href="#value"></a>Value</h2>
+
+    <p>A single character containing the label used directly for the issue
+badge</p>
 
   </div>
   <div class="col-md-3 hidden-xs hidden-sm" id="pkgdown-sidebar">
