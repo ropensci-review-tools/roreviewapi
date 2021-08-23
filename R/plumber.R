@@ -71,7 +71,7 @@ function (repo = "ropensci/software-review", issue_num) {
     if (!is.integer (issue_num) & length (issue_num) != 1L)
         return (NULL)
 
-    stats_badge (repo, issue_num)
+    roreviewapi::stats_badge (repo, issue_num)
 }
 
 #* Get log
