@@ -61,6 +61,19 @@ function (n = 10) {
     return (mean (rnorm (n)))
 }
 
+
+#* Get Stats badge for an issue
+#* @param repo GitHub repo of review issue in form 'org/repo'
+#* @param issue_num GitHub issue mumber for which badge is to be extracted
+#* @get /stats_badge
+function (repo = "ropensci/software-review", issue_num) {
+
+    if (!is.integer (issue_num) & length (issue_num) != 1L)
+        return (NULL)
+
+    stats_badge (repo, issue_num)
+}
+
 #* Get log
 #* @param n Get n latest log entries
 #* @get /log
