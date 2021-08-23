@@ -4,7 +4,7 @@
 \alias{serve_api}
 \title{serve plumber API to report on packages}
 \usage{
-serve_api(port = 8000L, cache_dir = NULL, os = "ubuntu", os_release = "20.04")
+serve_api(port = 8000L, cache_dir = NULL, os = "", os_release = "")
 }
 \arguments{
 \item{port}{Port for API to be exposed on}
