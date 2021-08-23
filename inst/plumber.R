@@ -25,7 +25,7 @@ function (repourl, repo, issue_id) {
                                     issue_id = issue_id),
                        stdout = logfiles$stdout,
                        stderr = logfiles$stderr,
-                       poll_connection = FALSE,
+                       poll_connection = TRUE,
                        supervise = TRUE)
 
     return ("Editor check started")
