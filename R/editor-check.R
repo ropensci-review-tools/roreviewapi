@@ -35,8 +35,8 @@ editor_check <- function (repourl, repo, issue_id, post_to_issue = TRUE) {
 
         out <- paste0 ("Oops, something went wrong with our automatic package ",
                        "checks. Our developers [have been notified](", u,
-                       ") and a report will appear here as soon as we've ",
-                       "resolved the issue. Sorry for any inconvenience!")
+                       ") and package checks will appear here as soon as ",
+                       "we've resolved the issue. Sorry for any inconvenience.")
 
     }
 
