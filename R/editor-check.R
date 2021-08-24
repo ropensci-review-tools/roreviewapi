@@ -22,9 +22,20 @@ editor_check <- function (repourl, repo, issue_id, post_to_issue = TRUE) {
     if (os != "" & os_release != "")
         roreviewapi::pkgrep_install_deps (path, os, os_release)
 
-    checks <- pkgcheck::pkgcheck (path)
+    checks <- tryCatch (pkgcheck::pkgcheck (path),
+                        error = function (e) e)
 
-    out <- collate_editor_check (checks)
+    if (!methods::is (e, "error")) {
+
+        out <- collate_editor_check (checks)
+
+    } else {
+
+        out <- paste0 ("Oops, something went wrong with out automatic package ",
+                       "checks. Our developers have been notified, and a report ",
+                       "will appear here as soon as we've resolved the issue. ",
+                       "Sorry for any inconvenience!")
+    }
 
     if (post_to_issue) {
 
