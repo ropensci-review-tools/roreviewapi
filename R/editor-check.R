@@ -23,6 +23,19 @@ editor_check <- function (repourl, repo, issue_id, post_to_issue = TRUE) {
         roreviewapi::pkgrep_install_deps (path, os, os_release)
 
     checks <- pkgcheck::pkgcheck (path)
+
+    out <- collate_editor_check (checks)
+
+    if (post_to_issue) {
+
+        out <- roreviewapi::post_to_issue (out, repo, issue_id)
+    }
+
+    return (out)
+}
+
+collate_editor_check <- function (checks) {
+
     checks_md <- pkgcheck::checks_to_markdown (checks, render = FALSE)
 
     check <- paste0 (checks_md, collapse = "\n")
@@ -32,7 +45,7 @@ editor_check <- function (repourl, repo, issue_id, post_to_issue = TRUE) {
     check <- strsplit (check, "\n") [[1]]
     attributes (check) <- a
 
-    u <- roreviewapi::push_to_gh_pages (check)
+    u <- push_to_gh_pages (check)
 
     if (!is.null (a$network_file)) { # pkg has a network, and network_file
 
@@ -83,11 +96,6 @@ editor_check <- function (repourl, repo, issue_id, post_to_issue = TRUE) {
                           "")
 
     out <- paste0 (c (check, eic_instr), collapse = "\n")
-
-    if (post_to_issue) {
-
-        out <- roreviewapi::post_to_issue (out, repo, issue_id)
-    }
 
     return (out)
 }
