@@ -25,7 +25,7 @@ editor_check <- function (repourl, repo, issue_id, post_to_issue = TRUE) {
     checks <- tryCatch (pkgcheck::pkgcheck (path),
                         error = function (e) e)
 
-    if (!methods::is (e, "error")) {
+    if (!methods::is (checks, "error")) {
 
         out <- collate_editor_check (checks)
 
