@@ -89,6 +89,15 @@ function (n = 10) {
         ret <- rev (tail (ret, n))
     }
 
+    # The Digital Ocean service constantly polls itself, so exclude any internal
+    # IP address (172.16.0.0 - 172.31.255.255)
+    ptn <- paste0 (paste0 ("172\\.", 16:31, "\\."), collapse = "|")
+    ret <- ret [which (!grepl (ptn, ret))]
+
+    # And remove any empty entries:
+    g <- regexpr ("INFO \\[.*\\]\\s+$", ret)
+    ret <- ret [which (g < 1L)]
+
     return (ret)
 }
 
