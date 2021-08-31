@@ -27,11 +27,11 @@ editor_check <- function (repourl, repo, issue_id, post_to_issue = TRUE) {
 
     if (!methods::is (checks, "error")) {
 
-        out <- collate_editor_check (checks)
+        out <- roreviewapi::collate_editor_check (checks)
 
     } else {
 
-        u <- file_pkgcheck_issue (repourl, repo, issue_id)
+        u <- roreviewapi::file_pkgcheck_issue (repourl, repo, issue_id)
 
         out <- paste0 ("Oops, something went wrong with our automatic package ",
                        "checks. Our developers [have been notified](", u,
@@ -48,6 +48,13 @@ editor_check <- function (repourl, repo, issue_id, post_to_issue = TRUE) {
     return (out)
 }
 
+#' Collate list of checks to single concatenated character string
+#'
+#' @param checks Result of `pkgcheck::pgkcheck` function
+#' @return Single character
+#' @note Exported only for access by plumber; not intended for general external
+#' usage.
+#' @export
 collate_editor_check <- function (checks) {
 
     checks_md <- pkgcheck::checks_to_markdown (checks, render = FALSE)
@@ -116,7 +123,9 @@ collate_editor_check <- function (checks) {
 
 #' File an issue in the GitHub `pkgcheck` repo on any packages which fail checks
 #'
-#' @noRd
+#' @note Exported only for access by plumber; not intended for general external
+#' usage.
+#' @export
 file_pkgcheck_issue <- function (repourl = NULL,
                                  repo = "ropensci/software-review",
                                  issue_id = NULL) {
