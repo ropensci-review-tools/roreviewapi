@@ -83,7 +83,7 @@ serve_api <- function(
           end <- tictoc::toc(quiet = TRUE)          # nolint
           # Log details about the request and the response
           # TODO: Sanitize log details - perhaps in convert_empty
-          logger::log_info('{convert_empty(req$REMOTE_ADDR)} "{convert_empty(req$HTTP_USER_AGENT)}" {convert_empty(req$HTTP_HOST)} {convert_empty(req$REQUEST_METHOD)} {convert_empty(req$PATH_INFO)} {convert_empty(res$status)} {round(end$toc - end$tic, digits = getOption("digits", 5))}')          # nolint
+          logger::log_info('{convert_empty(req$REMOTE_ADDR)} "{convert_empty(req$HTTP_USER_AGENT)}" {convert_empty(req$HTTP_HOST)} {convert_empty(req$REQUEST_METHOD)} {convert_empty(req$PATH_INFO)} {convert_empty(req$QUERY_STRING)} {convert_empty(res$status)} {round(end$toc - end$tic, digits = getOption("digits", 5))}')          # nolint
         }
       )
     )
