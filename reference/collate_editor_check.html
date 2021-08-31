@@ -6,7 +6,7 @@
 <meta http-equiv="X-UA-Compatible" content="IE=edge">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-<title>roreviewapi: Plumber API to report package structure and function — roreviewapi-package • roreviewapi</title>
+<title>Collate list of checks to single concatenated character string — collate_editor_check • roreviewapi</title>
 
 
 <!-- jquery -->
@@ -39,8 +39,8 @@
 
 
 
-<meta property="og:title" content="roreviewapi: Plumber API to report package structure and function — roreviewapi-package" />
-<meta property="og:description" content="Plumber API to report package structure and function." />
+<meta property="og:title" content="Collate list of checks to single concatenated character string — collate_editor_check" />
+<meta property="og:description" content="Collate list of checks to single concatenated character string" />
 
 
 
@@ -108,29 +108,33 @@
 <div class="row">
   <div class="col-md-9 contents">
     <div class="page-header">
-    <h1>roreviewapi: Plumber API to report package structure and function</h1>
-    <small class="dont-index">Source: <a href='https://github.com/ropensci-review-tools/roreviewapi/blob/master/R/roreviewapi-package.R'><code>R/roreviewapi-package.R</code></a></small>
-    <div class="hidden name"><code>roreviewapi-package.Rd</code></div>
+    <h1>Collate list of checks to single concatenated character string</h1>
+    <small class="dont-index">Source: <a href='https://github.com/ropensci-review-tools/roreviewapi/blob/master/R/editor-check.R'><code>R/editor-check.R</code></a></small>
+    <div class="hidden name"><code>collate_editor_check.Rd</code></div>
     </div>
 
     <div class="ref-description">
-    <p>Plumber API to report package structure and function.</p>
+    <p>Collate list of checks to single concatenated character string</p>
     </div>
 
+    <pre class="usage"><span class='fu'>collate_editor_check</span><span class='op'>(</span><span class='va'>checks</span><span class='op'>)</span></pre>
 
+    <h2 class="hasAnchor" id="arguments"><a class="anchor" href="#arguments"></a>Arguments</h2>
+    <table class="ref-arguments">
+    <colgroup><col class="name" /><col class="desc" /></colgroup>
+    <tr>
+      <th>checks</th>
+      <td><p>Result of <code>pkgcheck::pgkcheck</code> function</p></td>
+    </tr>
+    </table>
 
-    <h2 class="hasAnchor" id="see-also"><a class="anchor" href="#see-also"></a>See also</h2>
+    <h2 class="hasAnchor" id="value"><a class="anchor" href="#value"></a>Value</h2>
 
-    <div class='dont-index'><p>Useful links:</p><ul>
-<li><p><a href='https://docs.ropensci.org/roreviewapi'>https://docs.ropensci.org/roreviewapi</a></p></li>
-<li><p><a href='https://github.com/ropensci-review-tools/roreviewapi'>https://github.com/ropensci-review-tools/roreviewapi</a></p></li>
-<li><p>Report bugs at <a href='https://github.com/ropensci-review-tools/roreviewapi/issues'>https://github.com/ropensci-review-tools/roreviewapi/issues</a></p></li>
-</ul>
+    <p>Single character</p>
+    <h2 class="hasAnchor" id="note"><a class="anchor" href="#note"></a>Note</h2>
 
-</div>
-    <h2 class="hasAnchor" id="author"><a class="anchor" href="#author"></a>Author</h2>
-
-    <p><strong>Maintainer</strong>: Mark Padgham <a href='mailto:mark.padgham@email.com'>mark.padgham@email.com</a></p>
+    <p>Exported only for access by plumber; not intended for general external
+usage.</p>
 
   </div>
   <div class="col-md-3 hidden-xs hidden-sm" id="pkgdown-sidebar">
