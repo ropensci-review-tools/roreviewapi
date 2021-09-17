@@ -127,7 +127,7 @@ collate_editor_check <- function (checks) {
 #' usage.
 #' @export
 file_pkgcheck_issue <- function (repourl = NULL,
-                                 repo = "ropensci/software-review",
+                                 repo = "ropensci-review-tools/pkgcheck",
                                  issue_id = NULL) {
 
     user <- get_github_user ()
