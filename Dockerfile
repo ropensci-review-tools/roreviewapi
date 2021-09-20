@@ -1,8 +1,10 @@
 FROM mpadge/pkgcheck
 MAINTAINER Mark Padgham <mark.padgham@email.com>
 
+# seasonal -> roreviewapi#13
 RUN install2.r \
   plumber \
+  seasonal \
   visNetwork \
 && installGithub.r \
       ropensci-review-tools/pkgstats \
