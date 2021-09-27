@@ -87,7 +87,9 @@ html_variables <- c ("author1",
                      "reviewers-list",
                      "due-dates-list")
 
-submission_types <- c ("Standard", "Estándar", "Stats")
+# Note "Estandar" has to be converted to non-accented "a"
+# to avoid warnings about non-ASCII characters in code
+submission_types <- c ("Standard", "Estandar", "Stats")
 
 stats_grades <- c ("bronze", "silver", "gold")
 
@@ -173,6 +175,8 @@ check_html_variable <- function (x, variable) {
 
     } else if (variable == "submission-type") {
 
+        # Have to iconv to convert accented "a" to ascii:
+        x <- iconv (x, to = "ASCII//TRANSLIT")
         if (!x %in% submission_types)
             out <- paste0 ("submission type must be one of [",
                            paste0 (submission_types, collapse = ", "),
