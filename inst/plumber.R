@@ -8,7 +8,7 @@
 #* Run full range of editor checks and post result to a GitHub issue
 #* @param repourl The URL for the repo being checked
 #* @param repo The 'context.repo' parameter defining the repository from which
-#* the command was invoked.
+#* the command was invoked, passed in `org/repo` format.
 #* @param issue_id The id of the issue form which the command was invoked
 #* @get /editorcheck
 function (repourl, repo, issue_id) {
@@ -16,6 +16,10 @@ function (repourl, repo, issue_id) {
     repourl <- as.character (repourl) [1]
     repo <- as.character (repo) [1]
     issue_id <- as.integer (issue_id) [1]
+
+    template_chk <- roreviewapi::check_issue_template (repo, issue_id)
+    if (!attr (template_chk, "proceed_with_checks"))
+        return (template_chk)
 
     logfiles <- roreviewapi::stdout_stderr_cache (repourl)
 
@@ -28,7 +32,11 @@ function (repourl, repo, issue_id) {
                        poll_connection = TRUE,
                        supervise = TRUE)
 
-    return ("Editor check started")
+    out <- ifelse (nchar (template_chk) == 0L,
+                   "Editor check started",
+                   as.character (template_chk))
+
+    return (out)
 }
 
 
