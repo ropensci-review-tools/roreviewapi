@@ -1,6 +1,6 @@
 Package: roreviewapi
 Title: Plumber API to report package structure and function
-Version: 0.0.0.147
+Version: 0.0.0.148
 Authors@R: 
     person(given = "Mark",
            family = "Padgham",
@@ -20,6 +20,8 @@ Imports:
     gert,
     ghql,
     here,
+    httr,
+    jsonlite,
     logger,
     magrittr,
     methods,

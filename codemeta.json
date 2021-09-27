@@ -10,7 +10,7 @@
   "codeRepository": "https://github.com/ropensci-review-tools/roreviewapi",
   "issueTracker": "https://github.com/ropensci-review-tools/roreviewapi/issues",
   "license": "https://spdx.org/licenses/GPL-3.0",
-  "version": "0.0.0.147",
+  "version": "0.0.0.148",
   "programmingLanguage": {
     "@type": "ComputerLanguage",
     "name": "R",
@@ -133,6 +133,30 @@
     },
     {
       "@type": "SoftwareApplication",
+      "identifier": "httr",
+      "name": "httr",
+      "provider": {
+        "@id": "https://cran.r-project.org",
+        "@type": "Organization",
+        "name": "Comprehensive R Archive Network (CRAN)",
+        "url": "https://cran.r-project.org"
+      },
+      "sameAs": "https://CRAN.R-project.org/package=httr"
+    },
+    {
+      "@type": "SoftwareApplication",
+      "identifier": "jsonlite",
+      "name": "jsonlite",
+      "provider": {
+        "@id": "https://cran.r-project.org",
+        "@type": "Organization",
+        "name": "Comprehensive R Archive Network (CRAN)",
+        "url": "https://cran.r-project.org"
+      },
+      "sameAs": "https://CRAN.R-project.org/package=jsonlite"
+    },
+    {
+      "@type": "SoftwareApplication",
       "identifier": "logger",
       "name": "logger",
       "provider": {
@@ -221,7 +245,7 @@
       "sameAs": "https://CRAN.R-project.org/package=tictoc"
     }
   ],
-  "fileSize": "52.409KB",
+  "fileSize": "53.237KB",
   "developmentStatus": "https://www.repostatus.org/#concept",
   "readme": "https://github.com/ropensci-review-tools/roreviewapi/blob/main/README.md",
   "relatedLink": [
