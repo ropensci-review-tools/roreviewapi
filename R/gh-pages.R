@@ -52,8 +52,10 @@ push_to_gh_pages <- function (check) {
 
     } else {
 
-        this_id <- gert::git_commit_info (repo = path)$id
-        this_hash <- substring (this_id, 1, 8)
+        hash_line <- grep ("^git\\shash\\:", check, value = TRUE)
+        hash <- regmatches (hash_line,
+                            gregexpr ("\\[.*\\]", hash_line)) [[1]]
+        this_hash <- gsub ("^\\[|\\]$", "", hash)
     }
 
     if ("srr_report_file" %in% names (attributes (check))) {
