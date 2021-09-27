@@ -125,6 +125,7 @@ collate_editor_check <- function (checks) {
 #'
 #' @note Exported only for access by plumber; not intended for general external
 #' usage.
+#' @inheritParams editor_check
 #' @export
 file_pkgcheck_issue <- function (repourl = NULL,
                                  repo = "ropensci-review-tools/pkgcheck",
