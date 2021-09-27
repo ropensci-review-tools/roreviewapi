@@ -8,8 +8,8 @@
 #' @export
 check_issue_template <- function (orgrepo, issue_num) {
 
-    org <- strsplit (orgrepo, "/") [[1]] [1]
-    repo <- strsplit (orgrepo, "/") [[1]] [2]
+    org <- strsplit (orgrepo, "/|%2F") [[1]] [1]
+    repo <- strsplit (orgrepo, "/|%2F") [[1]] [2]
 
     token <- get_gh_token ()
 
