@@ -23,6 +23,33 @@ check_issue_template <- function (org, repo, issue_num) {
     x <- gh_cli$exec(qry$queries$get_template) |>
         jsonlite::fromJSON ()
     x <- strsplit (x$data$repository$issue$body, "\\n") [[1]]
+
+    html_must_have <- html_variables [html_variables != "statsgrade"]
+    chk <- vapply (html_must_have,
+                   function (i) check_html_variable (x, i),
+                   character (1))
+    
+    # separate checks for optional stats variable:
+    if (has_html_variable (x, "statsgrade"))
+        chk <- c (chk, check_html_variable (x, "statsgrade"))
+
+    chk <- chk [which (nchar (chk) > 0L)]
+
+    out <- ""
+    if (length (chk) == 1L) {
+
+        out <- paste0 ("The following problem was found in your ",
+                       "submission template:\n\n- ",
+                       unname (chk))
+
+    } else if (length (chk) > 1L) {
+        
+        out <- paste0 ("The following problems were found in your ",
+                       "submission template:\n\n",
+                       paste0 ("- ", unname (chk), collapse = "\n"))
+    }
+
+    return (out)
 }
 
 html_variables <- c ("author1",
@@ -33,13 +60,17 @@ html_variables <- c ("author1",
                      "reviewers-list",
                      "due-dates-list")
 
-#' Check one HTML variable in issue template
+submission_types <- c ("Standard", "Estándar", "Stats")
+
+stats_grades <- c ("bronze", "silver", "gold")
+
+#' Check whether one HTML variable exists in issue template
 #'
 #' @param x The opening comment of issue as a character string
 #' @param variable The HTML variable to be checked
 #' @return Logical flag indicating whether or not the variable is okay.
 #' @noRd
-check_html_variable <- function (x, variable) {
+has_html_variable <- function (x, variable) {
 
     variable <- match.arg (variable, html_variables)
 
@@ -53,12 +84,50 @@ check_html_variable <- function (x, variable) {
         length (close_pos) == 1L &
         identical (open_pos, close_pos)
 
-    if (!chk)
-        return (FALSE)
+    return (chk)
+}
+
+#' Extract value of one HTML variable from issue template
+#'
+#' This presumes `has_html_variable` has already been called to confirm the
+#' variable exists.
+#'
+#' @param x The opening comment of issue as a character string
+#' @param variable The HTML variable to be checked
+#' @return Logical flag indicating whether or not the variable is okay.
+#' @noRd
+get_html_variable <- function (x, variable) {
+
+    variable <- match.arg (variable, html_variables)
+
+    var_open <- paste0 ("<\\!\\-\\-", variable, "\\-\\->")
+    var_close <- gsub (variable, paste0 ("end-", variable), var_open)
+
+    open_pos <- grep (var_open, x)
+    close_pos <- grep (var_close, x)
 
     ptn <- paste0 ("^.*", var_open, "|",
                    var_close, ".*$")
-    x <- gsub (ptn, "", x [open_pos])
+    return (gsub (ptn, "", x [open_pos]))
+}
+
+#' Check one HTML variable in issue template
+#'
+#' @param x The opening comment of issue as a character string
+#' @param variable The HTML variable to be checked
+#' @return Logical flag indicating whether or not the variable is okay.
+#' @noRd
+check_html_variable <- function (x, variable) {
+
+    variable <- match.arg (variable, html_variables)
+
+    if (!has_html_variable (x, variable))
+        return (paste0 ("HTML variable [", variable,
+                        "] is missing"))
+
+    x <- get_html_variable (x, variable)
+
+    out <- ""
 
     if (variable == "author1") {
 
@@ -66,9 +135,41 @@ check_html_variable <- function (x, variable) {
         # match "(@something)"
         check <- grepl ("^\\w+\\s", x) &
             grepl ("\\(@\\S+\\)", x)
+        if (!check)
+            out <- paste0 ("'author1' variable is not in ",
+                           "the form 'name (@github-handle)'")
+
+    } else if (variable == "repourl") {
+
+        if (!url_exists (x))
+            out <- paste0 ("URL = [", x, "] is not valid")
+
+    } else if (variable == "submission-type") {
+
+        if (!x %in% submission_types)
+            out <- paste0 ("submission type must be one of [",
+                           paste0 (submission_types, collapse = ", "),
+                           "]")
+
+    } else if (variable %in% c ("editor", "reviewers-list")) {
+
+        if (!identical (gsub ("\\s*", "", x), "TBD"))
+            out <- paste0 ("'editor' and 'reviewers-list' variables must ",
+                           "be left untouched (' TBD ')")
+
+    } else if (variable == "due-dates-list") {
+
+        if (!identical (x, ""))
+            out <- "'due-dates-list' variable must be left empty"
+    } else if (variable == "statsgrade") {
+
+        if (!tolower (x) %in% stats_grades)
+            out <- paste0 ("'statsgrade' variable must be one of [",
+                           paste0 (stats_grades, collapse = ", "),
+                           "]")
     }
 
-    return (check)
+    return (out)
 }
 
 #' Get GitHub token
@@ -78,7 +179,7 @@ check_html_variable <- function (x, variable) {
 #' @return The value of the GitHub access token extracted from environment
 #' variables.
 #' @family github
-#' @export
+#' @noRd
 get_gh_token <- function (token_name = "") {
 
     e <- Sys.getenv ()
