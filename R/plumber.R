@@ -13,6 +13,9 @@
 #* @get /editorcheck
 function (repourl, repo, issue_id) {
 
+    if (length (repourl) == 0L)
+        return ("Error: Issue template has no 'repourl'")
+
     repourl <- as.character (repourl) [1]
     repo <- as.character (repo) [1]
     issue_id <- as.integer (issue_id) [1]
