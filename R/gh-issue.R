@@ -31,7 +31,7 @@ check_issue_template <- function (orgrepo, issue_num) {
     chk <- vapply (html_must_have,
                    function (i) check_html_variable (x, i),
                    character (1))
-    
+
     # separate checks for optional stats variable:
     if (has_html_variable (x, "statsgrade"))
         chk <- c (chk, check_html_variable (x, "statsgrade"))
@@ -46,7 +46,7 @@ check_issue_template <- function (orgrepo, issue_num) {
                        unname (chk))
 
     } else if (length (chk) > 1L) {
-        
+
         out <- paste0 ("The following problems were found in your ",
                        "submission template:\n\n",
                        paste0 ("- ", unname (chk), collapse = "\n"))
@@ -131,10 +131,10 @@ get_html_variable <- function (x, variable) {
     var_close <- gsub (variable, paste0 ("end-", variable), var_open)
 
     open_pos <- grep (var_open, x)
-    close_pos <- grep (var_close, x)
 
     ptn <- paste0 ("^.*", var_open, "|",
                    var_close, ".*$")
+
     return (gsub (ptn, "", x [open_pos]))
 }
 
