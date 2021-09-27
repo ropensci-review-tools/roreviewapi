@@ -5,6 +5,8 @@
 ^CODE_OF_CONDUCT\.md$
 ^CONTRIBUTING.md$
 ^Dockerfile$
+^docker-compose\.yml$
+^nginx\.conf$
 ^makefile$
 ^appveyor\.yml$
 ^aaa.Rmd$
