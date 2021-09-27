@@ -11,7 +11,7 @@ push_to_gh_pages <- function (check) {
 
     cache_dir <- Sys.getenv ("PKGCHECK_CACHE_DIR")
     rorev_dir <- file.path (cache_dir, "roreviewapi")
-    static_dir <- file.path (rorev_dir, "static")
+
     if (!dir.exists (rorev_dir)) {
 
         gert::git_clone (url = "https://github.com/ropensci-review-tools/roreviewapi",
