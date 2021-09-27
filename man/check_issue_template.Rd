@@ -4,12 +4,11 @@
 \alias{check_issue_template}
 \title{Check template variables in GitHub issue}
 \usage{
-check_issue_template(org, repo, issue_num)
+check_issue_template(orgrepo, issue_num)
 }
 \arguments{
-\item{org}{GitHub organization}
-
-\item{repo}{GitHub repository}
+\item{orgrepo}{GitHub organization and repo as single string separated by
+forward slash (\code{org/repo}).}
 
 \item{issue_num}{Number of issue from which to extract opening comment}
 }

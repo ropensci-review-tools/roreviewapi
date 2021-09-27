@@ -1,12 +1,15 @@
 
 #' Check template variables in GitHub issue
 #'
-#' @param org GitHub organization
-#' @param repo GitHub repository
+#' @param orgrepo GitHub organization and repo as single string separated by
+#' forward slash (`org/repo`).
 #' @param issue_num Number of issue from which to extract opening comment
 #' @return Comment as character string
 #' @export
-check_issue_template <- function (org, repo, issue_num) {
+check_issue_template <- function (orgrepo, issue_num) {
+
+    org <- strsplit (orgrepo, "/") [[1]] [1]
+    repo <- strsplit (orgrepo, "/") [[1]] [2]
 
     token <- get_gh_token ()
 
