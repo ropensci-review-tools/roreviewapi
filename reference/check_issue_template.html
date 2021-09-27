@@ -6,7 +6,7 @@
 <meta http-equiv="X-UA-Compatible" content="IE=edge">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-<title>Download a GitHub repo to local cache — dl_gh_repo • roreviewapi</title>
+<title>Check template variables in GitHub issue — check_issue_template • roreviewapi</title>
 
 
 <!-- jquery -->
@@ -39,8 +39,8 @@
 
 
 
-<meta property="og:title" content="Download a GitHub repo to local cache — dl_gh_repo" />
-<meta property="og:description" content="Download a GitHub repo to local cache" />
+<meta property="og:title" content="Check template variables in GitHub issue — check_issue_template" />
+<meta property="og:description" content="Check template variables in GitHub issue" />
 
 
 
@@ -108,29 +108,34 @@
 <div class="row">
   <div class="col-md-9 contents">
     <div class="page-header">
-    <h1>Download a GitHub repo to local cache</h1>
-    <small class="dont-index">Source: <a href='https://github.com/ropensci-review-tools/roreviewapi/blob/master/R/dl_repo.R'><code>R/dl_repo.R</code></a></small>
-    <div class="hidden name"><code>dl_gh_repo.Rd</code></div>
+    <h1>Check template variables in GitHub issue</h1>
+    <small class="dont-index">Source: <a href='https://github.com/ropensci-review-tools/roreviewapi/blob/master/R/gh-issue.R'><code>R/gh-issue.R</code></a></small>
+    <div class="hidden name"><code>check_issue_template.Rd</code></div>
     </div>
 
     <div class="ref-description">
-    <p>Download a GitHub repo to local cache</p>
+    <p>Check template variables in GitHub issue</p>
     </div>
 
-    <pre class="usage"><span class='fu'>dl_gh_repo</span><span class='op'>(</span><span class='va'>u</span><span class='op'>)</span></pre>
+    <pre class="usage"><span class='fu'>check_issue_template</span><span class='op'>(</span><span class='va'>orgrepo</span>, <span class='va'>issue_num</span><span class='op'>)</span></pre>
 
     <h2 class="hasAnchor" id="arguments"><a class="anchor" href="#arguments"></a>Arguments</h2>
     <table class="ref-arguments">
     <colgroup><col class="name" /><col class="desc" /></colgroup>
     <tr>
-      <th>u</th>
-      <td><p>URL of GitHub repository</p></td>
+      <th>orgrepo</th>
+      <td><p>GitHub organization and repo as single string separated by
+forward slash (<code>org/repo</code>).</p></td>
+    </tr>
+    <tr>
+      <th>issue_num</th>
+      <td><p>Number of issue from which to extract opening comment</p></td>
     </tr>
     </table>
 
     <h2 class="hasAnchor" id="value"><a class="anchor" href="#value"></a>Value</h2>
 
-    <p>Path to locally cached '.zip' version of repository</p>
+    <p>Comment as character string</p>
 
   </div>
   <div class="col-md-3 hidden-xs hidden-sm" id="pkgdown-sidebar">
