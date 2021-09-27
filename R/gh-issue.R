@@ -51,7 +51,8 @@ check_issue_template <- function (orgrepo, issue_num) {
                        "submission template:\n\n",
                        paste0 ("- ", unname (chk), collapse = "\n"))
     }
-    attr (out, "proceed_with_checks") <- TRUE
+
+    proceed_with_checks <- TRUE
 
     if (grepl ("URL.*is not valid", out)) {
 
@@ -62,7 +63,7 @@ check_issue_template <- function (orgrepo, issue_num) {
                        "these problems are rectified, and then call ",
                        "`@ropensci-review-bot check package`.")
 
-        attr (out, "proceed_with_checks") <- FALSE
+        proceed_with_checks <- FALSE
 
     } else if (nchar (out) > 0L) {
 
@@ -72,6 +73,8 @@ check_issue_template <- function (orgrepo, issue_num) {
                        "submission template are rectified. Package checks ",
                        "have been started regardless.")
     }
+
+    attr (out, "proceed_with_checks") <- proceed_with_checks
 
     return (out)
 }
