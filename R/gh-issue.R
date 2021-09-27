@@ -51,6 +51,27 @@ check_issue_template <- function (orgrepo, issue_num) {
                        "submission template:\n\n",
                        paste0 ("- ", unname (chk), collapse = "\n"))
     }
+    attr (out, "proceed_with_checks") <- TRUE
+
+    if (grepl ("URL.*is not valid", out)) {
+
+        out <- paste0 (out,
+                       "\n",
+                       "The package could not be checked because of ",
+                       "problems with the URL.\nEditors: Please ensure ",
+                       "these problems are rectified, and then call ",
+                       "`@ropensci-review-bot check package`.")
+
+        attr (out, "proceed_with_checks") <- FALSE
+
+    } else if (nchar (out) > 0L) {
+
+        out <- paste0 (out,
+                       "\n",
+                       "Editors: Please ensure these problems with the ",
+                       "submission template are rectified. Package checks ",
+                       "have been started regardless.")
+    }
 
     return (out)
 }
@@ -164,6 +185,7 @@ check_html_variable <- function (x, variable) {
 
         if (!identical (x, ""))
             out <- "'due-dates-list' variable must be left empty"
+
     } else if (variable == "statsgrade") {
 
         if (!tolower (x) %in% stats_grades)
