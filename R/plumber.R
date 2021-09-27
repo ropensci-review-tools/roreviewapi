@@ -52,7 +52,10 @@ function (repourl = "", repo, issue_id) {
 #* process, rather than bg.
 #* @param repourl The URL for the repo being checked
 #* @get /editorcheck_contents
-function (repourl) {
+function (repourl = "") {
+
+    if (nchar (repourl) == 0L)
+        return ("Error: Issue template has no 'repourl'")
 
     out <- roreviewapi::editor_check (repourl,
                                       post_to_issue = FALSE)
