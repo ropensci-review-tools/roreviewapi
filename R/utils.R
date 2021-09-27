@@ -93,7 +93,7 @@ url_exists <- function(x, non_2xx_return_value = FALSE, quiet = FALSE, ...) {
     res <- sGET(x, ...)
 
     if (is.null (res$result))
-        return (NA) # or whatever you want to return on "hard" errors
+        return (FALSE) # or whatever you want to return on "hard" errors
 
     if (((httr::status_code(res$result) %/% 200) != 1)) {
       if (!quiet)
