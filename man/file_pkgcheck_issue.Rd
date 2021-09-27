@@ -6,9 +6,17 @@
 \usage{
 file_pkgcheck_issue(
   repourl = NULL,
-  repo = "ropensci/software-review",
+  repo = "ropensci-review-tools/pkgcheck",
   issue_id = NULL
 )
+}
+\arguments{
+\item{repourl}{The URL for the repo being checked}
+
+\item{repo}{The 'context.repo' parameter defining the repository from which
+the command was invoked.}
+
+\item{issue_id}{The id of the issue form which the command was invoked}
 }
 \description{
 File an issue in the GitHub \code{pkgcheck} repo on any packages which fail checks
