@@ -182,17 +182,6 @@ check_html_variable <- function (x, variable) {
                            paste0 (submission_types, collapse = ", "),
                            "]")
 
-    } else if (variable %in% c ("editor", "reviewers-list")) {
-
-        if (!identical (gsub ("\\s*", "", x), "TBD"))
-            out <- paste0 ("'editor' and 'reviewers-list' variables must ",
-                           "be left untouched (' TBD ')")
-
-    } else if (variable == "due-dates-list") {
-
-        if (!identical (x, ""))
-            out <- "'due-dates-list' variable must be left empty"
-
     } else if (variable == "statsgrade") {
 
         if (!tolower (x) %in% stats_grades)
