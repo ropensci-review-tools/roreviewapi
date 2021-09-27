@@ -11,9 +11,9 @@
 #* the command was invoked, passed in `org/repo` format.
 #* @param issue_id The id of the issue form which the command was invoked
 #* @get /editorcheck
-function (repourl, repo, issue_id) {
+function (repourl = "", repo, issue_id) {
 
-    if (length (repourl) == 0L)
+    if (nchar (repourl) == 0L)
         return ("Error: Issue template has no 'repourl'")
 
     repourl <- as.character (repourl) [1]
