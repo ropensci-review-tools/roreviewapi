@@ -9,6 +9,7 @@ RUN install2.r \
   seasonal \
   visNetwork \
 && installGithub.r \
+      MangoTheCat/goodpractice \
       ropensci-review-tools/pkgstats \
       ropensci-review-tools/pkgcheck \
       ropensci-review-tools/roreviewapi
