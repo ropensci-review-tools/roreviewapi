@@ -160,13 +160,11 @@ check_html_variable <- function (x, variable) {
 
     if (variable == "author1") {
 
-        # Start with at least one word AND
-        # match "(@something)"
-        check <- grepl ("^\\w+\\s", x) &
-            grepl ("\\(@\\S+\\)", x)
+        # GitHub handle only (#17):
+        check <- grepl ("^@\\w+$", x)
         if (!check)
-            out <- paste0 ("'author1' variable is not in ",
-                           "the form 'name (@github-handle)'")
+            out <- paste0 ("'author1' variable must be ",
+                           "GitHub hanle only ('@myhandle')")
 
     } else if (variable == "repourl") {
 
