@@ -1,11 +1,11 @@
 #!/bin/bash
 
-# https://docs.docker.com/engine/reference/commandline/compose/
-# - this envvar is automatically detected when building
-COMPOSE_FILE=/<path>/<to>/<this>/<project>/docker-compose.yml
+COMPOSE_DIR=/<path>/<to>/<this>/<project>
+DOCKERFILE=$COMPOSE_DIR/Dockerfile
+COMPOSE_FILE=$COMPOSE_DIR/docker-compose.yml
 
-docker-compose down
+docker-compose -f $COMPOSE_FILE down
 docker pull mpadge/pkgcheck
-docker build --no-cache -t roreviewapi .
-docker-compose build
-docker-compose up -d
+docker build --rm -f $DOCKERFILE --no-cache -t roreviewapi
+docker-compose -f $COMPOSE_FILE build
+docker-compose -f $COMPOSE_FILE up -d
