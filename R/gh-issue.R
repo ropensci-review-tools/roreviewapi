@@ -23,8 +23,8 @@ check_issue_template <- function (orgrepo, issue_num) {
                           repo = repo,
                           issue_num = issue_num)
 
-    x <- gh_cli$exec(qry$queries$get_template) |>
-        jsonlite::fromJSON ()
+    x <- gh_cli$exec(qry$queries$get_template)
+    x <- jsonlite::fromJSON (x)
     x <- strsplit (x$data$repository$issue$body, "\\n") [[1]]
 
     html_must_have <- html_variables [html_variables != "statsgrade"]
