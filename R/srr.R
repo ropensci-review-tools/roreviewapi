@@ -48,16 +48,14 @@ get_html_var <- function (x, expr = "submission-type") {
 stats_version <- function () {
 
     u <- paste0 ("https://raw.githubusercontent.com/",
-                 "ropenscilabs/statistical-software-review-book/",
-                 "main/standards.Rmd")
-    f <- tempfile (fileext = ".Rmd")
-    chk <- utils::download.file (u, destfile = f, quiet = TRUE) # nolint
+                 "ropensci/statistical-software-review-book/",
+                 "main/DESCRIPTION")
 
-    s <- readLines (f, encoding = "UTF-8")
+    tmp <- file.path (tempdir (), "stats-devguide-DESCRIPTION")
+    if (!file.exists (tmp))
+        ret <- utils::download.file (u, destfile = tmp, quiet = TRUE) # nolint
 
-    v <- grep ("^\\#\\sStandards\\:\\sVersion", s, value = TRUE)
-    v <- gsub ("^\\s+", "", strsplit (v, "Version") [[1]] [2])
-    v <- strsplit (v, "\\s") [[1]] [1]
+    d <- data.frame (read.dcf (tmp))
 
-    return (v)
+    return (d$Version)
 }
