@@ -1,4 +1,4 @@
-LFILE = endpoints
+LFILE = debugging
 
 all: knith
 
