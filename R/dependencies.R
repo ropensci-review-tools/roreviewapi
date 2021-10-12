@@ -45,19 +45,31 @@ install_dev_deps <- function (deps) {
 
     for (p in deps) {
 
+        # Make sure no previous deps have also installed 'p':
+        ip <- data.frame (utils::installed.packages ())
+        if (p %in% ip$Package)
+            next
+
         u <- paste0 (u_base, p)
         x <- rvest::read_html (u)
         dat <- rvest::html_table (x)
         remote <- lapply (dat, function (i)
                           i [grep ("^(URL|BugReports)\\:", i$X1), ])
         remote <- do.call (rbind, remote)$X2
+        remote <- gsub ("\\s*", "", unlist (strsplit (remote, ",")))
         remote <- grep ("^https\\:\\/\\/github\\.com", remote, value = TRUE)
-        remote <- gsub ("issues\\/$", "", remote) # BugReports URLs
+        remote <- unique (gsub ("issues(\\/?)$", "", remote)) # BugReports URLs
 
         if (length (remote) > 1L)
             remote <- remote [1L]
 
-        tryCatch (remotes::install_github (remote, dependencies = TRUE),
-                  error = function (e) NULL)
+        if (length (remote) > 0L) {
+            tryCatch (remotes::install_github (remote, dependencies = TRUE),
+                      error = function (e) NULL)
+        } else {
+            # previous entries in `deps` may make standard installation
+            # possible:
+            install.packages (p)
+        }
     }
 }
