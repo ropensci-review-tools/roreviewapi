@@ -15,6 +15,10 @@ install system dependencies.}
 \item{os_release}{Name of operating system release, passed to \pkg{remotes}
 package to install system dependencies.}
 }
+\value{
+Hopefully a character vector of length zero, otherwise a list of any
+R packages unable to be installed.
+}
 \description{
 Install all system and package dependencies of an R package
 }
