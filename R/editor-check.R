@@ -29,8 +29,11 @@ editor_check <- function (repourl, repo, issue_id, post_to_issue = TRUE) {
 
         if (methods::is (chk, "error")) {
             return (paste0 ("Package and system dependencies were unable to ",
-                            "be installed. Please check your 'DESCRIPTION' ",
-                            "file, and ensure 'remotes::dev_package_deps()' ",
+                            "be installed. This could be a problem with our ",
+                            "build system, which we will check as soon as we ",
+                            "can. In the meantime, please check your ",
+                            "'DESCRIPTION' file, and ensure ",
+                            "'remotes::dev_package_deps()' ",
                             "lists the appropriate dependencies."))
         }
     }
