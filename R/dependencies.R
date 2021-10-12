@@ -48,9 +48,11 @@ install_dev_deps <- function (deps) {
         u <- paste0 (u_base, p)
         x <- rvest::read_html (u)
         dat <- rvest::html_table (x)
-        remote <- lapply (dat, function (i) i [grep ("^URL\\:", i$X1), ])
+        remote <- lapply (dat, function (i)
+                          i [grep ("^(URL|BugReports)\\:", i$X1), ])
         remote <- do.call (rbind, remote)$X2
         remote <- grep ("^https\\:\\/\\/github\\.com", remote, value = TRUE)
+        remote <- gsub ("issues\\/$", "", remote) # BugReports URLs
 
         if (length (remote) > 1L)
             remote <- remote [1L]
