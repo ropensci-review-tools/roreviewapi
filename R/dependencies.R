@@ -64,7 +64,9 @@ install_dev_deps <- function (deps) {
             remote <- remote [1L]
 
         if (length (remote) > 0L) {
-            tryCatch (remotes::install_github (remote, dependencies = TRUE),
+            tryCatch (remotes::install_github (remote,
+                                               dependencies = TRUE,
+                                               upgrade = "never"),
                       error = function (e) NULL)
         } else {
             # previous entries in `deps` may make standard installation
