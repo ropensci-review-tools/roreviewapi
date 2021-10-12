@@ -19,12 +19,12 @@ pkgrep_install_deps <- function (path, os, os_release) {
 
     deps <- remotes::dev_package_deps (pkgdir = path,
                                        dependencies = TRUE)
-    ip <- data.frame (installed.packages ())
+    ip <- data.frame (utils::installed.packages ())
     
     deps <- deps$package [which (!deps$package %in% ip$Package)]
     if (length (deps) > 0L) {
         install_dev_deps (deps)
-        ip <- data.frame (installed.packages ())
+        ip <- data.frame (utils::installed.packages ())
         deps <- deps [which (!deps %in% ip$Package)]
     }
 
