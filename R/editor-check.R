@@ -23,19 +23,7 @@ editor_check <- function (repourl, repo, issue_id, post_to_issue = TRUE) {
 
     if (os != "" & os_release != "") {
 
-        chk <- tryCatch (
-            roreviewapi::pkgrep_install_deps (path, os, os_release),
-            error = function (e) e)
-
-        if (methods::is (chk, "error")) {
-            return (paste0 ("Package and system dependencies were unable to ",
-                            "be installed. This could be a problem with our ",
-                            "build system, which we will check as soon as we ",
-                            "can. In the meantime, please check your ",
-                            "'DESCRIPTION' file, and ensure ",
-                            "'remotes::dev_package_deps()' ",
-                            "lists the appropriate dependencies."))
-        }
+        roreviewapi::pkgrep_install_deps (path, os, os_release),
     }
 
     checks <- tryCatch (pkgcheck::pkgcheck (path),
