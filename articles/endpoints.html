@@ -31,7 +31,7 @@
       </button>
       <span class="navbar-brand">
         <a class="navbar-link" href="../index.html">roreviewapi</a>
-        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="Released version">0.0.2.006</span>
+        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="Released version">0.0.2.007</span>
       </span>
     </div>
 
@@ -135,10 +135,12 @@
 <div id="log" class="section level2">
 <h2 class="hasAnchor">
 <a href="#log" class="anchor"></a>5. log</h2>
-<p>The <code>log</code> endpoint accepts a single parameter, <code>n</code>, specifying the number of latest log entries to retrieve. Each entry contains the following information:</p>
+<p>The <code>log</code> endpoint accepts a single parameter, <code>n</code>, specifying the number of latest log entries to retrieve. An example of the log entry for <a href="https://github.com/ropensci/software-review/issues/470">this submission</a> follows:</p>
+<pre><code>#&gt; [1] "INFO [2021-10-07 16:48:14] 3.236.83.25 \"Faraday v1.7.1\" &lt;ip&gt;:8000 GET /editorcheck ?bot_name=ropensci-review-bot&amp;issue_author=ewallace&amp;issue_id=470&amp;repo=ropensci%2Fsoftware-review&amp;repourl=https%3A%2F%2Fgithub.com%2Fewallace%2Ftidyqpcr&amp;sender=ewallace 200 1.964"</code></pre>
+<p>Each entry contains the following information:</p>
 <ol style="list-style-type: decimal">
 <li>Date and time at which call was made;</li>
-<li>IP address from which call was sent;</li>
+<li>IP address and machine from which call was sent;</li>
 <li>Method used to send call;</li>
 <li>IP address to which call was delivered (always the address hosting the <code>roreviewapi</code> instance);</li>
 <li>
