@@ -23,7 +23,14 @@ editor_check <- function (repourl, repo, issue_id, post_to_issue = TRUE) {
 
     if (os != "" & os_release != "") {
 
-        roreviewapi::pkgrep_install_deps (path, os, os_release),
+        p <- roreviewapi::pkgrep_install_deps (path, os, os_release)
+        if (length (p) > 0L) {
+            p <- paste0 ("Note: The following R packages were ",
+                         "unable to be installed on our system: [",
+                         paste0 (p, collapse = ", "),
+                         "]; some checks may be unreliable.")
+            p <- roreviewapi::post_to_issue (p, repo, issue_id)
+        }
     }
 
     checks <- tryCatch (pkgcheck::pkgcheck (path),
