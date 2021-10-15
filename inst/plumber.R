@@ -13,31 +13,38 @@
 #* @get /editorcheck
 function (repourl = "", repo, issue_id) {
 
-    if (nchar (repourl) == 0L)
-        return ("Error: Issue template has no 'repourl'")
+    if (nchar (repourl) == 0L) {
+          return ("Error: Issue template has no 'repourl'")
+      }
 
     repourl <- as.character (repourl) [1]
     repo <- as.character (repo) [1]
     issue_id <- as.integer (issue_id) [1]
 
     template_chk <- roreviewapi::check_issue_template (repo, issue_id)
-    if (!attr (template_chk, "proceed_with_checks"))
-        return (template_chk)
+    if (!attr (template_chk, "proceed_with_checks")) {
+          return (template_chk)
+      }
 
     logfiles <- roreviewapi::stdout_stderr_cache (repourl)
 
-    ps <<- callr::r_bg (func = roreviewapi::editor_check,
-                       args = list (repourl = repourl,
-                                    repo = repo,
-                                    issue_id = issue_id),
-                       stdout = logfiles$stdout,
-                       stderr = logfiles$stderr,
-                       poll_connection = TRUE,
-                       supervise = TRUE)
+    ps <<- callr::r_bg (
+        func = roreviewapi::editor_check,
+        args = list (
+            repourl = repourl,
+            repo = repo,
+            issue_id = issue_id
+        ),
+        stdout = logfiles$stdout,
+        stderr = logfiles$stderr,
+        poll_connection = TRUE,
+        supervise = TRUE
+    )
 
     out <- ifelse (nchar (template_chk) == 0L,
-                   "Editor check started",
-                   as.character (template_chk))
+        "Editor check started",
+        as.character (template_chk)
+    )
 
     return (out)
 }
@@ -54,11 +61,13 @@ function (repourl = "", repo, issue_id) {
 #* @get /editorcheck_contents
 function (repourl = "") {
 
-    if (nchar (repourl) == 0L)
-        return ("Error: Issue template has no 'repourl'")
+    if (nchar (repourl) == 0L) {
+          return ("Error: Issue template has no 'repourl'")
+      }
 
     out <- roreviewapi::editor_check (repourl,
-                                      post_to_issue = FALSE)
+        post_to_issue = FALSE
+    )
 
     return (paste0 (out, collapse = "\n"))
 }
@@ -82,8 +91,9 @@ function (n = 10) {
 #* @get /stats_badge
 function (repo = "ropensci/software-review", issue_num) {
 
-    if (!is.integer (issue_num) & length (issue_num) != 1L)
-        return (NULL)
+    if (!is.integer (issue_num) & length (issue_num) != 1L) {
+          return (NULL)
+      }
 
     roreviewapi::stats_badge (repo, issue_num)
 }
@@ -122,8 +132,9 @@ function () {
     chk <- unlink (cache_dir, recursive = TRUE)
 
     ifelse (chk == 0,
-            "Cache directory successfully removed",
-            "Unable to remove cache directory")
+        "Cache directory successfully removed",
+        "Unable to remove cache directory"
+    )
 }
 
 #* Fetch stdout & stderr logs from main process for specified repo URL
@@ -141,11 +152,15 @@ function (repourl) {
 
         if (sum (nchar (ret [[i]])) > 0) {
 
-            ret [[i]] <- c (paste0 ("# ---------   ",
-                                    toupper (i),
-                                    "   ----------"),
-                            "",
-                            ret [[i]])
+            ret [[i]] <- c (
+                paste0 (
+                    "# ---------   ",
+                    toupper (i),
+                    "   ----------"
+                ),
+                "",
+                ret [[i]]
+            )
         }
     }
 
@@ -153,8 +168,10 @@ function (repourl) {
 
     if (nchar (ret) <= 1) {
 
-        ret <- paste0 ("No stdout or stderr files found for ",
-                       repourl)
+        ret <- paste0 (
+            "No stdout or stderr files found for ",
+            repourl
+        )
     }
 
     return (ret)
