@@ -45,9 +45,11 @@ check_cache <- function (org, repo, cache_dir = tempdir ()) {
         }
     } else {
 
-        dat <- rbind (dat, data.frame (orgrepo = orgrepo,
-                                       oid = cmt$oid,
-                                       authoredDate = cmt$authoredDate))
+        dat <- rbind (dat, data.frame (
+            orgrepo = orgrepo,
+            oid = cmt$oid,
+            authoredDate = cmt$authoredDate
+        ))
         saveRDS (dat, f)
         updated <- TRUE
     }
@@ -79,18 +81,21 @@ stdout_stderr_cache <- function (repourl) {
     oid <- substring (cmt$oid, 1, 8)
 
     temp_dir <- file.path (Sys.getenv ("PKGCHECK_CACHE_DIR"), "templogs")
-    if (!dir.exists (temp_dir))
-        dir.create (temp_dir, recursive = TRUE)
+    if (!dir.exists (temp_dir)) {
+          dir.create (temp_dir, recursive = TRUE)
+      }
 
     sout <- file.path (temp_dir, paste0 (repo, "_", oid, "_stdout"))
     serr <- file.path (temp_dir, paste0 (repo, "_", oid, "_stderr"))
 
     otherlogs <- list.files (temp_dir,
-                             pattern = repo,
-                             full.names = TRUE)
+        pattern = repo,
+        full.names = TRUE
+    )
     otherlogs <- otherlogs [which (!grepl (oid, otherlogs))]
-    if (length (otherlogs) > 0)
-        file.remove (otherlogs)
+    if (length (otherlogs) > 0) {
+          file.remove (otherlogs)
+      }
 
     return (list (stdout = sout, stderr = serr))
 }
