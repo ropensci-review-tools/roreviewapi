@@ -1,0 +1,15 @@
+url: https://docs.ropensci.org/roreviewapi
+
+reference:
+- title: Main functions
+  contents:
+  - has_concept("main")
+- title: GitHub-related functions
+  contents:
+  - has_concept("github")
+- title: Utility functions
+  contents:
+  - has_concept("utils")
+- title: rOpenSci-specific functions
+  contents:
+  - has_concept("ropensci")
