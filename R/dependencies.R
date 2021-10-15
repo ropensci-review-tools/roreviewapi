@@ -5,6 +5,7 @@
 #' @inheritParams serve_api
 #' @return Hopefully a character vector of length zero, otherwise a list of any
 #' R packages unable to be installed.
+#' @family utils
 #' @export
 pkgrep_install_deps <- function (path, os, os_release) {
 

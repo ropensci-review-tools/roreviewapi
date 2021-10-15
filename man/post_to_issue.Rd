@@ -19,3 +19,9 @@ URL of the comment within the nominated issue
 \description{
 Post review checks to GitHub issue
 }
+\seealso{
+Other github: 
+\code{\link{dl_gh_repo}()},
+\code{\link{file_pkgcheck_issue}()}
+}
+\concept{github}

@@ -9,3 +9,11 @@ symbol_tck()
 \description{
 Tick symbol, exported for direct use in plumber API
 }
+\seealso{
+Other utils: 
+\code{\link{check_cache}()},
+\code{\link{pkgrep_install_deps}()},
+\code{\link{stdout_stderr_cache}()},
+\code{\link{symbol_crs}()}
+}
+\concept{utils}

@@ -25,3 +25,11 @@ added to the github repo since cached version.
 This function is not intended to be called directly, and is only
 exported to enable it to be used within the \pkg{plumber} API.
 }
+\seealso{
+Other utils: 
+\code{\link{pkgrep_install_deps}()},
+\code{\link{stdout_stderr_cache}()},
+\code{\link{symbol_crs}()},
+\code{\link{symbol_tck}()}
+}
+\concept{utils}

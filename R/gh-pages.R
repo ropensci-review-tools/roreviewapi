@@ -4,6 +4,7 @@
 #'
 #' @param check Return result of \link{editor_check} function.
 #' @return Vector of two paths containing URLs of the `srr` and `network` files.
+#' @family ropensci
 #' @export
 push_to_gh_pages <- function (check) {
 

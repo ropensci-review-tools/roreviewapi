@@ -19,3 +19,9 @@ Collate list of checks to single concatenated character string
 Exported only for access by plumber; not intended for general external
 usage.
 }
+\seealso{
+Other main: 
+\code{\link{editor_check}()},
+\code{\link{serve_api}()}
+}
+\concept{main}

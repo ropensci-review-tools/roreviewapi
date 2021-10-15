@@ -26,3 +26,9 @@ File an issue in the GitHub \code{pkgcheck} repo on any packages which fail chec
 Exported only for access by plumber; not intended for general external
 usage.
 }
+\seealso{
+Other github: 
+\code{\link{dl_gh_repo}()},
+\code{\link{post_to_issue}()}
+}
+\concept{github}

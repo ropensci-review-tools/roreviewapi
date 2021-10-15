@@ -5,6 +5,7 @@
 #' forward slash (`org/repo`).
 #' @param issue_num Number of issue from which to extract opening comment
 #' @return Comment as character string
+#' @family ropensci
 #' @export
 check_issue_template <- function (orgrepo, issue_num) {
 

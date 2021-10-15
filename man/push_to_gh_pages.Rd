@@ -17,3 +17,9 @@ Vector of two paths containing URLs of the \code{srr} and \code{network} files.
 Push static \code{html} files to \code{gh-pages} branch of this repo to serve via
 GitHub pages.
 }
+\seealso{
+Other ropensci: 
+\code{\link{check_issue_template}()},
+\code{\link{stats_badge}()}
+}
+\concept{ropensci}

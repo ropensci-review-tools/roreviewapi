@@ -22,3 +22,11 @@ R packages unable to be installed.
 \description{
 Install all system and package dependencies of an R package
 }
+\seealso{
+Other utils: 
+\code{\link{check_cache}()},
+\code{\link{stdout_stderr_cache}()},
+\code{\link{symbol_crs}()},
+\code{\link{symbol_tck}()}
+}
+\concept{utils}

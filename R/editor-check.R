@@ -11,6 +11,7 @@
 #' @return If `!post_to_issue`, a markdown-formatted response body from static
 #' package checks, otherwise URL of the issue comment to which response body has
 #' been posted.
+#' @family main
 #' @export
 editor_check <- function (repourl, repo, issue_id, post_to_issue = TRUE) {
 
@@ -65,6 +66,7 @@ editor_check <- function (repourl, repo, issue_id, post_to_issue = TRUE) {
 #' @return Single character
 #' @note Exported only for access by plumber; not intended for general external
 #' usage.
+#' @family main
 #' @export
 collate_editor_check <- function (checks) {
 
@@ -137,6 +139,7 @@ collate_editor_check <- function (checks) {
 #' @note Exported only for access by plumber; not intended for general external
 #' usage.
 #' @inheritParams editor_check
+#' @family github
 #' @export
 file_pkgcheck_issue <- function (repourl = NULL,
                                  repo = "ropensci-review-tools/pkgcheck",

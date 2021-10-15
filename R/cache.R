@@ -12,6 +12,7 @@
 #' @param cache_dir Directory in which packages are cached
 #' @return FALSE If a package has previously been cached, and the github repo
 #' has not changed; otherwise TRUE.
+#' @family utils
 #' @export
 check_cache <- function (org, repo, cache_dir = tempdir ()) {
 
@@ -66,6 +67,8 @@ check_cache <- function (org, repo, cache_dir = tempdir ()) {
 #' \url{https://github.com/r-lib/callr/issues/204}. The `stdout` and `stderr`
 #' pipes from the process are stored in the cache directory so they can be
 #' inspected via their own distinct endpoint calls.
+#'
+#' @family utils
 #' @export
 stdout_stderr_cache <- function (repourl) {
 

@@ -13,6 +13,7 @@
 #' package to install system dependencies.
 #' @return Nothing; calling this starts a blocking process.
 #'
+#' @family main
 #' @export
 serve_api <- function(
                       port = 8000L,

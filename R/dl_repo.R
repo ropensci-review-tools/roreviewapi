@@ -2,6 +2,7 @@
 #'
 #' @param u URL of GitHub repository
 #' @return Path to locally cached '.zip' version of repository
+#' @family github
 #' @export
 dl_gh_repo <- function (u) {
 

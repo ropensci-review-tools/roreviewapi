@@ -18,3 +18,9 @@ Comment as character string
 \description{
 Check template variables in GitHub issue
 }
+\seealso{
+Other ropensci: 
+\code{\link{push_to_gh_pages}()},
+\code{\link{stats_badge}()}
+}
+\concept{ropensci}

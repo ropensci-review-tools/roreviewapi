@@ -5,6 +5,7 @@
 #' @param repo The repository to post to (obtained directly from bot).
 #' @param issue_id The number of the issue to post to.
 #' @return URL of the comment within the nominated issue
+#' @family github
 #' @export
 post_to_issue <- function (cmt, repo, issue_id) {
 

@@ -5,6 +5,7 @@
 #' @param issue_num GitHub issue number of submission
 #' @return A single character containing the label used directly for the issue
 #' badge
+#' @family ropensci
 #' @export
 stats_badge <- function (repo = "ropensci/software-review",
                          issue_num = 258) {
