@@ -15,12 +15,14 @@ dl_gh_repo <- function (u) {
 
     clone_repo <- function (u, repo, branch) {
 
-        if (substring (u, nchar (u), nchar (u)) == "/")
-            u <- substring (u, 1, nchar (u) - 1)
+        if (substring (u, nchar (u), nchar (u)) == "/") {
+              u <- substring (u, 1, nchar (u) - 1)
+          }
 
         f <- file.path (cache_dir, repo)
-        if (file.exists (f))
-            chk <- unlink (f, recursive = TRUE)
+        if (file.exists (f)) {
+              chk <- unlink (f, recursive = TRUE)
+          }
         gert::git_clone (url = u, path = f)
         return (f)
     }
