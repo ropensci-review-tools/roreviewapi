@@ -15,29 +15,35 @@ push_to_gh_pages <- function (check) {
 
     if (!dir.exists (rorev_dir)) {
 
-        gert::git_clone (url = "https://github.com/ropensci-review-tools/roreviewapi",
-                         path = rorev_dir)
+        gert::git_clone (
+            url = "https://github.com/ropensci-review-tools/roreviewapi",
+            path = rorev_dir
+        )
     }
 
     gert::git_branch_checkout ("gh-pages", repo = rorev_dir)
     gert::git_pull (repo = rorev_dir)
 
     git_files <- gert::git_ls (repo = rorev_dir)
-    git_files <- gsub (rorev_dir,
-                       "",
-                       git_files$path)
+    git_files <- gsub (
+        rorev_dir,
+        "",
+        git_files$path
+    )
 
     # clean up any untracked files:
     all_files <- list.files (rorev_dir,
-                             full.names = TRUE,
-                             recursive = TRUE)
+        full.names = TRUE,
+        recursive = TRUE
+    )
     all_files <- gsub (rorev_dir, "", all_files)
     all_files <- gsub (paste0 ("^", .Platform$file.sep), "", all_files)
     untracked <- all_files [which (!all_files %in% git_files)]
     untracked <- file.path (rorev_dir, untracked)
 
-    if (length (untracked) > 0)
-        chk <- file.remove (untracked)
+    if (length (untracked) > 0) {
+          chk <- file.remove (untracked)
+      }
     # TODO# also need to unlink empty directories
 
     files <- NULL
@@ -54,8 +60,10 @@ push_to_gh_pages <- function (check) {
     } else {
 
         hash_line <- grep ("^git\\shash\\:", check, value = TRUE)
-        hash <- regmatches (hash_line,
-                            gregexpr ("\\[.*\\]", hash_line)) [[1]]
+        hash <- regmatches (
+            hash_line,
+            gregexpr ("\\[.*\\]", hash_line)
+        ) [[1]]
         this_hash <- gsub ("^\\[|\\]$", "", hash)
     }
 
@@ -64,8 +72,10 @@ push_to_gh_pages <- function (check) {
         out$srr_report_file <- path_to_url (attr (check, "srr_report_file"))
     }
 
-    files <- lapply (files,
-                     function (i) move1file (attr (check, i), rorev_dir))
+    files <- lapply (
+        files,
+        function (i) move1file (attr (check, i), rorev_dir)
+    )
     files <- gsub (rorev_dir, "", unlist (files))
     files <- gsub (paste0 ("^", .Platform$file.sep), "", files)
 
@@ -73,17 +83,23 @@ push_to_gh_pages <- function (check) {
     older_files <- NULL
     if ("network_file" %in% names (attributes (check))) {
 
-        older_files <- gsub ("\\.html$",
-                             "",
-                             basename (attr (check, "network_file")))
+        older_files <- gsub (
+            "\\.html$",
+            "",
+            basename (attr (check, "network_file"))
+        )
     }
 
     if ("srr_report_file" %in% names (attributes (check))) {
 
-        older_files <- c (older_files,
-                          gsub ("\\.html$",
-                                "",
-                                basename (attr (check, "srr_report_file"))))
+        older_files <- c (
+            older_files,
+            gsub (
+                "\\.html$",
+                "",
+                basename (attr (check, "srr_report_file"))
+            )
+        )
     }
 
     older_files <- older_files [which (!grep (this_hash, older_files))]
@@ -105,8 +121,9 @@ push_to_gh_pages <- function (check) {
     if (length (files) > 0) {
 
         files_full <- normalizePath (file.path (rorev_dir, files))
-        for (f in files_full [which (!grepl ("\\.png$", files_full))])
-            system2 ("dos2unix", f)
+        for (f in files_full [which (!grepl ("\\.png$", files_full))]) {
+              system2 ("dos2unix", f)
+          }
 
         a <- gert::git_add (files, repo = rorev_dir)
         git_updated <- git_updated | nrow (a) > 0
@@ -114,8 +131,10 @@ push_to_gh_pages <- function (check) {
 
     if (git_updated) {
 
-        nm <- gsub ("pkgstats|\\.html$", "",
-                    basename (attr (check, "network_file")))
+        nm <- gsub (
+            "pkgstats|\\.html$", "",
+            basename (attr (check, "network_file"))
+        )
         gert::git_commit (message = nm, repo = rorev_dir)
         gert::git_push (repo = rorev_dir)
     }
@@ -141,31 +160,40 @@ move1file <- function (path, rorev_dir) {
     base_path <- dirname (path)
     static_path <- file.path (rorev_dir, "static")
     flist <- list.files (base_path,
-                         full.names = TRUE)
+        full.names = TRUE
+    )
     fptn <- tools::file_path_sans_ext (path)
     f_from <- grep (fptn, flist, value = TRUE)
     # exclude auto-generated .js lib directory:
     f_from <- f_from [which (!dir.exists (f_from))]
-    f_to <- gsub (base_path,
-                  dir_to,
-                  f_from)
+    f_to <- gsub (
+        base_path,
+        dir_to,
+        f_from
+    )
 
-    if (!dir.exists (dir_to))
-        dir.create (dir_to, recursive = TRUE)
+    if (!dir.exists (dir_to)) {
+          dir.create (dir_to, recursive = TRUE)
+      }
 
     file_index <- which (!dir.exists (f_from))
     dir_index <- which (dir.exists (f_from))
     chk <- file.copy (f_from [file_index],
-                      f_to [file_index],
-                      recursive = FALSE)
+        f_to [file_index],
+        recursive = FALSE
+    )
     chk <- file.copy (f_from [dir_index],
-                      dirname (f_to [dir_index]),
-                      recursive = TRUE)
+        dirname (f_to [dir_index]),
+        recursive = TRUE
+    )
 
-    f_added <- c (f_to [file_index],
-                  list.files (f_to [dir_index],
-                              full.names = TRUE,
-                              recursive = TRUE))
+    f_added <- c (
+        f_to [file_index],
+        list.files (f_to [dir_index],
+            full.names = TRUE,
+            recursive = TRUE
+        )
+    )
 
     return (f_added)
 
@@ -173,6 +201,8 @@ move1file <- function (path, rorev_dir) {
 
 path_to_url <- function (path) {
 
-    paste0 ("https://ropensci-review-tools.github.io/roreviewapi/static/",
-            basename (path))
+    paste0 (
+        "https://ropensci-review-tools.github.io/roreviewapi/static/",
+        basename (path)
+    )
 }
