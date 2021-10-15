@@ -71,7 +71,7 @@
       </button>
       <span class="navbar-brand">
         <a class="navbar-link" href="../index.html">roreviewapi</a>
-        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="Released version">0.0.2.019</span>
+        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="Released version">0.0.2.033</span>
       </span>
     </div>
 
@@ -136,7 +136,69 @@
     <tbody>
       <tr>
         <th colspan="2">
-          <h2 id="section-all-functions" class="hasAnchor"><a href="#section-all-functions" class="anchor"></a>All functions</h2>
+          <h2 id="section-main-functions" class="hasAnchor"><a href="#section-main-functions" class="anchor"></a>Main functions</h2>
+          <p class="section-desc"></p>
+        </th>
+      </tr>
+      
+      
+    </tbody><tbody>
+      
+      
+      <tr>
+        
+        <td>
+          <p><code><a href="collate_editor_check.html">collate_editor_check()</a></code> </p>
+        </td>
+        <td><p>Collate list of checks to single concatenated character string</p></td>
+      </tr><tr>
+        
+        <td>
+          <p><code><a href="editor_check.html">editor_check()</a></code> </p>
+        </td>
+        <td><p>Body of main 'editorcheck' response</p></td>
+      </tr><tr>
+        
+        <td>
+          <p><code><a href="serve_api.html">serve_api()</a></code> </p>
+        </td>
+        <td><p>serve plumber API to report on packages</p></td>
+      </tr>
+    </tbody><tbody>
+      <tr>
+        <th colspan="2">
+          <h2 id="section-github-related-functions" class="hasAnchor"><a href="#section-github-related-functions" class="anchor"></a>GitHub-related functions</h2>
+          <p class="section-desc"></p>
+        </th>
+      </tr>
+      
+      
+    </tbody><tbody>
+      
+      
+      <tr>
+        
+        <td>
+          <p><code><a href="dl_gh_repo.html">dl_gh_repo()</a></code> </p>
+        </td>
+        <td><p>Download a GitHub repo to local cache</p></td>
+      </tr><tr>
+        
+        <td>
+          <p><code><a href="file_pkgcheck_issue.html">file_pkgcheck_issue()</a></code> </p>
+        </td>
+        <td><p>File an issue in the GitHub <code>pkgcheck</code> repo on any packages which fail checks</p></td>
+      </tr><tr>
+        
+        <td>
+          <p><code><a href="post_to_issue.html">post_to_issue()</a></code> </p>
+        </td>
+        <td><p>Post review checks to GitHub issue</p></td>
+      </tr>
+    </tbody><tbody>
+      <tr>
+        <th colspan="2">
+          <h2 id="section-utility-functions" class="hasAnchor"><a href="#section-utility-functions" class="anchor"></a>Utility functions</h2>
           <p class="section-desc"></p>
         </th>
       </tr>
@@ -154,64 +216,9 @@
       </tr><tr>
         
         <td>
-          <p><code><a href="check_issue_template.html">check_issue_template()</a></code> </p>
-        </td>
-        <td><p>Check template variables in GitHub issue</p></td>
-      </tr><tr>
-        
-        <td>
-          <p><code><a href="collate_editor_check.html">collate_editor_check()</a></code> </p>
-        </td>
-        <td><p>Collate list of checks to single concatenated character string</p></td>
-      </tr><tr>
-        
-        <td>
-          <p><code><a href="dl_gh_repo.html">dl_gh_repo()</a></code> </p>
-        </td>
-        <td><p>Download a GitHub repo to local cache</p></td>
-      </tr><tr>
-        
-        <td>
-          <p><code><a href="editor_check.html">editor_check()</a></code> </p>
-        </td>
-        <td><p>Body of main 'editorcheck' response</p></td>
-      </tr><tr>
-        
-        <td>
-          <p><code><a href="file_pkgcheck_issue.html">file_pkgcheck_issue()</a></code> </p>
-        </td>
-        <td><p>File an issue in the GitHub <code>pkgcheck</code> repo on any packages which fail checks</p></td>
-      </tr><tr>
-        
-        <td>
           <p><code><a href="pkgrep_install_deps.html">pkgrep_install_deps()</a></code> </p>
         </td>
         <td><p>Install all system and package dependencies of an R package</p></td>
-      </tr><tr>
-        
-        <td>
-          <p><code><a href="post_to_issue.html">post_to_issue()</a></code> </p>
-        </td>
-        <td><p>Post review checks to GitHub issue</p></td>
-      </tr><tr>
-        
-        <td>
-          <p><code><a href="push_to_gh_pages.html">push_to_gh_pages()</a></code> </p>
-        </td>
-        <td><p>Push static <code>html</code> files to <code>gh-pages</code> branch of this repo to serve via
-GitHub pages.</p></td>
-      </tr><tr>
-        
-        <td>
-          <p><code><a href="serve_api.html">serve_api()</a></code> </p>
-        </td>
-        <td><p>serve plumber API to report on packages</p></td>
-      </tr><tr>
-        
-        <td>
-          <p><code><a href="stats_badge.html">stats_badge()</a></code> </p>
-        </td>
-        <td><p>Get stats badge grade and standards version for a submission</p></td>
       </tr><tr>
         
         <td>
@@ -230,6 +237,38 @@ GitHub pages.</p></td>
           <p><code><a href="symbol_tck.html">symbol_tck()</a></code> </p>
         </td>
         <td><p>Tick symbol, exported for direct use in plumber API</p></td>
+      </tr>
+    </tbody><tbody>
+      <tr>
+        <th colspan="2">
+          <h2 id="section-ropensci-specific-functions" class="hasAnchor"><a href="#section-ropensci-specific-functions" class="anchor"></a>rOpenSci-specific functions</h2>
+          <p class="section-desc"></p>
+        </th>
+      </tr>
+      
+      
+    </tbody><tbody>
+      
+      
+      <tr>
+        
+        <td>
+          <p><code><a href="check_issue_template.html">check_issue_template()</a></code> </p>
+        </td>
+        <td><p>Check template variables in GitHub issue</p></td>
+      </tr><tr>
+        
+        <td>
+          <p><code><a href="push_to_gh_pages.html">push_to_gh_pages()</a></code> </p>
+        </td>
+        <td><p>Push static <code>html</code> files to <code>gh-pages</code> branch of this repo to serve via
+GitHub pages.</p></td>
+      </tr><tr>
+        
+        <td>
+          <p><code><a href="stats_badge.html">stats_badge()</a></code> </p>
+        </td>
+        <td><p>Get stats badge grade and standards version for a submission</p></td>
       </tr>
     </tbody>
     </table>

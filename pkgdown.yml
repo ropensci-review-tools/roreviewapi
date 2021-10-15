@@ -4,5 +4,8 @@ pkgdown_sha: ~
 articles:
   debugging: debugging.html
   endpoints: endpoints.html
-last_built: 2021-10-13T12:18Z
+last_built: 2021-10-15T12:10Z
+urls:
+  reference: https://docs.ropensci.org/roreviewapi/reference
+  article: https://docs.ropensci.org/roreviewapi/articles
 
