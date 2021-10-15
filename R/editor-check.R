@@ -26,16 +26,19 @@ editor_check <- function (repourl, repo, issue_id, post_to_issue = TRUE) {
 
         p <- roreviewapi::pkgrep_install_deps (path, os, os_release)
         if (length (p) > 0L) {
-            p <- paste0 ("Note: The following R packages were ",
-                         "unable to be installed on our system: [",
-                         paste0 (p, collapse = ", "),
-                         "]; some checks may be unreliable.")
+            p <- paste0 (
+                "Note: The following R packages were ",
+                "unable to be installed on our system: [",
+                paste0 (p, collapse = ", "),
+                "]; some checks may be unreliable."
+            )
             p <- roreviewapi::post_to_issue (p, repo, issue_id)
         }
     }
 
     checks <- tryCatch (pkgcheck::pkgcheck (path),
-                        error = function (e) e)
+        error = function (e) e
+    )
 
     if (!methods::is (checks, "error")) {
 
@@ -45,10 +48,12 @@ editor_check <- function (repourl, repo, issue_id, post_to_issue = TRUE) {
 
         u <- roreviewapi::file_pkgcheck_issue (repourl, repo, issue_id)
 
-        out <- paste0 ("Oops, something went wrong with our automatic package ",
-                       "checks. Our developers [have been notified](", u,
-                       ") and package checks will appear here as soon as ",
-                       "we've resolved the issue. Sorry for any inconvenience.")
+        out <- paste0 (
+            "Oops, something went wrong with our automatic package ",
+            "checks. Our developers [have been notified](", u,
+            ") and package checks will appear here as soon as ",
+            "we've resolved the issue. Sorry for any inconvenience."
+        )
 
     }
 
@@ -91,43 +96,63 @@ collate_editor_check <- function (checks) {
         check <- gsub (a$srr_report_file, u$srr_report_file, check)
     }
 
-    eic_instr <- c ("",
-                    "---",
-                    "",
-                    "## Editor-in-Chief Instructions:",
-                    "")
+    eic_instr <- c (
+        "",
+        "---",
+        "",
+        "## Editor-in-Chief Instructions:",
+        ""
+    )
 
     srr_okay <- !"srr_okay" %in% names (a)
-    if (!srr_okay)
-        srr_okay <- a$srr_okay
+    if (!srr_okay) {
+          srr_okay <- a$srr_okay
+      }
 
     if (!srr_okay) {
 
-        eic_instr <- c (eic_instr,
-                        paste0 ("Processing may not proceed until the 'srr' ",
-                                "issues identified above have been adressed."))
+        eic_instr <- c (
+            eic_instr,
+            paste0 (
+                "Processing may not proceed until the 'srr' ",
+                "issues identified above have been adressed."
+            )
+        )
     }
 
     if (!a$checks_okay) {
 
-        eic_instr <- c (eic_instr,
-                        paste0 ("Processing may not proceed until the ",
-                                "items marked with ",
-                                roreviewapi::symbol_crs (),
-                                " have been resolved."))
+        eic_instr <- c (
+            eic_instr,
+            paste0 (
+                "Processing may not proceed until the ",
+                "items marked with ",
+                roreviewapi::symbol_crs (),
+                " have been resolved."
+            )
+        )
     } else {
 
-        eic_instr <- c (eic_instr,
-                        paste0 ("This package is in top shape and may ",
-                                "be passed on to a handling editor"))
+        eic_instr <- c (
+            eic_instr,
+            paste0 (
+                "This package is in top shape and may ",
+                "be passed on to a handling editor"
+            )
+        )
     }
 
     noteworthy <- ifelse (a$is_noteworthy,
-                          c (paste0 ("This package has some noteworthy ",
-                                     "properties, see 'Package Statistics' ",
-                                     "details below"),
-                             ""),
-                          "")
+        c (
+            paste0 (
+                "This package has some noteworthy ",
+                "properties, see 'Package Statistics' ",
+                "details below"
+            ),
+            ""
+        ),
+        ""
+    )
 
     out <- paste0 (c (check, eic_instr), collapse = "\n")
 
@@ -147,22 +172,26 @@ file_pkgcheck_issue <- function (repourl = NULL,
 
     user <- get_github_user ()
 
-    if (!user %in% authorized_users)
-        return (NULL)
+    if (!user %in% authorized_users) {
+          return (NULL)
+      }
 
-    if (grepl ("github", repo))
-        repo <- gsub ("https://github.com/", "", repo)
+    if (grepl ("github", repo)) {
+          repo <- gsub ("https://github.com/", "", repo)
+      }
 
     pkg_name <- utils::tail (strsplit (repourl, "/") [[1]], 1)
     # Note that title has to be quoted. body is okay b/c read from file.
     title <- paste0 ("'roreviewapi fail for ", pkg_name, " package'")
-    body <- paste0 ("Automatic checks failed for submission of ", pkg_name,
-                    " package.\n\n",
-                    "Package URL is [", 
-                    gsub ("^https\\:\\/\\/", "", repourl),
-                    "](", repourl, "), submitted to [",
-                    repo, "#", issue_id, "](https://github.com/",
-                    repo, "/issues/", issue_id, ")")
+    body <- paste0 (
+        "Automatic checks failed for submission of ", pkg_name,
+        " package.\n\n",
+        "Package URL is [",
+        gsub ("^https\\:\\/\\/", "", repourl),
+        "](", repourl, "), submitted to [",
+        repo, "#", issue_id, "](https://github.com/",
+        repo, "/issues/", issue_id, ")"
+    )
     label <- "bug"
 
     # Pasting comments straight to `gh --body` fails with any internally nested
@@ -170,12 +199,14 @@ file_pkgcheck_issue <- function (repourl = NULL,
     f <- tempfile (fileext = ".txt")
     writeLines (body, f)
 
-    args <- list ("issue",
-                  "create",
-                  "--repo", repo,
-                  "--title", title,
-                  "--body-file", f,
-                  "--label", label)
+    args <- list (
+        "issue",
+        "create",
+        "--repo", repo,
+        "--title", title,
+        "--body-file", f,
+        "--label", label
+    )
 
     # This returns the URL of the opened issue
     u <- system2 ("gh", args = args, stdout = TRUE, wait = TRUE)
