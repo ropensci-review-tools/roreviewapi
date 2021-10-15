@@ -12,23 +12,27 @@ stats_badge <- function (repo = "ropensci/software-review",
 
     # This by default returns only the opening comment. Additional comments can
     # be extracted with the "-c" flag.
-    args <- list ("issue",
-                  "view",
-                  issue_num,
-                  "-R",
-                  repo)
+    args <- list (
+        "issue",
+        "view",
+        issue_num,
+        "-R",
+        repo
+    )
 
     out <- system2 ("gh", args = args, stdout = TRUE, wait = TRUE)
 
     type <- get_html_var (out, "submission-type")
-    if (length (type) == 0L)
-        return (NULL)
+    if (length (type) == 0L) {
+          return (NULL)
+      }
 
     grade <- get_html_var (out, "statsgrade")
     version <- stats_version ()
 
-    if (type != "Stats")
-        return (NULL)
+    if (type != "Stats") {
+          return (NULL)
+      }
 
     return (paste0 ("6\approved-", grade, "-v", version))
 }
@@ -48,13 +52,16 @@ get_html_var <- function (x, expr = "submission-type") {
 #' @noRd
 stats_version <- function () {
 
-    u <- paste0 ("https://raw.githubusercontent.com/",
-                 "ropensci/statistical-software-review-book/",
-                 "main/DESCRIPTION")
+    u <- paste0 (
+        "https://raw.githubusercontent.com/",
+        "ropensci/statistical-software-review-book/",
+        "main/DESCRIPTION"
+    )
 
     tmp <- file.path (tempdir (), "stats-devguide-DESCRIPTION")
-    if (!file.exists (tmp))
-        ret <- utils::download.file (u, destfile = tmp, quiet = TRUE) # nolint
+    if (!file.exists (tmp)) {
+          ret <- utils::download.file (u, destfile = tmp, quiet = TRUE)
+      } # nolint
 
     d <- data.frame (read.dcf (tmp))
 
