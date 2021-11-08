@@ -28,9 +28,11 @@ editor_check <- function (repourl, repo, issue_id, post_to_issue = TRUE) {
 
         if (methods::is (p, "simpleError")) {
 
-            out <- paste0 ("Initial examimnation of package 'DESCRIPTION'",
-                           " file failed with error\n:",
-                           p$message)
+            out <- paste0 (
+                "Initial examimnation of package 'DESCRIPTION'",
+                " file failed with error\n:",
+                p$message
+            )
             return (out)
 
         } else if (length (p) > 0L) {
@@ -115,8 +117,8 @@ collate_editor_check <- function (checks) {
 
     srr_okay <- !"srr_okay" %in% names (a)
     if (!srr_okay) {
-          srr_okay <- a$srr_okay
-      }
+        srr_okay <- a$srr_okay
+    }
 
     if (!srr_okay) {
 
@@ -182,12 +184,12 @@ file_pkgcheck_issue <- function (repourl = NULL,
     user <- get_github_user ()
 
     if (!user %in% authorized_users) {
-          return (NULL)
-      }
+        return (NULL)
+    }
 
     if (grepl ("github", repo)) {
-          repo <- gsub ("https://github.com/", "", repo)
-      }
+        repo <- gsub ("https://github.com/", "", repo)
+    }
 
     pkg_name <- utils::tail (strsplit (repourl, "/") [[1]], 1)
     # Note that title has to be quoted. body is okay b/c read from file.

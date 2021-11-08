@@ -15,7 +15,8 @@ pkgrep_install_deps <- function (path, os, os_release) {
             os_release = os_release,
             path = path
         ),
-        error = function (e) e)
+        error = function (e) e
+    )
 
     if (methods::is (sysreq, "simpleError")) {
         return (sysreq)
@@ -62,23 +63,23 @@ install_dev_deps <- function (deps) {
         # Make sure no previous deps have also installed 'p':
         ip <- data.frame (utils::installed.packages ())
         if (p %in% ip$Package) {
-              next
-          }
+            next
+        }
 
         u <- paste0 (u_base, p)
         x <- rvest::read_html (u)
         dat <- rvest::html_table (x)
         remote <- lapply (dat, function (i) {
-              i [grep ("^(URL|BugReports)\\:", i$X1), ]
-          })
+            i [grep ("^(URL|BugReports)\\:", i$X1), ]
+        })
         remote <- do.call (rbind, remote)$X2
         remote <- gsub ("\\s*", "", unlist (strsplit (remote, ",")))
         remote <- grep ("^https\\:\\/\\/github\\.com", remote, value = TRUE)
         remote <- unique (gsub ("issues(\\/?)$", "", remote)) # BugReports URLs
 
         if (length (remote) > 1L) {
-              remote <- remote [1L]
-          }
+            remote <- remote [1L]
+        }
 
         if (length (remote) > 0L) {
             tryCatch (remotes::install_github (remote,
