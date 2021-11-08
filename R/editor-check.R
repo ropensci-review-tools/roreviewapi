@@ -25,7 +25,16 @@ editor_check <- function (repourl, repo, issue_id, post_to_issue = TRUE) {
     if (os != "" & os_release != "") {
 
         p <- roreviewapi::pkgrep_install_deps (path, os, os_release)
-        if (length (p) > 0L) {
+
+        if (methods::is (p, "simpleError")) {
+
+            out <- paste0 ("Initial examimnation of package 'DESCRIPTION'",
+                           " file failed with error\n:",
+                           p$message)
+            return (out)
+
+        } else if (length (p) > 0L) {
+
             p <- paste0 (
                 "Note: The following R packages were ",
                 "unable to be installed on our system: [",

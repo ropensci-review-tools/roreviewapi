@@ -9,11 +9,18 @@
 #' @export
 pkgrep_install_deps <- function (path, os, os_release) {
 
-    sysreq <- remotes::system_requirements (
-        os = os,
-        os_release = os_release,
-        path = path
-    )
+    sysreq <- tryCatch (
+        remotes::system_requirements (
+            os = os,
+            os_release = os_release,
+            path = path
+        ),
+        error = function (e) e)
+
+    if (methods::is (sysreq, "simpleError")) {
+        return (sysreq)
+    }
+
     tmp <- lapply (sysreq, system) # nolint
 
     remotes::install_deps (
