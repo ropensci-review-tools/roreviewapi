@@ -47,7 +47,8 @@ editor_check <- function (repourl, repo, issue_id, post_to_issue = TRUE) {
         }
     }
 
-    checks <- tryCatch (pkgcheck::pkgcheck (path),
+    checks <- tryCatch (
+        pkgcheck::pkgcheck (path),
         error = function (e) e
     )
 
@@ -57,15 +58,21 @@ editor_check <- function (repourl, repo, issue_id, post_to_issue = TRUE) {
 
     } else {
 
-        u <- roreviewapi::file_pkgcheck_issue (repourl, repo, issue_id)
+        if (grepl ("does not appear to be an R package", checks$message)) {
 
-        out <- paste0 (
-            "Oops, something went wrong with our automatic package ",
-            "checks. Our developers [have been notified](", u,
-            ") and package checks will appear here as soon as ",
-            "we've resolved the issue. Sorry for any inconvenience."
-        )
+            out <- paste0 ("[", repourl, "] does not appear to be an R package")
 
+        } else {
+
+            u <- roreviewapi::file_pkgcheck_issue (repourl, repo, issue_id)
+
+            out <- paste0 (
+                "Oops, something went wrong with our automatic ",
+                "package checks. Our developers [have been notified](", u,
+                ") and package checks will appear here as soon as ",
+                "we've resolved the issue. Sorry for any inconvenience."
+            )
+        }
     }
 
     if (post_to_issue) {
