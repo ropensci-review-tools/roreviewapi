@@ -6,7 +6,7 @@
 
 
 
-## Standards with `srrstats` tag (181 / 213)
+## Standards with `srrstats` tag (92 / 124)
 
 
 
@@ -444,7 +444,7 @@ Standards in  on line#61 of file [./README.Rmd](https://github.com/helske/bssm/b
 
 
 
-## Standards with `srrstatsNA` tag (32 / 213)
+## Standards with `srrstatsNA` tag (32 / 124)
 
 
 
