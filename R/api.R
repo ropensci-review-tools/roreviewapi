@@ -21,11 +21,11 @@ serve_api <- function (port = 8000L,
                        os_release = "") {
 
     if (os != "") {
-          Sys.setenv ("ROREVIEWAPI_OS" = os)
-      }
+        Sys.setenv ("ROREVIEWAPI_OS" = os)
+    }
     if (os_release != "") {
-          Sys.setenv ("ROREVIEWAPI_OS_RELEASE" = os_release)
-      }
+        Sys.setenv ("ROREVIEWAPI_OS_RELEASE" = os_release)
+    }
 
     ip <- data.frame (utils::installed.packages ())
 
@@ -45,8 +45,9 @@ serve_api <- function (port = 8000L,
             Sys.getenv ("PKGCHECK_CACHE_DIR"),
             getOption ("pkgcheck.cache_dir")
         )
-        if (is.null (cache_dir))
-            cache_dir <- ""
+        if (is.null (cache_dir)) {
+              cache_dir <- ""
+          }
         if (cache_dir == "") {
             cache_dir <- file.path (rappdirs::user_cache_dir (), "pkgcheck")
         }
@@ -62,8 +63,8 @@ serve_api <- function (port = 8000L,
     log_dir <- here::here ("logs")
     Sys.setenv ("ROREVAPI_LOG_DIR" = log_dir)
     if (!fs::dir_exists (log_dir)) {
-          fs::dir_create (log_dir)
-      }
+        fs::dir_create (log_dir)
+    }
 
     log_file <- tempfile ("roreviewapi_", log_dir, ".log")
     Sys.setenv ("ROREVAPI_LOG_FILE" = log_file)
@@ -76,8 +77,8 @@ serve_api <- function (port = 8000L,
     # ----------local static dir set up----------
     static_dir <- file.path (cache_dir, "static")
     if (!file.exists (static_dir)) {
-          dir.create (static_dir, recursive = TRUE)
-      }
+        dir.create (static_dir, recursive = TRUE)
+    }
 
     # ----------plumber process set up----------
     pr <- plumber::pr (f)
