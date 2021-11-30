@@ -93,6 +93,8 @@ editor_check <- function (repourl, repo, issue_id, post_to_issue = TRUE) {
 #' @export
 collate_editor_check <- function (checks) {
 
+    attachNamespace ("pkgcheck") # to find the 'output_pkgchk_' fns
+
     checks_md <- pkgcheck::checks_to_markdown (checks, render = FALSE)
 
     check <- paste0 (checks_md, collapse = "\n")
