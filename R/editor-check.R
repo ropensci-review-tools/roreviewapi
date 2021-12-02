@@ -15,6 +15,9 @@
 #' @export
 editor_check <- function (repourl, repo, issue_id, post_to_issue = TRUE) {
 
+    attachNamespace ("pkgcheck")
+    # to find 'output_pkgchk_' fns, and set options("pkgcheck.cache_dir")
+
     path <- roreviewapi::dl_gh_repo (repourl)
 
     # Have to pre-install any system dependencies here because this is the
@@ -92,8 +95,6 @@ editor_check <- function (repourl, repo, issue_id, post_to_issue = TRUE) {
 #' @family main
 #' @export
 collate_editor_check <- function (checks) {
-
-    attachNamespace ("pkgcheck") # to find the 'output_pkgchk_' fns
 
     checks_md <- pkgcheck::checks_to_markdown (checks, render = FALSE)
 
