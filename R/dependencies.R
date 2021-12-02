@@ -9,20 +9,7 @@
 #' @export
 pkgrep_install_deps <- function (path, os, os_release) {
 
-    sysreq <- tryCatch (
-        remotes::system_requirements (
-            os = os,
-            os_release = os_release,
-            path = path
-        ),
-        error = function (e) e
-    )
-
-    if (methods::is (sysreq, "simpleError")) {
-        return (sysreq)
-    }
-
-    tmp <- lapply (sysreq, system) # nolint
+    install_sys_deps (path, os, os_release)
 
     remotes::install_deps (
         pkgdir = path,
@@ -44,6 +31,52 @@ pkgrep_install_deps <- function (path, os, os_release) {
     }
 
     return (deps)
+}
+
+#' Modified version of remotes::system_requirements that uses jsonlite rather
+#' than the remotes inbuilt json parser, because of
+#' https://github.com/r-lib/remotes/issues/663
+#'
+#' This code is directly filched from 
+#' https://github.com/r-lib/remotes/blob/main/R/system_requirements.R
+#' @noRd
+install_sys_deps <- function (path, os, os_release) {
+
+    rspm <-  "https://packagemanager.rstudio.com"
+    rspm_repo_id <- "1" # cran
+    rspm_repo_url <- sprintf("%s/__api__/repos/%s", rspm, rspm_repo_id)
+    curl <- Sys.which ("curl")
+
+    desc_file <- normalizePath (file.path (path, "DESCRIPTION"),
+                                mustWork = FALSE)
+
+    res <- system2(
+        curl,
+        args = c(
+            "--silent",
+            "--data-binary",
+            shQuote(paste0("@", desc_file)),
+            shQuote(sprintf("%s/sysreqs?distribution=%s&release=%s&suggests=true",
+                rspm_repo_url,
+                os,
+                os_release)
+            )
+        ),
+        stdout = TRUE
+    )
+
+    res <- jsonlite::fromJSON (res, simplifyDataFrame = FALSE)
+    # TODO: Error handling
+
+    pre_install <- unique (unlist (c (res [["pre_install"]],
+                                      lapply (res [["dependencies"]],
+                                              `[[`,
+                                              "pre_install"))))
+    install_scripts <- unique (unlist (c (res [["install_scripts"]],
+                                          lapply (res [["dependencies"]],
+                                                  `[[`,
+                                                  "install_scripts"))))
+    tmp <- lapply (install_scripts, system) # nolint
 }
 
 #' Any packages which can not be installed from CRAN, as for example commonly
