@@ -14,8 +14,8 @@
 function (repourl = "", repo, issue_id) {
 
     if (nchar (repourl) == 0L) {
-          return ("Error: Issue template has no 'repourl'")
-      }
+        return ("Error: Issue template has no 'repourl'")
+    }
 
     repourl <- as.character (repourl) [1]
     repo <- as.character (repo) [1]
@@ -23,8 +23,8 @@ function (repourl = "", repo, issue_id) {
 
     template_chk <- roreviewapi::check_issue_template (repo, issue_id)
     if (!attr (template_chk, "proceed_with_checks")) {
-          return (template_chk)
-      }
+        return (template_chk)
+    }
 
     logfiles <- roreviewapi::stdout_stderr_cache (repourl)
 
@@ -62,8 +62,8 @@ function (repourl = "", repo, issue_id) {
 function (repourl = "") {
 
     if (nchar (repourl) == 0L) {
-          return ("Error: Issue template has no 'repourl'")
-      }
+        return ("Error: Issue template has no 'repourl'")
+    }
 
     out <- roreviewapi::editor_check (repourl,
         post_to_issue = FALSE
@@ -92,8 +92,8 @@ function (n = 10) {
 function (repo = "ropensci/software-review", issue_num) {
 
     if (!is.integer (issue_num) & length (issue_num) != 1L) {
-          return (NULL)
-      }
+        return (NULL)
+    }
 
     roreviewapi::stats_badge (repo, issue_num)
 }
