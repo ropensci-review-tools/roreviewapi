@@ -56,6 +56,7 @@ authorized_users <- c (
 #' condition arises a warning message will be displayed. Default is `FALSE`.
 #' @param ... other params (`timeout()` would be a good one) passed directly to
 #' `httr::HEAD()` and/or `httr::GET()`
+#' @return 'TRUE' is 'x' is a valid URL.
 #'
 #' @note
 #' https://stackoverflow.com/questions/52911812/check-if-url-exists-in-r
