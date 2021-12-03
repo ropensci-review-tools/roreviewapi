@@ -15,8 +15,10 @@
 #' @export
 editor_check <- function (repourl, repo, issue_id, post_to_issue = TRUE) {
 
-    attachNamespace ("pkgcheck")
     # to find 'output_pkgchk_' fns, and set options("pkgcheck.cache_dir")
+    if (!isNamespaceLoaded ("pkgcheck")) {
+        attachNamespace ("pkgcheck")
+    }
 
     path <- roreviewapi::dl_gh_repo (repourl)
 
