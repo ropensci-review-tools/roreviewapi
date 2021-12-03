@@ -37,19 +37,29 @@ pkgrep_install_deps <- function (path, os, os_release) {
 #' than the remotes inbuilt json parser, because of
 #' https://github.com/r-lib/remotes/issues/663
 #'
-#' This code is directly filched from 
+#' This code is directly filched from
 #' https://github.com/r-lib/remotes/blob/main/R/system_requirements.R
+#' and directly calls the rstudio endpoint at
+#' https://packagemanager.rstudio.com/__api__/swagger/index.html#/default/post_repos__id__sysreqs_
 #' @noRd
 install_sys_deps <- function (path, os, os_release) {
 
     rspm <-  "https://packagemanager.rstudio.com"
     rspm_repo_id <- "1" # cran
     rspm_repo_url <- sprintf("%s/__api__/repos/%s", rspm, rspm_repo_id)
-    curl <- Sys.which ("curl")
 
     desc_file <- normalizePath (file.path (path, "DESCRIPTION"),
                                 mustWork = FALSE)
+    if (!file.exists (desc_file)) {
+        return (NULL)
+    }
 
+    curl <- Sys.which ("curl")
+    if (!nzchar(curl)) {
+        stop("`curl` must be on the `PATH`.", call. = FALSE)
+    }
+
+    # remotes call:
     res <- system2(
         curl,
         args = c(
@@ -65,18 +75,12 @@ install_sys_deps <- function (path, os, os_release) {
         stdout = TRUE
     )
 
-    res <- jsonlite::fromJSON (res, simplifyDataFrame = FALSE)
-    # TODO: Error handling
+    res <- jsonlite::fromJSON (res, simplifyDataFrame = TRUE)$dependencies
+    install_scripts <- unique (unlist (res$install_scripts))
 
-    pre_install <- unique (unlist (c (res [["pre_install"]],
-                                      lapply (res [["dependencies"]],
-                                              `[[`,
-                                              "pre_install"))))
-    install_scripts <- unique (unlist (c (res [["install_scripts"]],
-                                          lapply (res [["dependencies"]],
-                                                  `[[`,
-                                                  "install_scripts"))))
-    tmp <- lapply (install_scripts, system) # nolint
+    if (length (install_scripts) > 0L) {
+        tmp <- lapply (install_scripts, system) # nolint
+    }
 }
 
 #' Any packages which can not be installed from CRAN, as for example commonly
