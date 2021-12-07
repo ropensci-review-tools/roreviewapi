@@ -44,38 +44,32 @@ pkgrep_install_deps <- function (path, os, os_release) {
 #' @noRd
 install_sys_deps <- function (path, os, os_release) {
 
-    rspm <-  "https://packagemanager.rstudio.com"
+    rspm <- "https://packagemanager.rstudio.com"
     rspm_repo_id <- "1" # cran
-    rspm_repo_url <- sprintf("%s/__api__/repos/%s", rspm, rspm_repo_id)
+    rspm_repo_url <- sprintf ("%s/__api__/repos/%s", rspm, rspm_repo_id)
 
     desc_file <- normalizePath (file.path (path, "DESCRIPTION"),
-                                mustWork = FALSE)
+        mustWork = FALSE
+    )
     if (!file.exists (desc_file)) {
         return (NULL)
     }
 
-    curl <- Sys.which ("curl")
-    if (!nzchar(curl)) {
-        stop("`curl` must be on the `PATH`.", call. = FALSE)
+    u <- sprintf (
+        "%s/sysreqs?distribution=%s&release=%s&suggests=true",
+        rspm_repo_url,
+        os,
+        os_release
+    )
+    res <- httr::POST (url = u, body = httr::upload_file (desc_file))
+
+    if (res$status != 200L) {
+        return (NULL)
     }
 
-    # remotes call:
-    res <- system2(
-        curl,
-        args = c(
-            "--silent",
-            "--data-binary",
-            shQuote(paste0("@", desc_file)),
-            shQuote(sprintf("%s/sysreqs?distribution=%s&release=%s&suggests=true",
-                rspm_repo_url,
-                os,
-                os_release)
-            )
-        ),
-        stdout = TRUE
-    )
-
+    res <- httr::content (out, type = "text", encoding = "UTF-8")
     res <- jsonlite::fromJSON (res, simplifyDataFrame = TRUE)$dependencies
+
     install_scripts <- unique (unlist (res$install_scripts))
 
     if (length (install_scripts) > 0L) {
