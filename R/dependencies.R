@@ -54,6 +54,10 @@ install_sys_deps <- function (path, os, os_release) {
     if (!file.exists (desc_file)) {
         return (NULL)
     }
+    d <- data.frame (read.dcf (desc_file))
+    if (!"SystemRequirements" %in% names (d)) {
+        return (NULL)
+    }
 
     u <- sprintf (
         "%s/sysreqs?distribution=%s&release=%s&suggests=true",
