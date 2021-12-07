@@ -41,6 +41,8 @@ pkgrep_install_deps <- function (path, os, os_release) {
 #' https://github.com/r-lib/remotes/blob/main/R/system_requirements.R
 #' and directly calls the rstudio endpoint at
 #' https://packagemanager.rstudio.com/__api__/swagger/index.html#/default/post_repos__id__sysreqs_
+#'
+#' @inheritParams pkgrep_install_deps
 #' @noRd
 install_sys_deps <- function (path, os, os_release) {
 
@@ -55,15 +57,17 @@ install_sys_deps <- function (path, os, os_release) {
         return (NULL)
     }
 
-    install_scripts <- sysreqs_rspm (desc_file)
+    install_scripts <- sysreqs_rspm (desc_file, os, os_release)
 
     if (is.integer (install_scripts)) {
         # use rhub (see #22)
         install_scripts <- NULL
         sysreqs <- sysreqs_rhub (d)
         if (length (sysreqs) > 0L) {
-            install_scripts <- paste0 ("apt-get install -y ",
-                                       sysreqs)
+            install_scripts <- paste0 (
+                "apt-get install -y ",
+                sysreqs
+            )
         }
     }
 
@@ -77,7 +81,7 @@ install_sys_deps <- function (path, os, os_release) {
 #' @param desc_file Path to DESC file
 #' @return RSPM scripts to install all system requirements
 #' @noRd
-sysreqs_rspm <- function (desc_file) {
+sysreqs_rspm <- function (desc_file, os, os_release) {
 
     rspm <- "https://packagemanager.rstudio.com"
     rspm_repo_id <- "1" # cran
@@ -95,7 +99,7 @@ sysreqs_rspm <- function (desc_file) {
         return (res$status)
     }
 
-    res <- httr::content (out, type = "text", encoding = "UTF-8")
+    res <- httr::content (res, type = "text", encoding = "UTF-8")
     res <- jsonlite::fromJSON (res, simplifyDataFrame = TRUE)$dependencies
 
     install_scripts <- unique (unlist (res$install_scripts))
