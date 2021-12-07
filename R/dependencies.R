@@ -171,7 +171,7 @@ install_dev_deps <- function (deps) {
         } else {
             # previous entries in `deps` may make standard installation
             # possible:
-            install.packages (p)
+            utils::install.packages (p)
         }
     }
 }
