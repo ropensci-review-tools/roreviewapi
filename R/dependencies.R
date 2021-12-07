@@ -44,10 +44,6 @@ pkgrep_install_deps <- function (path, os, os_release) {
 #' @noRd
 install_sys_deps <- function (path, os, os_release) {
 
-    rspm <- "https://packagemanager.rstudio.com"
-    rspm_repo_id <- "1" # cran
-    rspm_repo_url <- sprintf ("%s/__api__/repos/%s", rspm, rspm_repo_id)
-
     desc_file <- normalizePath (file.path (path, "DESCRIPTION"),
         mustWork = FALSE
     )
@@ -58,6 +54,19 @@ install_sys_deps <- function (path, os, os_release) {
     if (!"SystemRequirements" %in% names (d)) {
         return (NULL)
     }
+
+    install_scripts <- sysreqs_rspm (desc_file)
+
+    if (length (install_scripts) > 0L) {
+        tmp <- lapply (install_scripts, system) # nolint
+    }
+}
+
+sysreqs_rspm <- function (desc_file) {
+
+    rspm <- "https://packagemanager.rstudio.com"
+    rspm_repo_id <- "1" # cran
+    rspm_repo_url <- sprintf ("%s/__api__/repos/%s", rspm, rspm_repo_id)
 
     u <- sprintf (
         "%s/sysreqs?distribution=%s&release=%s&suggests=true",
@@ -76,9 +85,7 @@ install_sys_deps <- function (path, os, os_release) {
 
     install_scripts <- unique (unlist (res$install_scripts))
 
-    if (length (install_scripts) > 0L) {
-        tmp <- lapply (install_scripts, system) # nolint
-    }
+    return (install_scripts)
 }
 
 #' Any packages which can not be installed from CRAN, as for example commonly
