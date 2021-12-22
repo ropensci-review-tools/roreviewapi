@@ -52,10 +52,6 @@ install_sys_deps <- function (path, os, os_release) {
     if (!file.exists (desc_file)) {
         return (NULL)
     }
-    d <- data.frame (read.dcf (desc_file))
-    if (!"SystemRequirements" %in% names (d)) {
-        return (NULL)
-    }
 
     install_scripts <- sysreqs_rspm (desc_file, os, os_release)
 
