@@ -16,8 +16,7 @@ function (repourl = "", repo, issue_id) {
     if (nchar (repourl) == 0L) {
         return ("Error: Issue template has no 'repourl'")
     }
-    user <- get_github_user ()
-    if (!user %in% authorized_users) {
+    if (!roreviewapi::is_user_authorized ()) {
         return ("Only authorized users may call this endpoint")
     }
 
@@ -68,8 +67,7 @@ function (repourl = "") {
     if (nchar (repourl) == 0L) {
         return ("Error: Issue template has no 'repourl'")
     }
-    user <- get_github_user ()
-    if (!user %in% authorized_users) {
+    if (!roreviewapi::is_user_authorized ()) {
         return ("Only authorized users may call this endpoint")
     }
 

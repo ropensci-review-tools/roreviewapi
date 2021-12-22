@@ -36,6 +36,20 @@ get_github_user <- function () {
     return (login)
 }
 
+#' Check whether a user, identified from GitHub API token, is authorized to call
+#' endpoints.
+#'
+#' This function is used only in the \pkg{plumber} endpoints, to prevent them
+#' being called by unauthorized users.
+#' @return Logical value indicating whether or not a user is authorized.
+#' @export
+is_user_authorized <- function () {
+
+    user <- get_github_user ()
+
+    return (user %in% authorized_users)
+}
+
 # The users are currently only used to authorize opening issues on the
 # `pkgcheck` repo for packages which fail checks:
 authorized_users <- c (
