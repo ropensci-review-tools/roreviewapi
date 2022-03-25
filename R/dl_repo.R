@@ -14,7 +14,7 @@ dl_gh_repo <- function (u) {
         dir.create (cache_dir, recursive = TRUE)
     }
     repo_updated <- roreviewapi::check_cache (org, repo, cache_dir)
-    branch <- pkgcheck::get_default_branch (org, repo)
+    branch <- pkgcheck::get_default_github_branch (org, repo)
 
     clone_repo <- function (u, repo, branch) {
 
