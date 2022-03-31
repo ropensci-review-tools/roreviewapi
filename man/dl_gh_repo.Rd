@@ -17,7 +17,6 @@ Download a GitHub repo to local cache
 }
 \seealso{
 Other github: 
-\code{\link{file_pkgcheck_issue}()},
 \code{\link{post_to_issue}()}
 }
 \concept{github}

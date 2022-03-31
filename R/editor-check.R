@@ -69,12 +69,10 @@ editor_check <- function (repourl, repo, issue_id, post_to_issue = TRUE) {
 
         } else {
 
-            u <- roreviewapi::file_pkgcheck_issue (repourl, repo, issue_id)
-
             out <- paste0 (
                 "Oops, something went wrong with our automatic ",
-                "package checks. Our developers [have been notified](", u,
-                ") and package checks will appear here as soon as ",
+                "package checks. Our developers have been notified ",
+                "and package checks will appear here as soon as ",
                 "we've resolved the issue. Sorry for any inconvenience."
             )
         }
@@ -180,59 +178,4 @@ collate_editor_check <- function (checks) {
     out <- paste0 (c (check, eic_instr), collapse = "\n")
 
     return (out)
-}
-
-#' File an issue in the GitHub `pkgcheck` repo on any packages which fail checks
-#'
-#' @note Exported only for access by plumber; not intended for general external
-#' usage.
-#' @inheritParams editor_check
-#' @family github
-#' @export
-file_pkgcheck_issue <- function (repourl = NULL,
-                                 repo = "ropensci-review-tools/pkgcheck",
-                                 issue_id = NULL) {
-
-    user <- get_github_user ()
-
-    if (!user %in% authorized_users) {
-        return (NULL)
-    }
-
-    if (grepl ("github", repo)) {
-        repo <- gsub ("https://github.com/", "", repo)
-    }
-
-    pkg_name <- utils::tail (strsplit (repourl, "/") [[1]], 1)
-    # Note that title has to be quoted. body is okay b/c read from file.
-    title <- paste0 ("'roreviewapi fail for ", pkg_name, " package'")
-    body <- paste0 (
-        "Automatic checks failed for submission of ", pkg_name,
-        " package.\n\n",
-        "Package URL is [",
-        gsub ("^https\\:\\/\\/", "", repourl),
-        "](", repourl, "), submitted to [",
-        repo, "#", issue_id, "](https://github.com/",
-        repo, "/issues/", issue_id, ")"
-    )
-    label <- "bug"
-
-    # Pasting comments straight to `gh --body` fails with any internally nested
-    # single- or double-quotes, but all works well when read from file, so:
-    f <- tempfile (fileext = ".txt")
-    writeLines (body, f)
-
-    args <- list (
-        "issue",
-        "create",
-        "--repo", repo,
-        "--title", title,
-        "--body-file", f,
-        "--label", label
-    )
-
-    # This returns the URL of the opened issue
-    u <- system2 ("gh", args = args, stdout = TRUE, wait = TRUE)
-
-    return (u)
 }
