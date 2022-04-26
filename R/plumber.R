@@ -11,12 +11,12 @@
 #* the command was invoked, passed in `org/repo` format.
 #* @param issue_id The id of the issue form which the command was invoked
 #* @get /editorcheck
-function (repourl = "", repo, issue_id) {
+function (repourl = "", repo, issue_id, secret = NULL) {
 
     if (nchar (repourl) == 0L) {
         return ("Error: Issue template has no 'repourl'")
     }
-    if (!roreviewapi::is_user_authorized ()) {
+    if (!roreviewapi::is_user_authorized (secret)) {
         return ("Only authorized users may call this endpoint")
     }
 
@@ -62,12 +62,12 @@ function (repourl = "", repo, issue_id) {
 #* process, rather than bg.
 #* @param repourl The URL for the repo being checked
 #* @get /editorcheck_contents
-function (repourl = "") {
+function (repourl = "", secret = NULL) {
 
     if (nchar (repourl) == 0L) {
         return ("Error: Issue template has no 'repourl'")
     }
-    if (!roreviewapi::is_user_authorized ()) {
+    if (!roreviewapi::is_user_authorized (secret)) {
         return ("Only authorized users may call this endpoint")
     }
 

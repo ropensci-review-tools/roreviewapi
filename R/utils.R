@@ -41,13 +41,18 @@ get_github_user <- function () {
 #'
 #' This function is used only in the \pkg{plumber} endpoints, to prevent them
 #' being called by unauthorized users.
+#' @param secret Environment variable `PKGCHECK_TOKEN` sent from bot.
 #' @return Logical value indicating whether or not a user is authorized.
 #' @export
-is_user_authorized <- function () {
+is_user_authorized <- function (secret = NULL) {
 
     user <- get_github_user ()
+    yes <- user %in% authorized_users
+    if (!yes & !is.null (secret)) {
+        yes <- identical (secret, Sys.getenv ("PKGCHECK_TOKEN"))
+    }
 
-    return (user %in% authorized_users)
+    return (yes)
 }
 
 # The users are currently only used to authorize opening issues on the

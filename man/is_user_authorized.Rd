@@ -5,7 +5,10 @@
 \title{Check whether a user, identified from GitHub API token, is authorized to call
 endpoints.}
 \usage{
-is_user_authorized()
+is_user_authorized(secret = NULL)
+}
+\arguments{
+\item{secret}{Environment variable \code{PKGCHECK_TOKEN} sent from bot.}
 }
 \value{
 Logical value indicating whether or not a user is authorized.
