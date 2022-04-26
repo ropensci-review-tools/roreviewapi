@@ -21,6 +21,8 @@ RUN echo "GITHUB_TOKEN='<my_github_token>'" > ~/.Renviron \
     && git config --global user.name "username" \
     && git config --global user.email "my.address@mail.com"
 
+RUN echo "PKGCHECK_TOKEN='<pkgcheck_token>'" > ~/.Renviron
+
 EXPOSE 8000
 
 RUN echo "#!/bin/bash\nRscript -e 'roreviewapi::serve_api(port=8000L,os=\"ubuntu\",os_release=\"20.04\")'" > /server_api.sh \
