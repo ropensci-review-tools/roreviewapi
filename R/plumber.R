@@ -10,6 +10,9 @@
 #* @param repo The 'context.repo' parameter defining the repository from which
 #* the command was invoked, passed in `org/repo` format.
 #* @param issue_id The id of the issue form which the command was invoked
+#' @param secret Secret token passed by the bot; checked for match with internal
+#' token specified in the Docker container. This allows authors of issues to
+#' run package checks.
 #* @get /editorcheck
 function (repourl = "", repo, issue_id, secret = NULL) {
 
