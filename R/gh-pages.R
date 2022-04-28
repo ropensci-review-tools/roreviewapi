@@ -42,8 +42,8 @@ push_to_gh_pages <- function (check) {
     untracked <- file.path (rorev_dir, untracked)
 
     if (length (untracked) > 0) {
-          chk <- file.remove (untracked)
-      }
+        chk <- file.remove (untracked)
+    }
     # TODO# also need to unlink empty directories
 
     files <- NULL
@@ -122,8 +122,8 @@ push_to_gh_pages <- function (check) {
 
         files_full <- normalizePath (file.path (rorev_dir, files))
         for (f in files_full [which (!grepl ("\\.png$", files_full))]) {
-              system2 ("dos2unix", f)
-          }
+            system2 ("dos2unix", f)
+        }
 
         a <- gert::git_add (files, repo = rorev_dir)
         git_updated <- git_updated | nrow (a) > 0
@@ -173,8 +173,8 @@ move1file <- function (path, rorev_dir) {
     )
 
     if (!dir.exists (dir_to)) {
-          dir.create (dir_to, recursive = TRUE)
-      }
+        dir.create (dir_to, recursive = TRUE)
+    }
 
     file_index <- which (!dir.exists (f_from))
     dir_index <- which (dir.exists (f_from))
