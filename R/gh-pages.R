@@ -136,7 +136,18 @@ push_to_gh_pages <- function (check) {
             basename (attr (check, "network_file"))
         )
         gert::git_commit (message = nm, repo = rorev_dir)
-        gert::git_push (repo = rorev_dir)
+
+        # push with https://username@github and token as password:
+        conf <- gert::git_config (repo = rorev_dir)
+        uname <- conf$value [conf$name == "user.name"]
+        remote <- conf$value [conf$name == "remote.origin.url"]
+        remote <- gsub (
+            "https://",
+            paste0 ("https://", uname, "@"),
+            remote
+        )
+        tok <- Sys.getenv ("GITHUB_TOKEN")
+        gert::git_push (repo = rorev_dir, remote = remote, password = tok)
     }
 
     gert::git_branch_checkout ("main", repo = rorev_dir)
