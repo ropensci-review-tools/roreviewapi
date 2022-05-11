@@ -23,7 +23,7 @@ dl_gh_repo <- function (u) {
         }
 
         f <- file.path (cache_dir, repo)
-        if (file.exists (f)) {
+        if (dir.exists (f)) {
             chk <- unlink (f, recursive = TRUE)
         }
         gert::git_clone (url = u, path = f)

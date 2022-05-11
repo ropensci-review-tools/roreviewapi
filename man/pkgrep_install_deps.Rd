@@ -25,6 +25,7 @@ Install all system and package dependencies of an R package
 \seealso{
 Other utils: 
 \code{\link{check_cache}()},
+\code{\link{rorevapi_updated_pkgs}()},
 \code{\link{stdout_stderr_cache}()},
 \code{\link{symbol_crs}()},
 \code{\link{symbol_tck}()}

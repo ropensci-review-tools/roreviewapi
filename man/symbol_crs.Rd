@@ -13,6 +13,7 @@ Cross symbol, exported for direct use in plumber API
 Other utils: 
 \code{\link{check_cache}()},
 \code{\link{pkgrep_install_deps}()},
+\code{\link{rorevapi_updated_pkgs}()},
 \code{\link{stdout_stderr_cache}()},
 \code{\link{symbol_tck}()}
 }

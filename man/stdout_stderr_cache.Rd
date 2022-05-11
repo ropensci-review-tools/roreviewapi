@@ -28,6 +28,7 @@ inspected via their own distinct endpoint calls.
 Other utils: 
 \code{\link{check_cache}()},
 \code{\link{pkgrep_install_deps}()},
+\code{\link{rorevapi_updated_pkgs}()},
 \code{\link{symbol_crs}()},
 \code{\link{symbol_tck}()}
 }

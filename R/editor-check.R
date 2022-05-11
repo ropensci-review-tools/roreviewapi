@@ -52,6 +52,11 @@ editor_check <- function (repourl, repo, issue_id, post_to_issue = TRUE) {
         }
     }
 
+    updates <- roreviewapi::rorevapi_updated_pkgs (path)
+    if (length (updates) > 0L) {
+        install.packages (updates)
+    }
+
     checks <- tryCatch (
         pkgcheck::pkgcheck (path),
         error = function (e) e
