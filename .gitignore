@@ -17,3 +17,5 @@ aaa\.Rmd*
 *.o
 *.so
 docs
+token
+inst/WORDLIST
