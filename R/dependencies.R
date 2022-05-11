@@ -58,7 +58,7 @@ install_sys_deps <- function (path, os, os_release) {
     if (is.integer (install_scripts)) {
         # use rhub (see #22)
         install_scripts <- NULL
-        sysreqs <- sysreqs_rhub (d)
+        sysreqs <- sysreqs_rhub (desc_file)
         if (length (sysreqs) > 0L) {
             install_scripts <- paste0 (
                 "apt-get install -y ",
@@ -105,13 +105,19 @@ sysreqs_rspm <- function (desc_file, os, os_release) {
 
 #' Get system requirements from rhub.io
 #'
-#' @param d Contents of DESC file read with `read.dcf`.
+#' @param desc_file Path to DESC file
 #' @return Character vector of system requirements, but not in full form of
 #' install scripts.
 #' @noRd
-sysreqs_rhub <- function (d) {
+sysreqs_rhub <- function (desc_file) {
+
+    d <- data.frame (read.dcf (desc_file))
 
     sr <- gsub ("\\s", "%20", d$SystemRequirements)
+
+    if (length (sr) == 0L) {
+        return (NULL)
+    }
 
     rhub <- sprintf ("http://sysreqs.r-hub.io/map/%s", sr)
 
