@@ -6,8 +6,8 @@
 #' @export
 rorevapi_updated_pkgs <- function (path) {
 
-    ip <- data.frame (installed.packages ()) [, c ("Package", "Version")]
-    ap <- data.frame (available.packages ()) [, c ("Package", "Version")]
+    ip <- data.frame (utils::installed.packages ()) [, c ("Package", "Version")]
+    ap <- data.frame (utils::available.packages ()) [, c ("Package", "Version")]
     ap <- ap [which (ap$Package %in% ip$Package), ]
     ip <- ip [which (ip$Package %in% ap$Package), ]
 
