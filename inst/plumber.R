@@ -5,14 +5,16 @@
 # ----------------   editorcheck   -----------------
 # --------------------------------------------------
 
-#* Run full range of editor checks and post result to a GitHub issue
+#* @name editorcheck
+#* @description Run full range of editor checks and post result to a GitHub issue
 #* @param repourl The URL for the repo being checked
 #* @param repo The 'context.repo' parameter defining the repository from which
 #* the command was invoked, passed in `org/repo` format.
 #* @param issue_id The id of the issue form which the command was invoked
-#' @param secret Secret token passed by the bot; checked for match with internal
-#' token specified in the Docker container. This allows authors of issues to
-#' run package checks.
+#* @param secret Secret token passed by the bot; checked for match with internal
+#* token specified in the Docker container. This allows authors and reviewers of
+#* packages/issues to run package checks. See
+#* \url{https://github.com/ropensci-org/buffy/pull/66}.
 #* @get /editorcheck
 function (repourl = "", repo, issue_id, secret = NULL) {
 
