@@ -30,13 +30,32 @@ dl_gh_repo <- function (u) {
         return (f)
     }
 
-    f <- file.path (cache_dir, repo)
+    path <- file.path (cache_dir, repo)
 
-    if (!dir.exists (f) | repo_updated) {
+    if (!dir.exists (path) | repo_updated) {
 
         message ("Cloning repo ...")
-        f <- clone_repo (u, repo, branch)
+        path <- clone_repo (u, repo, branch)
     }
 
-    return (f)
+    rm_renv_files (path)
+
+    return (path)
+}
+
+rm_renv_files <- function (path) {
+
+    flist <- list.files (path,
+                         recursive = TRUE,
+                         full.names = TRUE)
+
+    renv <- grep ("renv\\.lock$", flist, value = TRUE)
+    if (length (renv) > 0L) {
+
+        chk <- file.remove (renv)
+        renv_dir <- file.path (path, "renv")
+        if (dir.exists (renv_dir)) {
+            unlink (renv_dir, recursive = TRUE)
+        }
+    }
 }
