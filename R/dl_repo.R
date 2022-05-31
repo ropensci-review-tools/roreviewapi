@@ -38,24 +38,5 @@ dl_gh_repo <- function (u) {
         path <- clone_repo (u, repo, branch)
     }
 
-    rm_renv_files (path)
-
     return (path)
-}
-
-rm_renv_files <- function (path) {
-
-    flist <- list.files (path,
-                         recursive = TRUE,
-                         full.names = TRUE)
-
-    renv <- grep ("renv\\.lock$", flist, value = TRUE)
-    if (length (renv) > 0L) {
-
-        chk <- file.remove (renv)
-        renv_dir <- file.path (path, "renv")
-        if (dir.exists (renv_dir)) {
-            unlink (renv_dir, recursive = TRUE)
-        }
-    }
 }
