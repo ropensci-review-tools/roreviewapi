@@ -139,7 +139,7 @@ function (n = 10) {
 #* @get /clear_cache
 function () {
 
-    cache_dir <- options ("pkgcheck.cache_dir")
+    cache_dir <- Sys.getenv ("PKGCHECK_CACHE_DIR")
     if (dir.exists (cache_dir)) {
         chk <- unlink (cache_dir, recursive = TRUE)
     }

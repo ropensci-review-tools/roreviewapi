@@ -39,17 +39,9 @@ serve_api <- function (port = 8000L,
 
         requireNamespace ("pkgcheck")
 
-        # pkgcheck defines cache_dir with options; these are here converted to
-        # envvars:
-        cache_dir <- ifelse ("PKGCHECK_CACHE_DIR" %in% names (Sys.getenv ()),
-            Sys.getenv ("PKGCHECK_CACHE_DIR"),
-            getOption ("pkgcheck.cache_dir")
-        )
-        if (is.null (cache_dir)) {
-              cache_dir <- ""
-          }
-        if (cache_dir == "") {
-            cache_dir <- file.path (rappdirs::user_cache_dir (), "pkgcheck")
+        cache_dir <- Sys.getenv ("PKGCHECK_CACHE_DIR")
+        if (!nzchar (cache_dir)) {
+            cache_dir <- file.path (rappdirs::user_cache_dir (), "R", "pkgcheck")
         }
 
         if (!file.exists (cache_dir)) {
