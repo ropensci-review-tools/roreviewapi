@@ -12,8 +12,6 @@ RUN install2.r \
   visNetwork \
 && installGithub.r \
       MangoTheCat/goodpractice \
-      ropensci-review-tools/pkgstats@ctags-fix \
-      ropensci-review-tools/pkgcheck \
       ropensci-review-tools/roreviewapi
 
 RUN echo "GITHUB_TOKEN='<my_github_token>'" > ~/.Renviron \
