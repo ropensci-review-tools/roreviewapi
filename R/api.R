@@ -43,6 +43,10 @@ serve_api <- function (port = 8000L,
         if (!nzchar (cache_dir)) {
             cache_dir <- file.path (rappdirs::user_cache_dir (), "R", "pkgcheck")
             cache_dir <- normalizePath (cache_dir, mustWork = FALSE)
+            # normalizePath resolves `~` to /root instead of /home:
+            if (grepl ("^\\/root", cache_dir)) {
+                cache_dir <- gsub ("^\\/root", "/home", cache_dir)
+            }
         }
 
         if (!file.exists (cache_dir)) {
