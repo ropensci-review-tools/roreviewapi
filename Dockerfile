@@ -1,7 +1,6 @@
 FROM mpadge/pkgcheck
 MAINTAINER Mark Padgham <mark.padgham@email.com>
 
-ENV GITHUB_TOKEN "<my_github_token>"
 ENV R_REMOTES_UPGRADE "always"
 ENV NOT_CRAN "true"
 
