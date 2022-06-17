@@ -42,6 +42,7 @@ serve_api <- function (port = 8000L,
         cache_dir <- Sys.getenv ("PKGCHECK_CACHE_DIR")
         if (!nzchar (cache_dir)) {
             cache_dir <- file.path (rappdirs::user_cache_dir (), "R", "pkgcheck")
+            cache_dir <- normalizePath (cache_dir, mustWork = FALSE)
         }
 
         if (!file.exists (cache_dir)) {
