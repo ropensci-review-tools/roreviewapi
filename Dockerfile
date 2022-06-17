@@ -12,7 +12,7 @@ RUN install2.r \
   visNetwork \
 && installGithub.r \
       MangoTheCat/goodpractice \
-      ropensci-review-tools/pkgstats \
+      ropensci-review-tools/pkgstats@ctags-fix \
       ropensci-review-tools/pkgcheck \
       ropensci-review-tools/roreviewapi
 
