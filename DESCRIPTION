@@ -1,6 +1,6 @@
 Package: roreviewapi
 Title: Plumber API to report package structure and function
-Version: 0.0.2.108
+Version: 0.0.2.109
 Authors@R: 
     person("Mark", "Padgham", , "mark.padgham@email.com", role = c("aut", "cre"),
            comment = c(ORCID = "0000-0003-2172-5265"))
@@ -23,7 +23,6 @@ Imports:
     magrittr,
     methods,
     pkgcheck,
-    pkgstats,
     plumber,
     rappdirs,
     remotes,
@@ -36,7 +35,6 @@ VignetteBuilder:
     knitr
 Remotes:
     ropensci-review-tools/pkgcheck,
-    ropensci-review-tools/pkgstats,
     ropensci-review-tools/srr
 Encoding: UTF-8
 Language: en-GB
