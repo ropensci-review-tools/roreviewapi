@@ -81,10 +81,15 @@ check_cache <- function (org, repo, cache_dir = tempdir ()) {
 #' @export
 stdout_stderr_cache <- function (repourl) {
 
+    branch <- get_branch_from_url (repourl)
+    if (!is.null (branch)) {
+        repourl <- gsub (paste0 ("\\/tree\\/", branch, ".*$"), "", repourl)
+    }
+
     org <- utils::tail (strsplit (repourl, "/") [[1]], 2) [1]
     repo <- utils::tail (strsplit (repourl, "/") [[1]], 1)
 
-    cmt <- pkgcheck::get_latest_commit (org = org, repo = repo)
+    cmt <- pkgcheck::get_latest_commit (org = org, repo = repo, branch)
     oid <- substring (cmt$oid, 1, 8)
 
     temp_dir <- file.path (Sys.getenv ("PKGCHECK_CACHE_DIR"), "templogs")
