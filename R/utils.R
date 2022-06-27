@@ -64,6 +64,19 @@ authorized_users <- c (
     "maelle"
 )
 
+#' Get branch from a GitHub URL if non-default branch specified there
+#' @param repourl Potentially with "/tree/branch_name" appended
+#' @noRd
+get_branch_from_url <- function (repourl) {
+
+    branch <- NULL
+    domains <- strsplit (repourl, "\\/+") [[1]]
+    if (length (domains) > 4L & any (domains == "tree")) {
+        branch <- utils::tail (domains, 1L)
+    }
+    return (branch)
+}
+
 #' Bob Rudis's URL checker function
 #'
 #' This is used here to check the URLs in the `check_issue_template` function.

@@ -21,15 +21,7 @@ editor_check <- function (repourl, repo, issue_id, post_to_issue = TRUE) {
         attachNamespace ("pkgcheck")
     }
 
-    get_branch <- function (repourl) {
-        branch <- NULL
-        domains <- strsplit (repourl, "\\/+") [[1]]
-        if (length (domains) > 4L & any (domains == "tree")) {
-            branch <- utils::tail (domains, 1L)
-        }
-        return (branch)
-    }
-    branch <- get_branch (repourl)
+    branch <- get_branch_from_url (repourl)
     if (!is.null (branch)) {
         repourl <- gsub (paste0 ("\\/tree\\/", branch, ".*$"), "", repourl)
     }
