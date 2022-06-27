@@ -7,7 +7,8 @@
 editor_check(repourl, repo, issue_id, post_to_issue = TRUE)
 }
 \arguments{
-\item{repourl}{The URL for the repo being checked.}
+\item{repourl}{The URL for the repo being checked, potentially including full
+path to non-default branch.}
 
 \item{repo}{The 'context.repo' parameter defining the repository from which
 the command was invoked, passed in 'org/repo' format.}

@@ -1,10 +1,11 @@
 #' Download a GitHub repo to local cache
 #'
 #' @param u URL of GitHub repository
+#' @param branch Checkout specified (non-default) branch of repo.
 #' @return Path to locally cached '.zip' version of repository
 #' @family github
 #' @export
-dl_gh_repo <- function (u) {
+dl_gh_repo <- function (u, branch = NULL) {
 
     repo <- utils::tail (strsplit (u, "/") [[1]], 1)
     org <- utils::tail (strsplit (u, "/") [[1]], 2) [1]
@@ -14,7 +15,9 @@ dl_gh_repo <- function (u) {
         dir.create (cache_dir, recursive = TRUE)
     }
     repo_updated <- roreviewapi::check_cache (org, repo, cache_dir)
-    branch <- pkgcheck::get_default_github_branch (org, repo)
+    if (is.null (branch)) {
+        branch <- pkgcheck::get_default_github_branch (org, repo)
+    }
 
     clone_repo <- function (u, repo, branch) {
 
@@ -26,7 +29,7 @@ dl_gh_repo <- function (u) {
         if (dir.exists (f)) {
             chk <- unlink (f, recursive = TRUE)
         }
-        gert::git_clone (url = u, path = f)
+        gert::git_clone (url = u, path = f, branch = branch)
         return (f)
     }
 

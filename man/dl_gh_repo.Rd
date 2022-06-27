@@ -4,10 +4,12 @@
 \alias{dl_gh_repo}
 \title{Download a GitHub repo to local cache}
 \usage{
-dl_gh_repo(u)
+dl_gh_repo(u, branch = NULL)
 }
 \arguments{
 \item{u}{URL of GitHub repository}
+
+\item{branch}{Checkout specified (non-default) branch of repo.}
 }
 \value{
 Path to locally cached '.zip' version of repository

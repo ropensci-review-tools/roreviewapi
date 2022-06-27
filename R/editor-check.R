@@ -1,7 +1,8 @@
 
 #' Body of main 'editorcheck' response
 #'
-#' @param repourl The URL for the repo being checked.
+#' @param repourl The URL for the repo being checked, potentially including full
+#' path to non-default branch.
 #' @param repo The 'context.repo' parameter defining the repository from which
 #' the command was invoked, passed in 'org/repo' format.
 #' @param issue_id The id (number) of the issue from which the command was
@@ -20,7 +21,20 @@ editor_check <- function (repourl, repo, issue_id, post_to_issue = TRUE) {
         attachNamespace ("pkgcheck")
     }
 
-    path <- roreviewapi::dl_gh_repo (repourl)
+    get_branch <- function (repourl) {
+        branch <- NULL
+        domains <- strsplit (repourl, "\\/+") [[1]]
+        if (length (domains) > 4L & any (domains == "tree")) {
+            branch <- tail (domains, 1L)
+        }
+        return (branch)
+    }
+    branch <- get_branch (repourl)
+    if (!is.null (branch)) {
+        repourl <- gsub (paste0 ("\\/tree\\/", branch, ".*$"), "", repourl)
+    }
+
+    path <- roreviewapi::dl_gh_repo (u = repourl, branch = branch)
 
     # Have to pre-install any system dependencies here because this is the
     # single call point for the r_bg process
