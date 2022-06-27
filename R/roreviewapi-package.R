@@ -1,5 +1,6 @@
 #' @keywords internal
 #' @importFrom magrittr %>%
+#' @importFrom callr r_bg
 "_PACKAGE"
 
 # The following block is used by usethis to automatically manage
