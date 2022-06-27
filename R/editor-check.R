@@ -25,7 +25,7 @@ editor_check <- function (repourl, repo, issue_id, post_to_issue = TRUE) {
         branch <- NULL
         domains <- strsplit (repourl, "\\/+") [[1]]
         if (length (domains) > 4L & any (domains == "tree")) {
-            branch <- tail (domains, 1L)
+            branch <- utils::tail (domains, 1L)
         }
         return (branch)
     }
