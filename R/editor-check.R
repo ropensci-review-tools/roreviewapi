@@ -21,7 +21,7 @@ editor_check <- function (repourl, repo, issue_id, post_to_issue = TRUE) {
         attachNamespace ("pkgcheck")
     }
 
-    branch <- get_branch_from_url (repourl)
+    branch <- roreviewapi::get_branch_from_url (repourl)
     if (!is.null (branch)) {
         repourl <- gsub (paste0 ("\\/tree\\/", branch, ".*$"), "", repourl)
     }

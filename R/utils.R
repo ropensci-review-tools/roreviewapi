@@ -66,7 +66,8 @@ authorized_users <- c (
 
 #' Get branch from a GitHub URL if non-default branch specified there
 #' @param repourl Potentially with "/tree/branch_name" appended
-#' @noRd
+#' @return Branch as single string.
+#' @export
 get_branch_from_url <- function (repourl) {
 
     branch <- NULL
