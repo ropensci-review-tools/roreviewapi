@@ -105,7 +105,7 @@ srr_counts <- function (repourl, repo, issue_id, post_to_issue = TRUE) {
         )
 
         out <- c (
-            "'srr' standards compliance:",
+            "## 'srr' standards compliance:",
             "",
             stds_summary,
             "",
