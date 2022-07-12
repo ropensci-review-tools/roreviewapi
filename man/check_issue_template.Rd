@@ -21,6 +21,7 @@ Check template variables in GitHub issue
 \seealso{
 Other ropensci: 
 \code{\link{push_to_gh_pages}()},
+\code{\link{srr_counts}()},
 \code{\link{stats_badge}()}
 }
 \concept{ropensci}
