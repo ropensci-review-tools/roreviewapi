@@ -110,7 +110,7 @@ srr_counts <- function (repourl, repo, issue_id, post_to_issue = TRUE) {
             stds_summary,
             "",
             stds_final
-            )
+        )
     }
 
     out <- paste0 (out, collapse = "\n")
@@ -148,15 +148,15 @@ stats_badge <- function (repo = "ropensci/software-review",
 
     type <- get_html_var (out, "submission-type")
     if (length (type) == 0L) {
-          return (NULL)
-      }
+        return (NULL)
+    }
 
     grade <- get_html_var (out, "statsgrade")
     version <- stats_version ()
 
     if (type != "Stats") {
-          return (NULL)
-      }
+        return (NULL)
+    }
 
     return (paste0 ("6\approved-", grade, "-v", version))
 }
@@ -184,8 +184,8 @@ stats_version <- function () {
 
     tmp <- file.path (tempdir (), "stats-devguide-DESCRIPTION")
     if (!file.exists (tmp)) {
-          ret <- utils::download.file (u, destfile = tmp, quiet = TRUE)
-      } # nolint
+        ret <- utils::download.file (u, destfile = tmp, quiet = TRUE)
+    } # nolint
 
     d <- data.frame (read.dcf (tmp))
 
