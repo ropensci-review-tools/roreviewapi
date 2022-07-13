@@ -84,6 +84,53 @@ function (repourl = "", secret = NULL) {
 }
 
 
+# --------------------------------------------------
+# ----------------   srrcheck   -----------------
+# --------------------------------------------------
+
+#* @name srrcheck
+#* @description Summarise compliance of stats packages with 'srr' standards.
+#* @param repourl The URL for the repo being checked
+#* @param repo The 'context.repo' parameter defining the repository from which
+#* the command was invoked, passed in `org/repo` format.
+#* @param issue_id The id of the issue form which the command was invoked
+#* @param secret Secret token passed by the bot; checked for match with internal
+#* token specified in the Docker container. This allows authors and reviewers of
+#* packages/issues to run these checks. See
+#* \url{https://github.com/ropensci-org/buffy/pull/66}.
+#* @get /srrcheck
+function (repourl = "", repo, issue_id, secret = NULL) {
+
+    if (nchar (repourl) == 0L) {
+        return ("Error: Issue template has no 'repourl'")
+    }
+    if (!roreviewapi::is_user_authorized (secret)) {
+        return ("Only authorized users may call this endpoint")
+    }
+
+    repourl <- as.character (repourl) [1]
+    repo <- as.character (repo) [1]
+    issue_id <- as.integer (issue_id) [1]
+
+    logfiles <- roreviewapi::stdout_stderr_cache (repourl)
+
+    ps <<- callr::r_bg (
+        func = roreviewapi::srr_counts,
+        args = list (
+            repourl = repourl,
+            repo = repo,
+            issue_id = issue_id
+        ),
+        stdout = logfiles$stdout,
+        stderr = logfiles$stderr,
+        poll_connection = TRUE,
+        supervise = TRUE
+    )
+
+    return (NULL)
+}
+
+
 
 # --------------------------------------------------
 # --------------   other endpoints   ---------------
