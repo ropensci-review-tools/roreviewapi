@@ -1,6 +1,7 @@
 
 #' Install all system and package dependencies of an R package
 #'
+#' @param path Path to local file or directory
 #' @inheritParams editor_check
 #' @return Hopefully a character vector of length zero, otherwise a message
 #' detailing any R packages unable to be installed.

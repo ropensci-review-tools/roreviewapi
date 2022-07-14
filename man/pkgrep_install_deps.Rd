@@ -7,6 +7,8 @@
 pkgrep_install_deps(path, repo, issue_id)
 }
 \arguments{
+\item{path}{Path to local file or directory}
+
 \item{repo}{The 'context.repo' parameter defining the repository from which
 the command was invoked, passed in 'org/repo' format.}
 
