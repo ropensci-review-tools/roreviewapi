@@ -59,100 +59,7 @@ srr_counts <- function (repourl, repo, issue_id, post_to_issue = TRUE) {
 
     } else {
 
-        stds_start <- grep ("^\\#\\#\\sStandards with", srr_rep)
-        sections <- grep ("^\\#+", srr_rep)
-        stds_end <- vapply (
-            stds_start, function (i) {
-                sections [which (sections > i)] [1]
-            },
-            integer (1L)
-        )
-
-        # as.list -> unlist to avoid accidental matrix results when numbers are
-        # equal
-        stds <- apply (cbind (stds_start, stds_end), 1, function (i) {
-            as.list (srr_rep [seq (i [1], i [2])])
-        })
-        stds <- lapply (stds, unlist)
-
-        stds_what <- vapply (
-            stds, function (i) {
-                gsub ("\\`", "", regmatches (i, regexpr ("\\`.*\\`", i)))
-            },
-            character (1L)
-        )
-        stds_n <- lapply (stds, function (i) {
-            vals <- regmatches (i, gregexpr ("[0-9]+\\s+\\/\\s+[0-9]+$", i))
-            index <- which (vapply (vals, length, integer (1L)) > 0L)
-            vals <- lapply (vals [index], function (j) {
-                as.integer (strsplit (j, "\\/") [[1]])
-            })
-            categories <-
-                regmatches (i, gregexpr ("^\\-\\s+[A-Za-z]+\\s\\:", i))
-            categories <- gsub ("^\\-\\s+|\\s+\\:$", "", unlist (categories))
-            names (vals) <- categories
-            return (vals)
-        })
-        names (stds_n) <- stds_what
-
-        categories <- srr::srr_stats_categories ()
-
-        summarise_one <- function (s, complied = TRUE) {
-
-            stds_summary <- paste0 (
-                ifelse (complied,
-                    "- Complied with: ",
-                    "- Not complied with: "
-                ),
-                s$Total [1],
-                " / ",
-                s$Total [2],
-                " = ",
-                round (100 * s$Total [1] / s$Total [2], digits = 1),
-                "% ("
-            )
-            these_categories <- names (s)
-            these_categories <-
-                these_categories [which (!these_categories == "Total")]
-            for (cat in these_categories) {
-                stds_summary <- paste0 (
-                    stds_summary,
-                    categories$category [categories$std_prefix == cat],
-                    ": ",
-                    s [[cat]] [1],
-                    " / ",
-                    s [[cat]] [2],
-                    "; "
-                )
-            }
-            return (gsub (";\\s$", ")", stds_summary))
-        }
-        stds_summary <- c (
-            summarise_one (stds_n$srrstats, TRUE),
-            summarise_one (stds_n$srrstatsNA, FALSE)
-        )
-
-        compliance <- stds_n$srrstats$Total [1] / stds_n$srrstats$Total [2]
-
-        stds_final <- ifelse (
-            compliance > 0.5,
-            paste0 (
-                ":heavy_check_mark: This package complies with ",
-                "> 50% of all standads and may be submitted."
-            ),
-            paste0 (
-                ":heavy_multiplication_x: This package complies with ",
-                "< 50% of all standads and is not ready to be submitted."
-            )
-        )
-
-        out <- c (
-            "## 'srr' standards compliance:",
-            "",
-            stds_summary,
-            "",
-            stds_final
-        )
+        out <- srr_counts_summary (srr_rep)
     }
 
     out <- paste0 (out, collapse = "\n")
@@ -161,6 +68,107 @@ srr_counts <- function (repourl, repo, issue_id, post_to_issue = TRUE) {
 
         out <- roreviewapi::post_to_issue (out, repo, issue_id)
     }
+
+    return (out)
+}
+
+srr_counts_summary <- function (srr_rep) {
+
+    stds_start <- grep ("^\\#\\#\\sStandards with", srr_rep)
+    sections <- grep ("^\\#+", srr_rep)
+    stds_end <- vapply (
+        stds_start, function (i) {
+            sections [which (sections > i)] [1]
+        },
+        integer (1L)
+    )
+
+    # as.list -> unlist to avoid accidental matrix results when numbers are
+    # equal
+    stds <- apply (cbind (stds_start, stds_end), 1, function (i) {
+        as.list (srr_rep [seq (i [1], i [2])])
+    })
+    stds <- lapply (stds, unlist)
+
+    stds_what <- vapply (
+        stds, function (i) {
+            gsub ("\\`", "", regmatches (i, regexpr ("\\`.*\\`", i)))
+        },
+        character (1L)
+    )
+    stds_n <- lapply (stds, function (i) {
+        vals <- regmatches (i, gregexpr ("[0-9]+\\s+\\/\\s+[0-9]+$", i))
+        index <- which (vapply (vals, length, integer (1L)) > 0L)
+        vals <- lapply (vals [index], function (j) {
+            as.integer (strsplit (j, "\\/") [[1]])
+        })
+        categories <-
+            regmatches (i, gregexpr ("^\\-\\s+[A-Za-z]+\\s\\:", i))
+        categories <- gsub ("^\\-\\s+|\\s+\\:$", "", unlist (categories))
+        names (vals) <- categories
+        return (vals)
+    })
+    names (stds_n) <- stds_what
+
+    categories <- srr::srr_stats_categories ()
+
+    summarise_one <- function (s, complied = TRUE) {
+
+        stds_summary <- paste0 (
+            ifelse (complied,
+                "- Complied with: ",
+                "- Not complied with: "
+            ),
+            s$Total [1],
+            " / ",
+            s$Total [2],
+            " = ",
+            round (100 * s$Total [1] / s$Total [2], digits = 1),
+            "% ("
+        )
+        these_categories <- names (s)
+        these_categories <-
+            these_categories [which (!these_categories == "Total")]
+        for (cat in these_categories) {
+            stds_summary <- paste0 (
+                stds_summary,
+                categories$category [categories$std_prefix == cat],
+                ": ",
+                s [[cat]] [1],
+                " / ",
+                s [[cat]] [2],
+                "; "
+            )
+        }
+        return (gsub (";\\s$", ")", stds_summary))
+    }
+
+    stds_summary <- c (
+        summarise_one (stds_n$srrstats, TRUE),
+        summarise_one (stds_n$srrstatsNA, FALSE)
+    )
+
+    compliance <- stds_n$srrstats$Total [1] / stds_n$srrstats$Total [2]
+
+    stds_final <- ifelse (
+        compliance > 0.5,
+        paste0 (
+            ":heavy_check_mark: This package complies with ",
+            "> 50% of all standads and may be submitted."
+        ),
+        paste0 (
+            ":heavy_multiplication_x: This package complies with ",
+            "< 50% of all standads and is not ready to be submitted."
+        )
+    )
+
+    out <- c (
+        "## 'srr' standards compliance:",
+        "",
+        stds_summary,
+        "",
+        stds_final
+    )
 
     return (out)
 }
