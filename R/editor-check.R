@@ -28,34 +28,9 @@ editor_check <- function (repourl, repo, issue_id, post_to_issue = TRUE) {
 
     path <- roreviewapi::dl_gh_repo (u = repourl, branch = branch)
 
-    # Have to pre-install any system dependencies here because this is the
-    # single call point for the r_bg process
-    os <- Sys.getenv ("ROREVIEWAPI_OS")
-    os_release <- Sys.getenv ("ROREVIEWAPI_OS_RELEASE")
-
-    if (os != "" & os_release != "") {
-
-        p <- roreviewapi::pkgrep_install_deps (path, os, os_release)
-
-        if (methods::is (p, "simpleError")) {
-
-            out <- paste0 (
-                "Initial examimnation of package 'DESCRIPTION'",
-                " file failed with error\n:",
-                p$message
-            )
-            return (out)
-
-        } else if (length (p) > 0L) {
-
-            p <- paste0 (
-                "Note: The following R packages were ",
-                "unable to be installed on our system: [",
-                paste0 (p, collapse = ", "),
-                "]; some checks may be unreliable."
-            )
-            p <- roreviewapi::post_to_issue (p, repo, issue_id)
-        }
+    deps <- roreviewapi::pkgrep_install_deps (path, repo, issue_id)
+    if (grep ("failed with error", deps)) {
+        return (deps)
     }
 
     updates <- roreviewapi::rorevapi_updated_pkgs (path)

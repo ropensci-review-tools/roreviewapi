@@ -1,13 +1,19 @@
 
 #' Install all system and package dependencies of an R package
 #'
-#' @param path Path to local package
-#' @inheritParams serve_api
-#' @return Hopefully a character vector of length zero, otherwise a list of any
-#' R packages unable to be installed.
+#' @inheritParams editor_checks
+#' @return Hopefully a character vector of length zero, otherwise a message
+#' detailing any R packages unable to be installed.
 #' @family utils
 #' @export
-pkgrep_install_deps <- function (path, os, os_release) {
+pkgrep_install_deps <- function (path, repo, issue_id) {
+
+    os <- Sys.getenv ("ROREVIEWAPI_OS")
+    os_release <- Sys.getenv ("ROREVIEWAPI_OS_RELEASE")
+
+    if (os == "" || os_release == "") {
+        return (NULL)
+    }
 
     install_sys_deps (path, os, os_release)
 
@@ -30,7 +36,28 @@ pkgrep_install_deps <- function (path, os, os_release) {
         deps <- deps [which (!deps %in% ip$Package)]
     }
 
-    return (deps)
+    out <- NULL
+
+    if (methods::is (deps, "simpleError")) {
+
+        out <- paste0 (
+            "Initial examimnation of package 'DESCRIPTION'",
+            " file failed with error\n:",
+            out$message
+        )
+
+    } else if (length (deps) > 0L) {
+
+        out <- paste0 (
+            "Note: The following R packages were ",
+            "unable to be installed on our system: [",
+            paste0 (out, collapse = ", "),
+            "]; some checks may be unreliable."
+        )
+        out <- roreviewapi::post_to_issue (out, repo, issue_id)
+    }
+
+    return (out)
 }
 
 #' Modified version of remotes::system_requirements that uses jsonlite rather
