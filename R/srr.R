@@ -33,7 +33,7 @@ srr_counts <- function (repourl, repo, issue_id, post_to_issue = TRUE) {
     os <- Sys.getenv ("ROREVIEWAPI_OS")
     os_release <- Sys.getenv ("ROREVIEWAPI_OS_RELEASE")
 
-    if (os != "" & os_release != "") {
+    if (os != "" && os_release != "") {
 
         p <- roreviewapi::pkgrep_install_deps (path, os, os_release)
 
@@ -112,7 +112,8 @@ srr_counts <- function (repourl, repo, issue_id, post_to_issue = TRUE) {
             vals <- lapply (vals [index], function (j) {
                 as.integer (strsplit (j, "\\/") [[1]])
             })
-            categories <- regmatches (i, gregexpr ("^\\-\\s+[A-Za-z]+\\s\\:", i))
+            categories <-
+                regmatches (i, gregexpr ("^\\-\\s+[A-Za-z]+\\s\\:", i))
             categories <- gsub ("^\\-\\s+|\\s+\\:$", "", unlist (categories))
             names (vals) <- categories
             return (vals)
@@ -136,7 +137,8 @@ srr_counts <- function (repourl, repo, issue_id, post_to_issue = TRUE) {
                 "% ("
             )
             these_categories <- names (s)
-            these_categories <- these_categories [which (!these_categories == "Total")]
+            these_categories <-
+                these_categories [which (!these_categories == "Total")]
             for (cat in these_categories) {
                 stds_summary <- paste0 (
                     stds_summary,
@@ -249,8 +251,8 @@ stats_version <- function () {
 
     tmp <- file.path (tempdir (), "stats-devguide-DESCRIPTION")
     if (!file.exists (tmp)) {
-        ret <- utils::download.file (u, destfile = tmp, quiet = TRUE)
-    } # nolint
+        ret <- utils::download.file (u, destfile = tmp, quiet = TRUE) # nolint
+    }
 
     d <- data.frame (read.dcf (tmp))
 
