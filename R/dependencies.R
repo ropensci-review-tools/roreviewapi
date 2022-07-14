@@ -1,7 +1,7 @@
 
 #' Install all system and package dependencies of an R package
 #'
-#' @inheritParams editor_checks
+#' @inheritParams editor_check
 #' @return Hopefully a character vector of length zero, otherwise a message
 #' detailing any R packages unable to be installed.
 #' @family utils

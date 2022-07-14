@@ -4,20 +4,18 @@
 \alias{pkgrep_install_deps}
 \title{Install all system and package dependencies of an R package}
 \usage{
-pkgrep_install_deps(path, os, os_release)
+pkgrep_install_deps(path, repo, issue_id)
 }
 \arguments{
-\item{path}{Path to local package}
+\item{repo}{The 'context.repo' parameter defining the repository from which
+the command was invoked, passed in 'org/repo' format.}
 
-\item{os}{Name of operating system, passed to \pkg{remotes} package to
-install system dependencies.}
-
-\item{os_release}{Name of operating system release, passed to \pkg{remotes}
-package to install system dependencies.}
+\item{issue_id}{The id (number) of the issue from which the command was
+invoked.}
 }
 \value{
-Hopefully a character vector of length zero, otherwise a list of any
-R packages unable to be installed.
+Hopefully a character vector of length zero, otherwise a message
+detailing any R packages unable to be installed.
 }
 \description{
 Install all system and package dependencies of an R package
