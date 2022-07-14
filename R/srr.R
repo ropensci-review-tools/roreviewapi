@@ -63,6 +63,9 @@ srr_counts <- function (repourl, repo, issue_id, post_to_issue = TRUE) {
         branch <- "" # for srr_report fn
     }
     srr_rep <- srr::srr_report (path = path, branch = branch, view = FALSE)
+    if (length (srr_rep) == 1L) { # "This is not an 'srr' package"
+        return (srr_rep)
+    }
 
     index <- grep ("^\\#\\#\\sMissing Standards", srr_rep)
 
