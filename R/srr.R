@@ -84,28 +84,89 @@ srr_counts <- function (repourl, repo, issue_id, post_to_issue = TRUE) {
 
     } else {
 
-        stds <- grep ("^\\#\\#\\sStandards with", srr_rep, value = TRUE)
-        stds_n <- regmatches (stds, regexpr ("[0-9]+\\s\\/\\s[0-9]+", stds))
-        stds_what <- gsub ("\\`", "", regmatches (stds, regexpr ("\\`.*\\`", stds)))
-        stds_what [stds_what == "srrstats"] <- "complied with"
-        if (any (stds_what == "srrstatsNA")) {
-            stds_what [stds_what == "srrstatsNA"] <- "not complied with"
-        } else {
-            stds_what <- c (stds_what, "not complied with")
-            stds_n <- c (stds_n, 0L)
-        }
-        stds_ntot <- regmatches (stds_n, regexpr ("[0-9]+$", stds_n))
-        stds_ntot <- unique (as.integer (stds_ntot))
-        stds_n <- as.integer (gsub ("\\s.*$", "", stds_n))
-
-        stds_summary <- paste0 (
-            "- ", stds_what, ": ", stds_n, " / ", stds_ntot,
-            " = ", round (100 * stds_n / stds_ntot, digits = 1), "%"
+        stds_start <- grep ("^\\#\\#\\sStandards with", srr_rep)
+        sections <- grep ("^\\#+", srr_rep)
+        stds_end <- vapply (
+            stds_start, function (i) {
+                sections [which (sections > i)] [1]
+            },
+            integer (1L)
         )
+
+        # as.list -> unlist to avoid accidental matrix results when numbers are
+        # equal
+        stds <- apply (cbind (stds_start, stds_end), 1, function (i) {
+            as.list (srr_rep [seq (i [1], i [2])])
+        })
+        stds <- lapply (stds, unlist)
+
+        stds_what <- vapply (
+            stds, function (i) {
+                gsub ("\\`", "", regmatches (i, regexpr ("\\`.*\\`", i)))
+            },
+            character (1L)
+        )
+        stds_n <- lapply (stds, function (i) {
+            vals <- regmatches (i, gregexpr ("[0-9]+\\s+\\/\\s+[0-9]+$", i))
+            index <- which (vapply (vals, length, integer (1L)) > 0L)
+            vals <- lapply (vals [index], function (j) {
+                as.integer (strsplit (j, "\\/") [[1]])
+            })
+            categories <- regmatches (i, gregexpr ("^\\-\\s+[A-Za-z]+\\s\\:", i))
+            categories <- gsub ("^\\-\\s+|\\s+\\:$", "", unlist (categories))
+            names (vals) <- categories
+            return (vals)
+        })
+        names (stds_n) <- stds_what
+
+        categories <- srr::srr_stats_categories ()
+
+        summarise_one <- function (s, complied = TRUE) {
+
+            stds_summary <- paste0 (
+                ifelse (complied,
+                    "- Complied with: ",
+                    "- Not complied with: "
+                ),
+                s$Total [1],
+                " / ",
+                s$Total [2],
+                " = ",
+                round (100 * s$Total [1] / s$Total [2], digits = 1),
+                "% ("
+            )
+            these_categories <- names (s)
+            these_categories <- these_categories [which (!these_categories == "Total")]
+            for (cat in these_categories) {
+                stds_summary <- paste0 (
+                    stds_summary,
+                    categories$category [categories$std_prefix == cat],
+                    ": ",
+                    s [[cat]] [1],
+                    " / ",
+                    s [[cat]] [2],
+                    "; "
+                )
+            }
+            return (gsub (";\\s$", ")", stds_summary))
+        }
+        stds_summary <- c (
+            summarise_one (stds_n$srrstats, TRUE),
+            summarise_one (stds_n$srrstatsNA, FALSE)
+        )
+
+        compliance <- stds_n$srrstats$Total [1] / stds_n$srrstats$Total [2]
+
         stds_final <- ifelse (
-            stds_n [stds_what == "complied with"] / stds_ntot > 0.5,
-            "This package complies with > 50% of all standads and may be submitted.",
-            "This package complies with < 50% of all standads and is not ready to be submitted."
+            compliance > 0.5,
+            paste0 (
+                ":heavy_check_mark: This package complies with ",
+                "> 50% of all standads and may be submitted."
+            ),
+            paste0 (
+                ":heavy_multiplication_x: This package complies with ",
+                "< 50% of all standads and is not ready to be submitted."
+            )
         )
 
         out <- c (
