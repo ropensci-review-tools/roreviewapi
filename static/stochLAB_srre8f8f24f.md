@@ -5,6 +5,7 @@
 [Click here for full text of all standards](https://stats-devguide.ropensci.org/standards.html)
 
 
+:heavy_multiplication_x: Error: Package documents compliance only with general standards.Statistical packages must document compliance with at least one set of category-specific standards as well.
 
 ## Standards with `srrstats` tag
 
@@ -13,98 +14,6 @@
 **Numbers of standards:**
 
 -  G :  47  /  68
-
--  NA :  NA  /  NA
-
--  NA :  NA  /  NA
-
--  NA :  NA  /  NA
-
--  NA :  NA  /  NA
-
--  NA :  NA  /  NA
-
--  NA :  NA  /  NA
-
--  NA :  NA  /  NA
-
--  NA :  NA  /  NA
-
--  NA :  NA  /  NA
-
--  NA :  NA  /  NA
-
--  NA :  NA  /  NA
-
--  NA :  NA  /  NA
-
--  NA :  NA  /  NA
-
--  NA :  NA  /  NA
-
--  NA :  NA  /  NA
-
--  NA :  NA  /  NA
-
--  NA :  NA  /  NA
-
--  NA :  NA  /  NA
-
--  NA :  NA  /  NA
-
--  NA :  NA  /  NA
-
--  NA :  NA  /  NA
-
--  NA :  NA  /  NA
-
--  NA :  NA  /  NA
-
--  NA :  NA  /  NA
-
--  NA :  NA  /  NA
-
--  NA :  NA  /  NA
-
--  NA :  NA  /  NA
-
--  NA :  NA  /  NA
-
--  NA :  NA  /  NA
-
--  NA :  NA  /  NA
-
--  NA :  NA  /  NA
-
--  NA :  NA  /  NA
-
--  NA :  NA  /  NA
-
--  NA :  NA  /  NA
-
--  NA :  NA  /  NA
-
--  NA :  NA  /  NA
-
--  NA :  NA  /  NA
-
--  NA :  NA  /  NA
-
--  NA :  NA  /  NA
-
--  NA :  NA  /  NA
-
--  NA :  NA  /  NA
-
--  NA :  NA  /  NA
-
--  NA :  NA  /  NA
-
--  NA :  NA  /  NA
-
--  NA :  NA  /  NA
-
--  NA :  NA  /  NA
 
 - Total : 47 / 68
 
@@ -225,46 +134,6 @@ Standards in  on line#60 of file [R/srr-stats-standards.R](https://github.com/Hi
 **Numbers of standards:**
 
 -  G :  21  /  68
-
--  NA :  NA  /  NA
-
--  NA :  NA  /  NA
-
--  NA :  NA  /  NA
-
--  NA :  NA  /  NA
-
--  NA :  NA  /  NA
-
--  NA :  NA  /  NA
-
--  NA :  NA  /  NA
-
--  NA :  NA  /  NA
-
--  NA :  NA  /  NA
-
--  NA :  NA  /  NA
-
--  NA :  NA  /  NA
-
--  NA :  NA  /  NA
-
--  NA :  NA  /  NA
-
--  NA :  NA  /  NA
-
--  NA :  NA  /  NA
-
--  NA :  NA  /  NA
-
--  NA :  NA  /  NA
-
--  NA :  NA  /  NA
-
--  NA :  NA  /  NA
-
--  NA :  NA  /  NA
 
 - Total : 21 / 68
 
