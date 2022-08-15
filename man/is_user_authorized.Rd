@@ -17,3 +17,12 @@ Logical value indicating whether or not a user is authorized.
 This function is used only in the \pkg{plumber} endpoints, to prevent them
 being called by unauthorized users.
 }
+\seealso{
+Other ropensci: 
+\code{\link{check_issue_template}()},
+\code{\link{push_to_gh_pages}()},
+\code{\link{srr_counts_summary}()},
+\code{\link{srr_counts}()},
+\code{\link{stats_badge}()}
+}
+\concept{ropensci}

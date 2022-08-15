@@ -35,7 +35,9 @@ whether than represents > 50\% of all applicable standards.
 \seealso{
 Other ropensci: 
 \code{\link{check_issue_template}()},
+\code{\link{is_user_authorized}()},
 \code{\link{push_to_gh_pages}()},
+\code{\link{srr_counts_summary}()},
 \code{\link{stats_badge}()}
 }
 \concept{ropensci}

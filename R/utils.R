@@ -43,6 +43,7 @@ get_github_user <- function () {
 #' being called by unauthorized users.
 #' @param secret Environment variable `PKGCHECK_TOKEN` sent from bot.
 #' @return Logical value indicating whether or not a user is authorized.
+#' @family ropensci
 #' @export
 is_user_authorized <- function (secret = NULL) {
 
@@ -67,6 +68,7 @@ authorized_users <- c (
 #' Get branch from a GitHub URL if non-default branch specified there
 #' @param repourl Potentially with "/tree/branch_name" appended
 #' @return Branch as single string.
+#' @family github
 #' @export
 get_branch_from_url <- function (repourl) {
 

@@ -21,6 +21,7 @@ Post review checks to GitHub issue
 }
 \seealso{
 Other github: 
-\code{\link{dl_gh_repo}()}
+\code{\link{dl_gh_repo}()},
+\code{\link{get_branch_from_url}()}
 }
 \concept{github}

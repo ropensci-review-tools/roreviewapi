@@ -20,6 +20,8 @@ GitHub pages.
 \seealso{
 Other ropensci: 
 \code{\link{check_issue_template}()},
+\code{\link{is_user_authorized}()},
+\code{\link{srr_counts_summary}()},
 \code{\link{srr_counts}()},
 \code{\link{stats_badge}()}
 }

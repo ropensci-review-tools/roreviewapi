@@ -16,3 +16,12 @@ of standards complied with.
 \description{
 Summarise counts of 'srr' standards from full 'srr' report
 }
+\seealso{
+Other ropensci: 
+\code{\link{check_issue_template}()},
+\code{\link{is_user_authorized}()},
+\code{\link{push_to_gh_pages}()},
+\code{\link{srr_counts}()},
+\code{\link{stats_badge}()}
+}
+\concept{ropensci}

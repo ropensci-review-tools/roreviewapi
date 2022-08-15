@@ -19,6 +19,7 @@ Download a GitHub repo to local cache
 }
 \seealso{
 Other github: 
+\code{\link{get_branch_from_url}()},
 \code{\link{post_to_issue}()}
 }
 \concept{github}
