@@ -29,7 +29,7 @@ editor_check <- function (repourl, repo, issue_id, post_to_issue = TRUE) {
     path <- roreviewapi::dl_gh_repo (u = repourl, branch = branch)
 
     deps <- roreviewapi::pkgrep_install_deps (path, repo, issue_id)
-    if (grep ("failed with error", deps)) {
+    if (any (grepl ("failed with error", deps))) {
         return (deps)
     }
 
