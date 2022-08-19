@@ -18,23 +18,17 @@ pkgrep_install_deps <- function (path, repo, issue_id) {
 
     install_sys_deps (path, os, os_release)
 
+    update.packages (ask = FALSE)
+
     remotes::install_deps (
         pkgdir = path,
         dependencies = TRUE,
         upgrade = "always"
     )
 
-    deps <- remotes::dev_package_deps (
-        pkgdir = path,
-        dependencies = TRUE
-    )
-    ip <- data.frame (utils::installed.packages ())
-
-    deps <- deps$package [which (!deps$package %in% ip$Package)]
-    if (length (deps) > 0L) {
-        install_dev_deps (deps)
-        ip <- data.frame (utils::installed.packages ())
-        deps <- deps [which (!deps %in% ip$Package)]
+    deps <- upgradeable_pkgs (path)
+    if (nrow (deps) > 0L) {
+        deps <- install_dev_deps (path, deps)
     }
 
     out <- NULL
@@ -47,12 +41,12 @@ pkgrep_install_deps <- function (path, repo, issue_id) {
             out$message
         )
 
-    } else if (length (deps) > 0L) {
+    } else if (nrow (deps) > 0L) {
 
         out <- paste0 (
-            "Note: The following R packages were ",
-            "unable to be installed on our system: [",
-            paste0 (out, collapse = ", "),
+            "Note: The following R packages were unable to be ",
+            "installed/upgraded  on our system: [",
+            paste0 (deps$package, collapse = ", "),
             "]; some checks may be unreliable."
         )
         out <- roreviewapi::post_to_issue (out, repo, issue_id)
@@ -160,52 +154,56 @@ sysreqs_rhub <- function (desc_file) {
     return (req)
 }
 
-#' Any packages which can not be installed from CRAN, as for example commonly
-#' happens with spatial packages, are installed in this function as remote
-#' dependencies directly from GitHub. This only works for packages which list a
-#' GitHub URL.
-#' @param devs List of 'dev' packages unable to be installed from CRAN
+upgradeable_pkgs <- function (path) {
+
+    deps <- remotes::dev_package_deps (
+        pkgdir = path,
+        dependencies = TRUE
+    )
+    deps [which (deps$diff != 0L), ]
+}
+
+#' Install required development versions of any packages.
+#'
+#' This uses the two standard ways to install remotes dependencies provided by
+#' the \pkg{remotes} package:
+#' 1. Direct installation from listed remote package repository sources;
+#' 2. Installation through additional repository servers other than CRAN.
+#'
+#' @param deps List of 'dev' packages unable to be installed from CRAN
 #' @noRd
-install_dev_deps <- function (deps) {
+install_dev_deps <- function (path, deps) {
 
-    requireNamespace ("rvest")
-
-    u_base <- "https://cran.r-project.org/package="
-
-    for (p in deps) {
-
-        # Make sure no previous deps have also installed 'p':
-        ip <- data.frame (utils::installed.packages ())
-        if (p %in% ip$Package) {
-            next
-        }
-
-        u <- paste0 (u_base, p)
-        x <- rvest::read_html (u)
-        dat <- rvest::html_table (x)
-        remote <- lapply (dat, function (i) {
-            i [grep ("^(URL|BugReports)\\:", i$X1), ]
-        })
-        remote <- do.call (rbind, remote)$X2
-        remote <- gsub ("\\s*", "", unlist (strsplit (remote, ",")))
-        remote <- grep ("^https\\:\\/\\/github\\.com", remote, value = TRUE)
-        remote <- unique (gsub ("issues(\\/?)$", "", remote)) # BugReports URLs
-
-        if (length (remote) > 1L) {
-            remote <- remote [1L]
-        }
-
-        if (length (remote) > 0L) {
-            tryCatch (remotes::install_github (remote,
-                dependencies = TRUE,
-                upgrade = "never"
-            ),
+    # Install from standard remote locations:
+    for (p in deps$package) {
+        tryCatch (
+            remotes::install_dev (p),
             error = function (e) NULL
-            )
-        } else {
-            # previous entries in `deps` may make standard installation
-            # possible:
-            utils::install.packages (p)
+        )
+    }
+
+    # Then refresh package upgrade list:
+    deps <- upgradeable_pkgs (path)
+    if (nrow (deps) == 0L) {
+        return (NULL)
+    }
+
+    # Installation from remote repository servers:
+    remote_repos <- lapply (deps$remote, function (i) i$repos)
+    remote_repos <- unique (unlist (remote_repos))
+    remote_repos <- remote_repos [which (!remote_repos %in% getOption ("repos"))]
+    repos <- c (remote_repos, getOption ("repos"))
+
+    # Install packages from any remote repository servers:
+    if (length (repos) > 1L) { # other repos added to standard "CRAN" option
+
+        ip <- data.frame (installed.packages ())
+        ip <- ip [ip$Package %in% deps$package, ]
+        for (i in seq (nrow (ip))) {
+            # remove.packages (ip$Package [i], lib = ip$LibPath [i])
+            install.packages (ip$Package [i], repos = repos)
         }
     }
+
+    return (upgradeable_pkgs (path))
 }
