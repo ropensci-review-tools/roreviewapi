@@ -27,5 +27,5 @@ rorevapi_updated_pkgs <- function (path) {
 
     updates <- updates$Package [which (updates$Package %in% deps)]
 
-    return (updates)
+    return (unique (updates))
 }
