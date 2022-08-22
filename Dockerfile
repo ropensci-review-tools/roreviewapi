@@ -15,7 +15,8 @@ RUN install2.r \
 
 RUN echo "GITHUB_TOKEN='<my_github_token>'" > ~/.Renviron \
     && echo "GITHUB_PAT='<my_github_token>'" >> ~/.Renviron \
-    && echo "PKGCHECK_TOKEN='<pkgcheck_token>'" >> ~/.Renviron
+    && echo "PKGCHECK_TOKEN='<pkgcheck_token>'" >> ~/.Renviron \
+    && echo "ROREV_CONTAINER='true'" >> ~/.Renviron \
     && git config --global user.name "username" \
     && git config --global user.email "my.address@mail.com"
 

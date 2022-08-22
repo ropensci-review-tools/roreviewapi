@@ -197,11 +197,13 @@ install_dev_deps <- function (path, deps) {
     # Install packages from any remote repository servers:
     if (length (repos) > 1L) { # other repos added to standard "CRAN" option
 
-        ip <- data.frame (installed.packages ())
-        ip <- ip [ip$Package %in% deps$package, ]
-        for (i in seq (nrow (ip))) {
-            # remove.packages (ip$Package [i], lib = ip$LibPath [i])
-            install.packages (ip$Package [i], repos = repos)
+        is_docker <- Sys.getenv ("ROREV_CONTAINER") == "true" # #33
+        if (is_docker) {
+            bspm::disable ()
+        }
+        install.packages (deps$package, repos = repos)
+        if (is_docker) {
+            bspm::enable ()
         }
     }
 
