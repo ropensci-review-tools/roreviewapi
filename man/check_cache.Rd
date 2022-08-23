@@ -28,7 +28,6 @@ exported to enable it to be used within the \pkg{plumber} API.
 \seealso{
 Other utils: 
 \code{\link{pkgrep_install_deps}()},
-\code{\link{rorevapi_updated_pkgs}()},
 \code{\link{stdout_stderr_cache}()},
 \code{\link{symbol_crs}()},
 \code{\link{symbol_tck}()}
