@@ -171,8 +171,15 @@ upgradeable_pkgs <- function (path) {
 #' 2. Installation through additional repository servers other than CRAN.
 #'
 #' @param deps List of 'dev' packages unable to be installed from CRAN
+#' @return A zero-row data.frame if everything works, otherwise an error. The
+#' zero-row data.frame is important because the output must be comparable with
+#' that of 'upgradeable_pkgs()', which returns an empty 'data.frame' directly
+#' from 'remotes::dev_package_deps()`, so must be an empty 'data.frame' here
+#' too.
 #' @noRd
 install_dev_deps <- function (path, deps) {
+
+    ret <- data.frame (x = integer (0)) # dummy value; only checked with nrow
 
     # Install from standard remote locations:
     for (p in deps$package) {
@@ -185,7 +192,7 @@ install_dev_deps <- function (path, deps) {
     # Then refresh package upgrade list:
     deps <- upgradeable_pkgs (path)
     if (nrow (deps) == 0L) {
-        return (NULL)
+        return (ret)
     }
 
     # Installation from remote repository servers:
