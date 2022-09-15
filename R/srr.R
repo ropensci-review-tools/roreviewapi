@@ -216,7 +216,7 @@ stats_badge <- function (repo = "ropensci/software-review",
         return (NULL)
     }
 
-    return (paste0 ("6\\approved-", grade, "-v", version))
+    return (paste0 ("6/approved-", grade, "-v", version))
 }
 
 get_html_var <- function (x, expr = "submission-type") {
