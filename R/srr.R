@@ -210,7 +210,7 @@ stats_badge <- function (repo = "ropensci/software-review",
     }
 
     grade <- get_html_var (out, "statsgrade")
-    version <- stats_version ()
+    version <- stats_version (truncated = TRUE)
 
     if (type != "Stats") {
         return (NULL)
@@ -232,7 +232,7 @@ get_html_var <- function (x, expr = "submission-type") {
 #'
 #' @return A single character containing version number
 #' @noRd
-stats_version <- function () {
+stats_version <- function (truncated = TRUE) {
 
     u <- paste0 (
         "https://raw.githubusercontent.com/",
@@ -247,5 +247,10 @@ stats_version <- function () {
 
     d <- data.frame (read.dcf (tmp))
 
-    return (d$Version)
+    version <- d$Version
+    if (truncated) {
+        version <- regmatches (version, regexpr ("[0-9]+\\.[0-9]+", version))
+    }
+
+    return (version)
 }
