@@ -8,7 +8,6 @@ ENV GITHUB_PAT "<my_github_token>"
 # seasonal -> roreviewapi#13
 RUN install2.r \
   plumber \
-  seasonal \
   visNetwork \
 && installGithub.r \
       ropensci-review-tools/roreviewapi
