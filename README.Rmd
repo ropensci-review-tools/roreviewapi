@@ -12,7 +12,7 @@ output:
 
 <!-- badges: start -->
 [![R build status](https://github.com/ropensci-review-tools/roreviewapi/workflows/R-CMD-check/badge.svg)](https://github.com/ropensci-review-tools/roreviewapi/actions?query=workflow%3AR-CMD-check)
-[![Project Status: Concept](https://www.repostatus.org/badges/latest/concept.svg)](https://www.repostatus.org/#concept)
+[![Project Status: Concept](https://www.repostatus.org/badges/latest/active.svg)](https://www.repostatus.org/#active)
 <!-- badges: end -->
 
 Plumber API to generate reports on package structure and function for the
@@ -40,7 +40,7 @@ cli only recognises the former name.
 The package also works by locally caching previously analysed packages, in
 a `pkgcheck` subdirectory of the location determined by
 ```{r, rappdirs, eval = FALSE}
-rappdirs::user_cache_dir()
+rappdirs::user_cache_dir ()
 ```
 You may manually erase the contents of this subdirectory at any time at no
 risk.
