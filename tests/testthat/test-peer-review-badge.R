@@ -51,7 +51,7 @@ test_that("has_readme_badge() works when HTTPS software review badge", {
     "[![Status at rOpenSci Software Peer Review](https://badges.ropensci.org/3_status.svg)](https://github.com/ropensci/software-review/issues/3)",
     "README.md"
   )
-  expect_equal(has_readme_badge(), "")
-  expect_equal(has_readme_badge(issue_id = 3), "")
+  expect_equal(has_readme_badge(), "Found software review README badge. :tada:")
+  expect_equal(has_readme_badge(issue_id = 3), "Found software review README badge. :tada:")
   expect_match(has_readme_badge(issue_id = 33), "Missing")
 })
