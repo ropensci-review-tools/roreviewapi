@@ -4,10 +4,12 @@
 \alias{has_readme_badge}
 \title{Check whether README.md features an rOpenSci software-review badge}
 \usage{
-has_readme_badge(path = getwd())
+has_readme_badge(path = getwd(), issue_number = NULL)
 }
 \arguments{
-\item{path}{}
+\item{path}{Path to package source}
+
+\item{issue_number}{Number of software review submission issue}
 }
 \value{
 A string, empty if the badge was found.
