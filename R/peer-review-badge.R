@@ -93,3 +93,4 @@ has_readme_badge <- function(path = getwd(), issue_id = NULL) {
 
 }
 
+globalVariables(".")

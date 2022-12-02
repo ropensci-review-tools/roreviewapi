@@ -18,7 +18,7 @@ pkgrep_install_deps <- function (path, repo, issue_id) {
 
     install_sys_deps (path, os, os_release)
 
-    update.packages (ask = FALSE)
+    utils::update.packages (ask = FALSE)
 
     remotes::install_deps (
         pkgdir = path,
@@ -208,7 +208,7 @@ install_dev_deps <- function (path, deps) {
         if (is_docker) {
             bspm::disable ()
         }
-        install.packages (deps$package, repos = repos)
+        utils::install.packages (deps$package, repos = repos)
         if (is_docker) {
             bspm::enable ()
         }
