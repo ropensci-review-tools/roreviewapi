@@ -25,7 +25,7 @@ check_cache <- function (org, repo, cache_dir = tempdir ()) {
         )
     }
 
-    f <- file.path (cache_dir, "commit_oids.Rds")
+    f <- fs::path (cache_dir, "commit_oids.Rds")
 
     if (file.exists (f)) {
 
@@ -92,21 +92,20 @@ stdout_stderr_cache <- function (repourl) {
     cmt <- pkgcheck::get_latest_commit (org = org, repo = repo, branch)
     oid <- substring (cmt$oid, 1, 8)
 
-    temp_dir <- file.path (Sys.getenv ("PKGCHECK_CACHE_DIR"), "templogs")
+    temp_dir <- fs::path (Sys.getenv ("PKGCHECK_CACHE_DIR"), "templogs")
     if (!dir.exists (temp_dir)) {
-        dir.create (temp_dir, recursive = TRUE)
+        fs::dir_create (temp_dir, recurse = TRUE)
     }
 
-    sout <- file.path (temp_dir, paste0 (repo, "_", oid, "_stdout"))
-    serr <- file.path (temp_dir, paste0 (repo, "_", oid, "_stderr"))
+    sout <- fs::path (temp_dir, paste0 (repo, "_", oid, "_stdout"))
+    serr <- fs::path (temp_dir, paste0 (repo, "_", oid, "_stderr"))
 
-    otherlogs <- list.files (temp_dir,
-        pattern = repo,
-        full.names = TRUE
+    otherlogs <- fs::dir_ls (temp_dir,
+        regexp = repo
     )
     otherlogs <- otherlogs [which (!grepl (oid, otherlogs))]
     if (length (otherlogs) > 0) {
-        file.remove (otherlogs)
+        fs::file_delete (otherlogs)
     }
 
     return (list (stdout = sout, stderr = serr))
