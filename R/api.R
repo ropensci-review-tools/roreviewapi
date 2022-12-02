@@ -29,7 +29,7 @@ serve_api <- function (port = 8000L,
 
     ip <- data.frame (utils::installed.packages ())
 
-    f <- file.path (
+    f <- fs::path (
         ip$LibPath [ip$Package == "roreviewapi"],
         "roreviewapi", "plumber.R"
     )
@@ -41,16 +41,15 @@ serve_api <- function (port = 8000L,
 
         cache_dir <- Sys.getenv ("PKGCHECK_CACHE_DIR")
         if (!nzchar (cache_dir)) {
-            cache_dir <- file.path (rappdirs::user_cache_dir (), "R", "pkgcheck")
-            cache_dir <- normalizePath (cache_dir, mustWork = FALSE)
+            cache_dir <- fs::path (rappdirs::user_cache_dir (), "R", "pkgcheck")
             # normalizePath resolves `~` to /root instead of /home:
             if (grepl ("^\\/root", cache_dir)) {
                 cache_dir <- gsub ("^\\/root", "/home", cache_dir)
             }
         }
 
-        if (!file.exists (cache_dir)) {
-            dir.create (cache_dir, recursive = TRUE)
+        if (!fs::file_exists (cache_dir)) {
+            fs::dir_create (cache_dir, recurse = TRUE)
         }
     }
 
@@ -72,9 +71,9 @@ serve_api <- function (port = 8000L,
     }
 
     # ----------local static dir set up----------
-    static_dir <- file.path (cache_dir, "static")
+    static_dir <- fs::path (cache_dir, "static")
     if (!file.exists (static_dir)) {
-        dir.create (static_dir, recursive = TRUE)
+        fs::dir_create (static_dir, recurse = TRUE)
     }
 
     # ----------plumber process set up----------
