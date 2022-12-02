@@ -25,17 +25,17 @@ dl_gh_repo <- function (u, branch = NULL) {
             u <- substring (u, 1, nchar (u) - 1)
         }
 
-        f <- file.path (cache_dir, repo)
-        if (dir.exists (f)) {
-            chk <- unlink (f, recursive = TRUE)
+        f <- fs::path (cache_dir, repo)
+        if (fs::dir_exists (f)) {
+            fs::dir_delete (f)
         }
         gert::git_clone (url = u, path = f, branch = branch)
         return (f)
     }
 
-    path <- file.path (cache_dir, repo)
+    path <- fs::path (cache_dir, repo)
 
-    if (!dir.exists (path) | repo_updated) {
+    if (!fs::dir_exists (path) | repo_updated) {
 
         message ("Cloning repo ...")
         path <- clone_repo (u, repo, branch)
