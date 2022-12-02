@@ -240,8 +240,8 @@ stats_version <- function (truncated = TRUE) {
         "main/DESCRIPTION"
     )
 
-    tmp <- file.path (tempdir (), "stats-devguide-DESCRIPTION")
-    if (!file.exists (tmp)) {
+    tmp <- fs::path (tempdir (), "stats-devguide-DESCRIPTION")
+    if (!fs::file_exists (tmp)) {
         ret <- utils::download.file (u, destfile = tmp, quiet = TRUE) # nolint
     }
 
