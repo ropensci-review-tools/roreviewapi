@@ -1,3 +1,10 @@
+#' Check whether README.md features an rOpenSci software-review badge
+#'
+#' @param path
+#'
+#' @return A string, empty if the badge was found.
+#' @export
+#'
 has_readme_badge <- function(path = getwd()) {
   readme_path <- file.path(path, "README.md")
   if (!file.exists(readme_path)) {
@@ -18,15 +25,36 @@ has_readme_badge <- function(path = getwd()) {
 
   is_ropensci_badge <- function(badges_links) {
     grepl(
-      "http(s)?://badges.ropensci.org/[[:digit:]]*_status.svg",
+      "https://badges.ropensci.org/[[:digit:]]*_status.svg",
       badges_links,
       perl = TRUE
     )
   }
+
+  is_http_ropensci_badge <- function(badges_links) {
+    grepl(
+      "http://badges.ropensci.org/[[:digit:]]*_status.svg",
+      badges_links,
+      perl = TRUE
+    )
+  }
+
   if (!any(is_ropensci_badge(badges_links))) {
-    FALSE
+    if (any(is_http_ropensci_badge(badges_links))) {
+      "Use https not http in the software review badge."
+    } else {
+      paste(
+        c(
+          "Missing software review badge, add it with", "",
+          "```markdown",
+          "[![Status at rOpenSci Software Peer Review](https://badges.ropensci.org/<issue-number>_status.svg)](https://github.com/ropensci/software-review/issues/<issue-number>)",
+          "```"
+        ),
+        collapse = "\n"
+      )
+    }
   } else {
-    TRUE
+    ""
   }
 
 }
