@@ -161,7 +161,7 @@ function (repourl = "", repo, issue_id, secret = NULL) {
     logfiles <- roreviewapi::stdout_stderr_cache (repourl)
 
     ps <<- callr::r_bg (
-        func = roreviewapi::has_review_badge,
+        func = roreviewapi::readme_badge,
         args = list (
             repourl = repourl,
             repo = repo,
