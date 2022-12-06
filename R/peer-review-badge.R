@@ -76,7 +76,7 @@ has_readme_badge <- function(path = getwd(), issue_id = NULL) {
       }
       paste(
         c(
-          "Missing software review badge in README.md, add it with", "",
+          "Missing software review badge in README.md; please add it with", "",
           "```markdown",
           sprintf(
             "[![Status at rOpenSci Software Peer Review](https://badges.ropensci.org/%s_status.svg)](https://github.com/ropensci/software-review/issues/%s)",
