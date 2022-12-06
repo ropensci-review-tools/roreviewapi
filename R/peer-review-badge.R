@@ -23,13 +23,13 @@ readme_badge <- function (repourl, repo, issue_id, post_to_issue = TRUE) {
     # https://github.com/ropensci/codemetar/blob/master/R/extract_badges.R
     # Also GPL-3
 
-    badges_links <- readme_path %>%
-        readLines () %>%
-        commonmark::markdown_xml () %>%
-        xml2::read_xml () %>%
-        xml2::xml_find_all (".//d1:link[d1:image]", xml2::xml_ns (.)) %>%
-        xml2::xml_contents (.) %>%
-        . [xml2::xml_name (.) == "image"] %>%
+    xml_cnts <- readme_path |>
+        readLines () |>
+        commonmark::markdown_xml () |>
+        xml2::read_xml ()
+    xml_cnts <- xml2::xml_find_all (xml_cnts, ".//d1:link[d1:image]", xml2::xml_ns (xml_cnts)) |>
+        xml2::xml_contents ()
+    badges_links <- xml_cnts [which (xml2::xml_name (xml_cnts) == "image")] |>
         xml2::xml_attr ("destination")
 
     is_ropensci_badge <- function (badges_links, issue_id) {
@@ -79,7 +79,6 @@ readme_badge <- function (repourl, repo, issue_id, post_to_issue = TRUE) {
     } else {
         out <- "Found software review README badge. :tada:"
     }
-
 
     if (post_to_issue) {
 
