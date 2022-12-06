@@ -208,15 +208,26 @@ stats_badge <- function (repo = "ropensci/software-review",
     if (length (type) == 0L) {
         return (NULL)
     }
-
-    grade <- get_html_var (out, "statsgrade")
-    version <- stats_version (truncated = TRUE)
-
     if (type != "Stats") {
         return (NULL)
     }
 
-    return (paste0 ("6/approved-", grade, "-v", version))
+    labels <- grep ("^labels\\:", out, value = TRUE) [1]
+
+    if (grepl ("approved", labels)) {
+
+        g <- regexpr ("6\\/approved\\-(bronze|silver|gold)\\-v[0-9]+\\.[0-9]+$", labels)
+        res <- regmatches (labels, g)
+
+    } else {
+
+        grade <- get_html_var (out, "statsgrade")
+        version <- stats_version (truncated = TRUE)
+        res <- paste0 ("6/approved-", grade, "-v", version)
+
+    }
+
+    return (res)
 }
 
 get_html_var <- function (x, expr = "submission-type") {
