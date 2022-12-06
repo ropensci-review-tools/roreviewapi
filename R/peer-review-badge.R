@@ -15,17 +15,6 @@ readme_badge <- function(repourl, repo, issue_id, post_to_issue = TRUE) {
   path <- roreviewapi::dl_gh_repo (u = repourl, branch = branch)
 
   # Then the 'badge' bit:
-  out <- has_readme_badge(path, issue_id)
-
-  if (post_to_issue) {
-
-    out <- roreviewapi::post_to_issue (out, repo, issue_id)
-  }
-
-  return (out)
-}
-
-has_readme_badge <- function(path = getwd(), issue_id = NULL) {
   readme_path <- file.path(path, "README.md")
   if (!file.exists(readme_path)) {
     stop(sprintf("Can't find README.md at %s", path))
@@ -69,12 +58,12 @@ has_readme_badge <- function(path = getwd(), issue_id = NULL) {
 
   if (!any(is_ropensci_badge(badges_links, issue_id))) {
     if (any(is_http_ropensci_badge(badges_links, issue_id))) {
-      "Use https not http in the software review badge."
+      out <- "Use https not http in the software review badge."
     } else {
       if (is.null(issue_id)) {
         issue_id <- "<issue-number>"
       }
-      paste(
+      out <- paste(
         c(
           "Missing software review badge in README.md; please add it with", "",
           "```markdown",
@@ -88,9 +77,16 @@ has_readme_badge <- function(path = getwd(), issue_id = NULL) {
       )
     }
   } else {
-    "Found software review README badge. :tada:"
+    out <- "Found software review README badge. :tada:"
   }
 
+
+  if (post_to_issue) {
+
+    out <- roreviewapi::post_to_issue (out, repo, issue_id)
+  }
+
+  return (out)
 }
 
 globalVariables(".")
