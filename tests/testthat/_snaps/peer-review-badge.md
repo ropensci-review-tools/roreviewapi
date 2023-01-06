@@ -1,7 +1,7 @@
-# has_readme_badge() errors when no README.md
+# readme_has_peer_review_badge() errors when no README.md
 
     Code
-      has_readme_badge()
+      readme_has_peer_review_badge()
     Error <simpleError>
       Can't find README.md at package-path
 
