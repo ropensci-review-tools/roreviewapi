@@ -5,7 +5,8 @@
 #' @return A string, empty if the badge was found.
 #' @export
 #'
-readme_badge <- function (repourl, repo, issue_id, post_to_issue = TRUE) {
+readme_badge <- function (repourl, repo = NULL, issue_id = NULL, post_to_issue = TRUE) {
+
     # Content taken directly from editor_check():
     branch <- roreviewapi::get_branch_from_url (repourl)
     if (!is.null (branch)) {
@@ -14,7 +15,28 @@ readme_badge <- function (repourl, repo, issue_id, post_to_issue = TRUE) {
 
     path <- roreviewapi::dl_gh_repo (u = repourl, branch = branch)
 
-    # Then the 'badge' bit:
+    out <- readme_has_peer_review_badge (path, issue_id)
+
+    if (post_to_issue) {
+
+        out <- roreviewapi::post_to_issue (out, repo, issue_id)
+    }
+
+    return (out)
+}
+
+globalVariables (".")
+
+
+#' Check whether 'README.md' has a "peer reviewed" badge
+#'
+#' @param path Local path to package directory.
+#' @inheritParams srr_counts
+#' @return A string, empty if the badge was found.
+#' @export
+#'
+readme_has_peer_review_badge <- function (path = getwd (), issue_id = NULL) {
+
     readme_path <- file.path (path, "README.md")
     if (!file.exists (readme_path)) {
         stop (sprintf ("Can't find README.md at %s", path))
@@ -80,12 +102,5 @@ readme_badge <- function (repourl, repo, issue_id, post_to_issue = TRUE) {
         out <- "Found software review README badge. :tada:"
     }
 
-    if (post_to_issue) {
-
-        out <- roreviewapi::post_to_issue (out, repo, issue_id)
-    }
-
     return (out)
 }
-
-globalVariables (".")

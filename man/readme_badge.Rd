@@ -4,7 +4,7 @@
 \alias{readme_badge}
 \title{Check whether README.md features an rOpenSci software-review badge}
 \usage{
-readme_badge(repourl, repo, issue_id, post_to_issue = TRUE)
+readme_badge(repourl, repo = NULL, issue_id = NULL, post_to_issue = TRUE)
 }
 \arguments{
 \item{repourl}{The URL for the repo being checked, potentially including full
