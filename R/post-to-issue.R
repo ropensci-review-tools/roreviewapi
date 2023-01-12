@@ -25,7 +25,17 @@ post_to_issue <- function (cmt, repo, issue_id) {
             "--repo", repo_bug,
             "--body-file", f
         )
-        cmt <- bug_report (cmt, repo, issue_id)
+        cmt <- paste0 (
+            "There was a problem checking submission for [",
+            repo,
+            "](https://github.com/",
+            repo,
+            ") submitted in issue [",
+            issue_id,
+            "](https://github.com/ropensci/softwoare-review/",
+            issue_id,
+            ")"
+        )
 
     } else if (grepl ("github", repo)) {
 
@@ -43,19 +53,4 @@ post_to_issue <- function (cmt, repo, issue_id) {
     writeLines (cmt, f)
 
     system2 ("gh", args = args, stdout = TRUE)
-}
-
-bug_report <- function (cmt, repo, issue_id) {
-
-    return (paste0 (
-        "There was a problem checking submission for [",
-        repo,
-        "](https://github.com/",
-        repo,
-        ") submitted in issue [",
-        issue_id,
-        "](https://github.com/ropensci/softwoare-review/",
-        issue_id,
-        ")"
-    ))
 }
