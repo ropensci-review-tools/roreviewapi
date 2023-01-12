@@ -37,7 +37,7 @@ post_to_issue <- function (cmt, repo, issue_id) {
             ")"
         )
 
-    } else if (grepl ("github", repo)) {
+    } else {
 
         repo <- gsub ("https://github.com/", "", repo)
 
