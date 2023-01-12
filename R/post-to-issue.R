@@ -32,7 +32,7 @@ post_to_issue <- function (cmt, repo, issue_id) {
             repo,
             ") submitted in issue [",
             issue_id,
-            "](https://github.com/ropensci/softwoare-review/",
+            "](https://github.com/ropensci/software-review/",
             issue_id,
             ")"
         )
