@@ -22,6 +22,7 @@ Check template variables in GitHub issue
 Other ropensci: 
 \code{\link{is_user_authorized}()},
 \code{\link{push_to_gh_pages}()},
+\code{\link{readme_has_peer_review_badge}()},
 \code{\link{srr_counts_summary}()},
 \code{\link{srr_counts}()},
 \code{\link{stats_badge}()}
