@@ -1,6 +1,6 @@
 Package: roreviewapi
 Title: Plumber API to report package structure and function
-Version: 0.0.2.179
+Version: 0.0.2.180
 Authors@R: 
     person("Mark", "Padgham", , "mark.padgham@email.com", role = c("aut", "cre"),
            comment = c(ORCID = "0000-0003-2172-5265"))
@@ -12,7 +12,6 @@ BugReports: https://github.com/ropensci-review-tools/roreviewapi/issues
 Depends: 
     R (>= 4.1.0)
 Imports:
-    bspm,
     callr,
     commonmark,
     fs,
@@ -32,6 +31,7 @@ Imports:
     tictoc,
     xml2
 Suggests: 
+    bspm,
     knitr,
     rmarkdown,
     rvest,

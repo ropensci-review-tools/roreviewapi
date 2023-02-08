@@ -201,8 +201,12 @@ install_dev_deps <- function (path, deps) {
     # Install packages from any remote repository servers:
     if (length (repos) > 1L) { # other repos added to standard "CRAN" option
 
-        is_docker <- Sys.getenv ("ROREV_CONTAINER") == "true" # #33
+        # See #33
+        is_docker <- Sys.getenv ("ROREV_CONTAINER") == "true" &&
+            Sys.info () ["sysname"] == "Linux"
+
         if (is_docker) {
+            requireNamespace ("bspm")
             bspm::disable ()
         }
         utils::install.packages (deps$package, repos = repos)
