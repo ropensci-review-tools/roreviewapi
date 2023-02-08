@@ -18,3 +18,13 @@ A string, empty if the badge was found.
 \description{
 Check whether 'README.md' has a "peer reviewed" badge
 }
+\seealso{
+Other ropensci: 
+\code{\link{check_issue_template}()},
+\code{\link{is_user_authorized}()},
+\code{\link{push_to_gh_pages}()},
+\code{\link{srr_counts_summary}()},
+\code{\link{srr_counts}()},
+\code{\link{stats_badge}()}
+}
+\concept{ropensci}

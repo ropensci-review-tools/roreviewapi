@@ -33,6 +33,7 @@ globalVariables (".")
 #' @param path Local path to package directory.
 #' @inheritParams srr_counts
 #' @return A string, empty if the badge was found.
+#' @family ropensci
 #' @export
 #'
 readme_has_peer_review_badge <- function (path = getwd (), issue_id = NULL) {
