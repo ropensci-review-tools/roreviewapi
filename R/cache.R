@@ -1,4 +1,3 @@
-
 #' check_cache
 #'
 #' Check whether a package has been cached, and if so, whether commits have been
@@ -14,7 +13,7 @@
 #' has not changed; otherwise TRUE.
 #' @family utils
 #' @export
-check_cache <- function (org, repo, cache_dir = tempdir ()) {
+check_cache <- function (org, repo, cache_dir = fs::path_temp ()) {
 
     cmt <- pkgcheck::get_latest_commit (org = org, repo = repo)
 
@@ -27,7 +26,7 @@ check_cache <- function (org, repo, cache_dir = tempdir ()) {
 
     f <- fs::path (cache_dir, "commit_oids.Rds")
 
-    if (file.exists (f)) {
+    if (fs::file_exists (f)) {
 
         dat <- readRDS (f)
 
@@ -93,7 +92,7 @@ stdout_stderr_cache <- function (repourl) {
     oid <- substring (cmt$oid, 1, 8)
 
     temp_dir <- fs::path (Sys.getenv ("PKGCHECK_CACHE_DIR"), "templogs")
-    if (!dir.exists (temp_dir)) {
+    if (!fs::dir_exists (temp_dir)) {
         fs::dir_create (temp_dir, recurse = TRUE)
     }
 

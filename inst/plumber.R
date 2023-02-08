@@ -212,7 +212,7 @@ function (n = 10) {
 
     ret <- "no log file present"
 
-    if (file.exists (log_file)) {
+    if (fs::file_exists (log_file)) {
         ret <- readLines (log_file)
         ret <- rev (tail (ret, n))
     }
@@ -233,7 +233,7 @@ function (n = 10) {
 function () {
 
     cache_dir <- Sys.getenv ("PKGCHECK_CACHE_DIR")
-    if (dir.exists (cache_dir)) {
+    if (fs::dir_exists (cache_dir)) {
         chk <- unlink (cache_dir, recursive = TRUE)
     }
 
@@ -250,7 +250,7 @@ function (repourl) {
 
     logfiles <- roreviewapi::stdout_stderr_cache (repourl)
 
-    index <- which (vapply (logfiles, file.exists, logical (1)))
+    index <- which (vapply (logfiles, fs::file_exists, logical (1)))
     logfiles <- logfiles [index]
 
     ret <- lapply (logfiles, readLines)

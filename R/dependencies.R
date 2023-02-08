@@ -1,4 +1,3 @@
-
 #' Install all system and package dependencies of an R package
 #'
 #' @param path Path to local file or directory
@@ -68,10 +67,8 @@ pkgrep_install_deps <- function (path, repo, issue_id) {
 #' @noRd
 install_sys_deps <- function (path, os, os_release) {
 
-    desc_file <- normalizePath (file.path (path, "DESCRIPTION"),
-        mustWork = FALSE
-    )
-    if (!file.exists (desc_file)) {
+    desc_file <- fs::path_abs (fs::path (path, "DESCRIPTION"))
+    if (!fs::file_exists (desc_file)) {
         return (NULL)
     }
 

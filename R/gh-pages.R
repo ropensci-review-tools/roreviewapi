@@ -1,4 +1,3 @@
-
 #' Push static `html` files to `gh-pages` branch of this repo to serve via
 #' GitHub pages.
 #'
@@ -11,9 +10,9 @@ push_to_gh_pages <- function (check) {
     out <- list ()
 
     cache_dir <- Sys.getenv ("PKGCHECK_CACHE_DIR")
-    rorev_dir <- file.path (cache_dir, "roreviewapi")
+    rorev_dir <- fs::path (cache_dir, "roreviewapi")
 
-    if (!dir.exists (rorev_dir)) {
+    if (!fs::dir_exists (rorev_dir)) {
 
         gert::git_clone (
             url = "https://github.com/ropensci-review-tools/roreviewapi",
@@ -32,17 +31,14 @@ push_to_gh_pages <- function (check) {
     )
 
     # clean up any untracked files:
-    all_files <- list.files (rorev_dir,
-        full.names = TRUE,
-        recursive = TRUE
-    )
+    all_files <- fs::dir_ls (rorev_dir, recurse = TRUE)
     all_files <- gsub (rorev_dir, "", all_files)
     all_files <- gsub (paste0 ("^", .Platform$file.sep), "", all_files)
     untracked <- all_files [which (!all_files %in% git_files)]
-    untracked <- file.path (rorev_dir, untracked)
+    untracked <- fs::path (rorev_dir, untracked)
 
     if (length (untracked) > 0) {
-        chk <- file.remove (untracked)
+        chk <- fs::file_delete (untracked)
     }
     # TODO# also need to unlink empty directories
 
@@ -86,7 +82,7 @@ push_to_gh_pages <- function (check) {
         older_files <- gsub (
             "\\.html$",
             "",
-            basename (attr (check, "network_file"))
+            fs::path_file (attr (check, "network_file"))
         )
     }
 
@@ -120,7 +116,7 @@ push_to_gh_pages <- function (check) {
 
     if (length (files) > 0) {
 
-        files_full <- normalizePath (file.path (rorev_dir, files))
+        files_full <- fs::path_abs (fs::path (rorev_dir, files))
         for (f in files_full [which (!grepl ("\\.png$", files_full))]) {
             system2 ("dos2unix", f)
         }
@@ -161,48 +157,46 @@ push_to_gh_pages <- function (check) {
 #' @noRd
 move1file <- function (path, rorev_dir) {
 
-    fname <- basename (path)
-    dir_to <- file.path (rorev_dir, "static")
+    fname <- fs::path_file (path)
+    dir_to <- fs::path (rorev_dir, "static")
 
-    if (fname %in% list.files (dir_to)) {
+    if (fname %in% fs::dir_ls (dir_to)) {
         return (NULL)
     }
 
-    base_path <- dirname (path)
-    static_path <- file.path (rorev_dir, "static")
-    flist <- list.files (base_path,
-        full.names = TRUE
-    )
+    base_path <- fs::path_dir (path)
+    static_path <- fs::path (rorev_dir, "static")
+    flist <- fs::dir_ls (base_path)
     fptn <- tools::file_path_sans_ext (path)
     f_from <- grep (fptn, flist, value = TRUE)
     # exclude auto-generated .js lib directory:
-    f_from <- f_from [which (!dir.exists (f_from))]
+    f_from <- f_from [which (!fs::dir_exists (f_from))]
     f_to <- gsub (
         base_path,
         dir_to,
         f_from
     )
 
-    if (!dir.exists (dir_to)) {
-        dir.create (dir_to, recursive = TRUE)
+    if (!fs::dir_exists (dir_to)) {
+        fs::dir_create (dir_to, recurse = TRUE)
     }
 
-    file_index <- which (!dir.exists (f_from))
-    dir_index <- which (dir.exists (f_from))
-    chk <- file.copy (f_from [file_index],
-        f_to [file_index],
-        recursive = FALSE
+    file_index <- which (!fs::dir_exists (f_from))
+    dir_index <- which (fs::dir_exists (f_from))
+    chk <- fs::file_copy (
+        f_from [file_index],
+        f_to [file_index]
     )
-    chk <- file.copy (f_from [dir_index],
-        dirname (f_to [dir_index]),
-        recursive = TRUE
+    chk <- fs::file_copy (
+        f_from [dir_index],
+        fs::path_dir (f_to [dir_index])
     )
 
     f_added <- c (
         f_to [file_index],
-        list.files (f_to [dir_index],
-            full.names = TRUE,
-            recursive = TRUE
+        fs::dir_ls (
+            f_to [dir_index],
+            recurse = TRUE
         )
     )
 
@@ -214,6 +208,6 @@ path_to_url <- function (path) {
 
     paste0 (
         "https://ropensci-review-tools.github.io/roreviewapi/static/",
-        basename (path)
+        fs::path_file (path)
     )
 }

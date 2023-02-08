@@ -38,8 +38,8 @@ globalVariables (".")
 #'
 readme_has_peer_review_badge <- function (path = getwd (), issue_id = NULL) {
 
-    readme_path <- file.path (path, "README.md")
-    if (!file.exists (readme_path)) {
+    readme_path <- fs::path (path, "README.md")
+    if (!fs::file_exists (readme_path)) {
         stop (sprintf ("Can't find README.md at %s", path))
     }
 

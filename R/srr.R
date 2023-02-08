@@ -1,4 +1,3 @@
-
 #' Count number of 'srr' statistical standards complied with, and confirm
 #' whether than represents > 50% of all applicable standards.
 #'
@@ -255,7 +254,7 @@ stats_version <- function (truncated = TRUE) {
         "main/DESCRIPTION"
     )
 
-    tmp <- fs::path (tempdir (), "stats-devguide-DESCRIPTION")
+    tmp <- fs::path (fs::path_temp (), "stats-devguide-DESCRIPTION")
     if (!fs::file_exists (tmp)) {
         ret <- utils::download.file (u, destfile = tmp, quiet = TRUE) # nolint
     }

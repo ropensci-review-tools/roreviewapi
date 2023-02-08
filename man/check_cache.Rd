@@ -4,7 +4,7 @@
 \alias{check_cache}
 \title{check_cache}
 \usage{
-check_cache(org, repo, cache_dir = tempdir())
+check_cache(org, repo, cache_dir = fs::path_temp())
 }
 \arguments{
 \item{org}{Github organization}

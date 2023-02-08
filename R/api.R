@@ -62,7 +62,7 @@ serve_api <- function (port = 8000L,
         fs::dir_create (log_dir)
     }
 
-    log_file <- tempfile ("roreviewapi_", log_dir, ".log")
+    log_file <- fs::file_temp ("roreviewapi_", tmp_dir = log_dir, ext = ".log")
     Sys.setenv ("ROREVAPI_LOG_FILE" = log_file)
     logger::log_appender (logger::appender_tee (log_file))
 
@@ -72,7 +72,7 @@ serve_api <- function (port = 8000L,
 
     # ----------local static dir set up----------
     static_dir <- fs::path (cache_dir, "static")
-    if (!file.exists (static_dir)) {
+    if (!fs::file_exists (static_dir)) {
         fs::dir_create (static_dir, recurse = TRUE)
     }
 
