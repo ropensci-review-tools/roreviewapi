@@ -1,6 +1,6 @@
 test_that ("readme_has_peer_review_badge() errors when no README.md", {
-    temp_dir <- file.path (withr::local_tempdir (), "package-path")
-    dir.create (temp_dir)
+    temp_dir <- fs::path (withr::local_tempdir (), "package-path")
+    fs::dir_create (temp_dir)
     withr::local_dir (temp_dir)
     expect_snapshot (
         readme_has_peer_review_badge (),
@@ -10,18 +10,18 @@ test_that ("readme_has_peer_review_badge() errors when no README.md", {
 })
 
 test_that ("readme_has_peer_review_badge() works with badgeless README.md", {
-    temp_dir <- file.path (withr::local_tempdir (), "package-path")
-    dir.create (temp_dir)
+    temp_dir <- fs::path (withr::local_tempdir (), "package-path")
+    fs::dir_create (temp_dir)
     withr::local_dir (temp_dir)
-    file.create ("README.md")
+    fs::file_create ("README.md")
     expect_match (readme_has_peer_review_badge (), "Missing software review badge")
 })
 
 test_that ("readme_has_peer_review_badge() works when no software review badge", {
-    temp_dir <- file.path (withr::local_tempdir (), "package-path")
-    dir.create (temp_dir)
+    temp_dir <- fs::path (withr::local_tempdir (), "package-path")
+    fs::dir_create (temp_dir)
     withr::local_dir (temp_dir)
-    file.create ("README.md")
+    fs::file_create ("README.md")
     writeLines (
         "[![Project Status: Concept](https://www.repostatus.org/badges/latest/concept.svg)](https://www.repostatus.org/#concept)",
         "README.md"
@@ -31,10 +31,10 @@ test_that ("readme_has_peer_review_badge() works when no software review badge",
 })
 
 test_that ("readme_has_peer_review_badge() works when HTTP software review badge", {
-    temp_dir <- file.path (withr::local_tempdir (), "package-path")
-    dir.create (temp_dir)
+    temp_dir <- fs::path (withr::local_tempdir (), "package-path")
+    fs::dir_create (temp_dir)
     withr::local_dir (temp_dir)
-    file.create ("README.md")
+    fs::file_create ("README.md")
     writeLines (
         "[![Status at rOpenSci Software Peer Review](http://badges.ropensci.org/3_status.svg)](https://github.com/ropensci/software-review/issues/3)",
         "README.md"
@@ -44,10 +44,10 @@ test_that ("readme_has_peer_review_badge() works when HTTP software review badge
 })
 
 test_that ("readme_has_peer_review_badge() works when HTTPS software review badge", {
-    temp_dir <- file.path (withr::local_tempdir (), "package-path")
-    dir.create (temp_dir)
+    temp_dir <- fs::path (withr::local_tempdir (), "package-path")
+    fs::dir_create (temp_dir)
     withr::local_dir (temp_dir)
-    file.create ("README.md")
+    fs::file_create ("README.md")
     writeLines (
         "[![Status at rOpenSci Software Peer Review](https://badges.ropensci.org/3_status.svg)](https://github.com/ropensci/software-review/issues/3)",
         "README.md"
