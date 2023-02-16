@@ -15,7 +15,7 @@ readme_badge <- function (repourl, repo = NULL, issue_id = NULL, post_to_issue =
 
     path <- roreviewapi::dl_gh_repo (u = repourl, branch = branch)
 
-    out <- readme_has_peer_review_badge (path, issue_id)
+    out <- roreviewapi::readme_has_peer_review_badge (path, issue_id)
 
     if (post_to_issue) {
 
