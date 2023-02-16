@@ -31,14 +31,17 @@ push_to_gh_pages <- function (check) {
     )
 
     # clean up any untracked files:
-    all_files <- fs::dir_ls (rorev_dir, recurse = TRUE)
+    all_files <- fs::dir_ls (rorev_dir, recurse = TRUE, type = "file")
     all_files <- gsub (rorev_dir, "", all_files)
     all_files <- gsub (paste0 ("^", .Platform$file.sep), "", all_files)
     untracked <- all_files [which (!all_files %in% git_files)]
     untracked <- fs::path (rorev_dir, untracked)
 
-    if (length (untracked) > 0) {
-        chk <- fs::file_delete (untracked)
+    if (length (untracked) > 0L) {
+        tryCatch (
+            fs::file_delete (untracked),
+            error = function (e) NULL
+        )
     }
     # TODO# also need to unlink empty directories
 
