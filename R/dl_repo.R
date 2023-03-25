@@ -12,7 +12,7 @@ dl_gh_repo <- function (u, branch = NULL) {
 
     cache_dir <- Sys.getenv ("PKGCHECK_CACHE_DIR")
     if (!fs::dir_exists (cache_dir)) {
-        fs::dir_create (cache_dir, recursive = TRUE)
+        fs::dir_create (cache_dir, recurse = TRUE)
     }
     repo_updated <- roreviewapi::check_cache (org, repo, cache_dir)
     if (is.null (branch)) {
