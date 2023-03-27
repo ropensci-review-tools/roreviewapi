@@ -163,10 +163,6 @@ move1file <- function (path, rorev_dir) {
     fname <- fs::path_file (path)
     dir_to <- fs::path (rorev_dir, "static")
 
-    if (fname %in% fs::dir_ls (dir_to)) {
-        return (NULL)
-    }
-
     base_path <- fs::path_dir (path)
     static_path <- fs::path (rorev_dir, "static")
     flist <- fs::dir_ls (base_path)
@@ -179,6 +175,10 @@ move1file <- function (path, rorev_dir) {
         dir_to,
         f_from
     )
+
+    if (fname %in% fs::path_file (fs::dir_ls (dir_to))) {
+        return (f_to)
+    }
 
     if (!fs::dir_exists (dir_to)) {
         fs::dir_create (dir_to, recurse = TRUE)
