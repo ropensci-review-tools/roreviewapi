@@ -1,4 +1,3 @@
-
 #' Check template variables in GitHub issue
 #'
 #' @param orgrepo GitHub organization and repo as single string separated by
@@ -38,8 +37,8 @@ check_issue_template <- function (orgrepo, issue_num) {
 
     # separate checks for optional stats variable:
     if (has_html_variable (x, "statsgrade")) {
-          chk <- c (chk, check_html_variable (x, "statsgrade"))
-      }
+        chk <- c (chk, check_html_variable (x, "statsgrade"))
+    }
 
     chk <- chk [which (nchar (chk) > 0L)]
 
@@ -168,11 +167,11 @@ check_html_variable <- function (x, variable) {
     variable <- match.arg (variable, html_variables)
 
     if (!has_html_variable (x, variable)) {
-          return (paste0 (
-              "HTML variable [", variable,
-              "] is missing"
-          ))
-      }
+        return (paste0 (
+            "HTML variable [", variable,
+            "] is missing"
+        ))
+    }
 
     x <- get_html_variable (x, variable)
 
@@ -183,39 +182,39 @@ check_html_variable <- function (x, variable) {
         # GitHub handle only (#17):
         check <- grepl ("^@(\\w|\\-|\\_)+$", x)
         if (!check) {
-              out <- paste0 (
-                  "'author1' variable must be ",
-                  "GitHub hanle only ('@myhandle')"
-              )
-          }
+            out <- paste0 (
+                "'author1' variable must be ",
+                "GitHub hanle only ('@myhandle')"
+            )
+        }
 
     } else if (variable == "repourl") {
 
         if (!url_exists (x)) {
-              out <- paste0 ("URL = [", x, "] is not valid")
-          }
+            out <- paste0 ("URL = [", x, "] is not valid")
+        }
 
     } else if (variable == "submission-type") {
 
         # Have to iconv to convert accented "a" to ascii:
         x <- iconv (x, to = "ASCII//TRANSLIT")
         if (!x %in% submission_types) {
-              out <- paste0 (
-                  "submission type must be one of [",
-                  paste0 (submission_types, collapse = ", "),
-                  "]"
-              )
-          }
+            out <- paste0 (
+                "submission type must be one of [",
+                paste0 (submission_types, collapse = ", "),
+                "]"
+            )
+        }
 
     } else if (variable == "statsgrade") {
 
         if (!tolower (x) %in% stats_grades) {
-              out <- paste0 (
-                  "'statsgrade' variable must be one of [",
-                  paste0 (stats_grades, collapse = ", "),
-                  "]"
-              )
-          }
+            out <- paste0 (
+                "'statsgrade' variable must be one of [",
+                paste0 (stats_grades, collapse = ", "),
+                "]"
+            )
+        }
     }
 
     return (out)
