@@ -181,7 +181,7 @@ check_html_variable <- function (x, variable) {
     if (variable == "author1") {
 
         # GitHub handle only (#17):
-        check <- grepl ("^@\\w+$", x)
+        check <- grepl ("^@(\\w|\\-|\\_)+$", x)
         if (!check) {
               out <- paste0 (
                   "'author1' variable must be ",
