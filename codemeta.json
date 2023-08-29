@@ -8,13 +8,13 @@
   "codeRepository": "https://github.com/ropensci-review-tools/roreviewapi",
   "issueTracker": "https://github.com/ropensci-review-tools/roreviewapi/issues",
   "license": "https://spdx.org/licenses/GPL-3.0",
-  "version": "0.0.2.191",
+  "version": "0.1.0",
   "programmingLanguage": {
     "@type": "ComputerLanguage",
     "name": "R",
     "url": "https://r-project.org"
   },
-  "runtimePlatform": "R version 4.2.2 (2022-10-31)",
+  "runtimePlatform": "R version 4.3.1 (2023-06-16)",
   "author": [
     {
       "@type": "Person",
@@ -314,7 +314,7 @@
     },
     "SystemRequirements": "gh, dos2unix"
   },
-  "fileSize": "121.029KB",
+  "fileSize": "115.055KB",
   "readme": "https://github.com/ropensci-review-tools/roreviewapi/blob/main/README.md",
   "contIntegration": "https://github.com/ropensci-review-tools/roreviewapi/actions?query=workflow%3AR-CMD-check",
   "developmentStatus": "https://www.repostatus.org/#active"
