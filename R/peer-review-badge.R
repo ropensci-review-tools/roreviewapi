@@ -17,7 +17,7 @@ readme_badge <- function (repourl, repo = NULL, issue_id = NULL, post_to_issue =
 
     out <- roreviewapi::readme_has_peer_review_badge (path, issue_id)
 
-    if (post_to_issue) {
+    if (post_to_issue && !any (grepl ("Found software review README", out))) {
 
         out <- roreviewapi::post_to_issue (out, repo, issue_id)
     }
