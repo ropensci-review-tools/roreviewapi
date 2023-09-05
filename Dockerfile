@@ -4,8 +4,6 @@ MAINTAINER Mark Padgham <mark.padgham@email.com>
 ENV R_REMOTES_UPGRADE "always"
 ENV NOT_CRAN "true"
 ENV GITHUB_PAT "<my_github_token>"
-# pkgcheck-action#43:
-ENV COVR_COVRIGNORE ".covrignore"
 
 # seasonal -> roreviewapi#13
 RUN install2.r \
