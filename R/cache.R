@@ -89,7 +89,8 @@ stdout_stderr_cache <- function (repourl) {
     repo <- utils::tail (strsplit (repourl, "/") [[1]], 1)
 
     cmt <- pkgcheck::get_latest_commit (org = org, repo = repo, branch)
-    if (is.null (cmt)) { # e.g., not a GitHub repo
+    not_github_repo <- (is.null (cmt))
+    if (not_github_repo) {
         path <- roreviewapi::dl_gh_repo (u = repourl, branch = branch)
         info <- gert::git_info (path)
         cmt <- list (oid = info$commit)
