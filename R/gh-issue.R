@@ -184,7 +184,7 @@ check_html_variable <- function (x, variable) {
         if (!check) {
             out <- paste0 (
                 "'author1' variable must be ",
-                "GitHub hanle only ('@myhandle')"
+                "GitHub handle only ('@myhandle')"
             )
         }
 
