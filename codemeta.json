@@ -8,13 +8,13 @@
   "codeRepository": "https://github.com/ropensci-review-tools/roreviewapi",
   "issueTracker": "https://github.com/ropensci-review-tools/roreviewapi/issues",
   "license": "https://spdx.org/licenses/GPL-3.0",
-  "version": "0.1.0.013",
+  "version": "0.1.0.14",
   "programmingLanguage": {
     "@type": "ComputerLanguage",
     "name": "R",
     "url": "https://r-project.org"
   },
-  "runtimePlatform": "R version 4.3.1 (2023-06-16)",
+  "runtimePlatform": "R version 4.3.2 (2023-10-31)",
   "author": [
     {
       "@type": "Person",
@@ -117,6 +117,18 @@
     },
     "2": {
       "@type": "SoftwareApplication",
+      "identifier": "BiocManager",
+      "name": "BiocManager",
+      "provider": {
+        "@id": "https://cran.r-project.org",
+        "@type": "Organization",
+        "name": "Comprehensive R Archive Network (CRAN)",
+        "url": "https://cran.r-project.org"
+      },
+      "sameAs": "https://CRAN.R-project.org/package=BiocManager"
+    },
+    "3": {
+      "@type": "SoftwareApplication",
       "identifier": "callr",
       "name": "callr",
       "provider": {
@@ -127,7 +139,7 @@
       },
       "sameAs": "https://CRAN.R-project.org/package=callr"
     },
-    "3": {
+    "4": {
       "@type": "SoftwareApplication",
       "identifier": "commonmark",
       "name": "commonmark",
@@ -139,7 +151,7 @@
       },
       "sameAs": "https://CRAN.R-project.org/package=commonmark"
     },
-    "4": {
+    "5": {
       "@type": "SoftwareApplication",
       "identifier": "fs",
       "name": "fs",
@@ -151,7 +163,7 @@
       },
       "sameAs": "https://CRAN.R-project.org/package=fs"
     },
-    "5": {
+    "6": {
       "@type": "SoftwareApplication",
       "identifier": "gert",
       "name": "gert",
@@ -163,7 +175,7 @@
       },
       "sameAs": "https://CRAN.R-project.org/package=gert"
     },
-    "6": {
+    "7": {
       "@type": "SoftwareApplication",
       "identifier": "ghql",
       "name": "ghql",
@@ -175,7 +187,7 @@
       },
       "sameAs": "https://CRAN.R-project.org/package=ghql"
     },
-    "7": {
+    "8": {
       "@type": "SoftwareApplication",
       "identifier": "here",
       "name": "here",
@@ -187,7 +199,7 @@
       },
       "sameAs": "https://CRAN.R-project.org/package=here"
     },
-    "8": {
+    "9": {
       "@type": "SoftwareApplication",
       "identifier": "httr",
       "name": "httr",
@@ -199,7 +211,7 @@
       },
       "sameAs": "https://CRAN.R-project.org/package=httr"
     },
-    "9": {
+    "10": {
       "@type": "SoftwareApplication",
       "identifier": "jsonlite",
       "name": "jsonlite",
@@ -211,7 +223,7 @@
       },
       "sameAs": "https://CRAN.R-project.org/package=jsonlite"
     },
-    "10": {
+    "11": {
       "@type": "SoftwareApplication",
       "identifier": "logger",
       "name": "logger",
@@ -223,7 +235,7 @@
       },
       "sameAs": "https://CRAN.R-project.org/package=logger"
     },
-    "11": {
+    "12": {
       "@type": "SoftwareApplication",
       "identifier": "magrittr",
       "name": "magrittr",
@@ -235,18 +247,18 @@
       },
       "sameAs": "https://CRAN.R-project.org/package=magrittr"
     },
-    "12": {
+    "13": {
       "@type": "SoftwareApplication",
       "identifier": "methods",
       "name": "methods"
     },
-    "13": {
+    "14": {
       "@type": "SoftwareApplication",
       "identifier": "pkgcheck",
       "name": "pkgcheck",
       "sameAs": "https://github.com/ropensci-review-tools/pkgcheck"
     },
-    "14": {
+    "15": {
       "@type": "SoftwareApplication",
       "identifier": "plumber",
       "name": "plumber",
@@ -258,7 +270,7 @@
       },
       "sameAs": "https://CRAN.R-project.org/package=plumber"
     },
-    "15": {
+    "16": {
       "@type": "SoftwareApplication",
       "identifier": "rappdirs",
       "name": "rappdirs",
@@ -270,7 +282,7 @@
       },
       "sameAs": "https://CRAN.R-project.org/package=rappdirs"
     },
-    "16": {
+    "17": {
       "@type": "SoftwareApplication",
       "identifier": "remotes",
       "name": "remotes",
@@ -282,13 +294,13 @@
       },
       "sameAs": "https://CRAN.R-project.org/package=remotes"
     },
-    "17": {
+    "18": {
       "@type": "SoftwareApplication",
       "identifier": "srr",
       "name": "srr",
       "sameAs": "https://github.com/ropensci-review-tools/srr"
     },
-    "18": {
+    "19": {
       "@type": "SoftwareApplication",
       "identifier": "tictoc",
       "name": "tictoc",
@@ -300,7 +312,7 @@
       },
       "sameAs": "https://CRAN.R-project.org/package=tictoc"
     },
-    "19": {
+    "20": {
       "@type": "SoftwareApplication",
       "identifier": "xml2",
       "name": "xml2",
@@ -314,7 +326,7 @@
     },
     "SystemRequirements": "gh, dos2unix"
   },
-  "fileSize": "115.055KB",
+  "fileSize": "122.975KB",
   "readme": "https://github.com/ropensci-review-tools/roreviewapi/blob/main/README.md",
   "contIntegration": "https://github.com/ropensci-review-tools/roreviewapi/actions?query=workflow%3AR-CMD-check",
   "developmentStatus": "https://www.repostatus.org/#active"

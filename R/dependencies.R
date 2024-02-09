@@ -17,17 +17,20 @@ pkgrep_install_deps <- function (path, repo, issue_id) {
 
     install_sys_deps (path, os, os_release)
 
+    repos <- c (getOption ("repos"), BiocManager::repositories ())
+
     utils::update.packages (ask = FALSE)
 
     remotes::install_deps (
         pkgdir = path,
         dependencies = TRUE,
+        repos = repos,
         upgrade = "always"
     )
 
-    deps <- upgradeable_pkgs (path)
+    deps <- upgradeable_pkgs (path, repos)
     if (nrow (deps) > 0L) {
-        deps <- install_dev_deps (path, deps)
+        deps <- install_dev_deps (path, deps, repos)
     }
 
     out <- NULL
@@ -151,11 +154,12 @@ sysreqs_rhub <- function (desc_file) {
     return (req)
 }
 
-upgradeable_pkgs <- function (path) {
+upgradeable_pkgs <- function (path, repos) {
 
     deps <- remotes::dev_package_deps (
         pkgdir = path,
-        dependencies = TRUE
+        dependencies = TRUE,
+        repos = repos
     )
     deps [which (deps$diff != 0L), ]
 }
@@ -174,7 +178,7 @@ upgradeable_pkgs <- function (path) {
 #' from 'remotes::dev_package_deps()`, so must be an empty 'data.frame' here
 #' too.
 #' @noRd
-install_dev_deps <- function (path, deps) {
+install_dev_deps <- function (path, deps, repos) {
 
     ret <- data.frame (x = integer (0)) # dummy value; only checked with nrow
 
@@ -187,7 +191,7 @@ install_dev_deps <- function (path, deps) {
     }
 
     # Then refresh package upgrade list:
-    deps <- upgradeable_pkgs (path)
+    deps <- upgradeable_pkgs (path, repos)
     if (nrow (deps) == 0L) {
         return (ret)
     }
