@@ -54,6 +54,11 @@ srr_counts <- function (repourl, repo, issue_id, post_to_issue = TRUE) {
         while (!nzchar (missing_stds [1])) {
             missing_stds <- missing_stds [-1]
         }
+        next_sec <- grep ("^\\#+", missing_stds)
+        missing_stds <- missing_stds [-seq (next_sec [1], length (missing_stds))]
+        while (!nzchar (missing_stds [length (missing_stds)])) {
+            missing_stds <- missing_stds [-length (missing_stds)]
+        }
 
         out <- c (
             missing_stds,
