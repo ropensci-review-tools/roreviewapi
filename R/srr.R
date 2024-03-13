@@ -66,6 +66,24 @@ srr_counts <- function (repourl, repo, issue_id, post_to_issue = TRUE) {
             "All standards must be documented prior to submission"
         )
 
+        todo <- grep ("srrstatsTODO", srr_rep)
+        if (length (todo) > 0L) {
+            srr_rep_todo <- srr_rep [seq (todo, length (srr_rep))]
+            ptn <- "^\\-\\sTotal\\s\\:"
+            srr_rep_todo_total <- gsub (ptn, "", grep (ptn, srr_rep_todo, value = TRUE))
+            srr_rep_todo_total <- as.integer (gsub ("^\\s|\\/.*$", "", srr_rep_todo_total))
+            if (srr_rep_todo_total > 0L) {
+                out <- c (
+                    out, "",
+                    paste0 (
+                        "There are also ",
+                        srr_rep_todo_total,
+                        " standards with 'srrstatsTODO' tags."
+                    )
+                )
+            }
+        }
+
     } else {
 
         out <- roreviewapi::srr_counts_summary (srr_rep)
