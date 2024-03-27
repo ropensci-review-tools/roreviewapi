@@ -57,7 +57,8 @@ srr_counts <- function (repourl, repo, issue_id, post_to_issue = TRUE) {
             missing_stds <- missing_stds [-1]
         }
         next_sec <- grep ("^\\#+", missing_stds)
-        missing_stds <- missing_stds [-seq (next_sec [1], length (missing_stds))]
+        missing_stds <-
+            missing_stds [-seq (next_sec [1], length (missing_stds))]
         while (!nzchar (missing_stds [length (missing_stds)])) {
             missing_stds <- missing_stds [-length (missing_stds)]
         }
@@ -72,8 +73,10 @@ srr_counts <- function (repourl, repo, issue_id, post_to_issue = TRUE) {
         if (length (todo) > 0L) {
             srr_rep_todo <- srr_rep [seq (todo, length (srr_rep))]
             ptn <- "^\\-\\sTotal\\s\\:"
-            srr_rep_todo_total <- gsub (ptn, "", grep (ptn, srr_rep_todo, value = TRUE))
-            srr_rep_todo_total <- as.integer (gsub ("^\\s|\\/.*$", "", srr_rep_todo_total))
+            srr_rep_todo_total <-
+                gsub (ptn, "", grep (ptn, srr_rep_todo, value = TRUE))
+            srr_rep_todo_total <-
+                as.integer (gsub ("^\\s|\\/.*$", "", srr_rep_todo_total))
             if (srr_rep_todo_total > 0L) {
                 out <- c (
                     out, "",
@@ -244,7 +247,10 @@ stats_badge <- function (repo = "ropensci/software-review",
 
     if (grepl ("approved", labels)) {
 
-        g <- regexpr ("6\\/approved\\-(bronze|silver|gold)\\-v[0-9]+\\.[0-9]+$", labels)
+        g <- regexpr (
+            "6\\/approved\\-(bronze|silver|gold)\\-v[0-9]+\\.[0-9]+$",
+            labels
+        )
         res <- regmatches (labels, g)
 
     } else {
