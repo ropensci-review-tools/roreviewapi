@@ -37,7 +37,9 @@ srr_counts <- function (repourl, repo, issue_id, post_to_issue = TRUE) {
     if (is.null (branch)) {
         branch <- "" # for srr_report fn
     }
-    srr_rep <- srr::srr_report (path = path, branch = branch, view = FALSE)
+    srr_rep <- srr::srr_report (
+        path = path, branch = branch, view = FALSE, roxygenise = FALSE
+    )
     if (length (srr_rep) == 1L) { # "This is not an 'srr' package"
         out <- "This is not an 'srr' package"
         if (post_to_issue) {
