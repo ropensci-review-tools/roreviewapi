@@ -21,7 +21,7 @@ symbol_crs <- function () {
 #' @noRd
 get_github_user <- function () {
 
-    gh_tok <- gitcreds::gitcreds_get ()
+    gh_tok <- gitcreds::gitcreds_get ()$password
 
     # Check corresponding user name:
     u <- "https://api.github.com/user"
