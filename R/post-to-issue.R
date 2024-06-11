@@ -1,4 +1,3 @@
-
 #' Post review checks to GitHub issue
 #'
 #' @param cmt Single character string with comment to post.

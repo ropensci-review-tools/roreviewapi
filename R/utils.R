@@ -1,4 +1,3 @@
-
 #' Tick symbol, exported for direct use in plumber API
 #' @family utils
 #' @export
