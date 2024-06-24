@@ -1,4 +1,3 @@
-
 #' Body of main 'editorcheck' response
 #'
 #' @param repourl The URL for the repo being checked, potentially including full
@@ -87,6 +86,13 @@ collate_editor_check <- function (checks) {
     attributes (check) <- a
 
     u <- push_to_gh_pages (check)
+    if (!u$push_success) {
+        out <- paste0 (
+            "Sorry, something went wrong trying to push function ",
+            "call network to GitHub. Please try again later."
+        )
+        return (out)
+    }
 
     if (!is.null (a$network_file)) { # pkg has a network, and network_file
 

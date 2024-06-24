@@ -7,7 +7,7 @@
 #' @export
 push_to_gh_pages <- function (check) {
 
-    out <- list ()
+    out <- list (push_success = TRUE)
 
     cache_dir <- Sys.getenv ("PKGCHECK_CACHE_DIR")
     rorev_dir <- fs::path (cache_dir, "roreviewapi")
@@ -146,7 +146,13 @@ push_to_gh_pages <- function (check) {
             remote
         )
         tok <- Sys.getenv ("GITHUB_TOKEN")
-        gert::git_push (repo = rorev_dir, remote = remote, password = tok)
+        # GitHub sometimes generates 403 "Unexpected error",
+        # which causes this to fail:
+        chk <- tryCatch (
+            gert::git_push (repo = rorev_dir, remote = remote, password = tok),
+            error = function (e) NULL
+        )
+        out$push_success <- !is.null (chk)
     }
 
     gert::git_branch_checkout ("main", repo = rorev_dir)
