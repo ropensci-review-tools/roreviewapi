@@ -48,6 +48,12 @@ srr_counts <- function (repourl, repo, issue_id, post_to_issue = TRUE) {
         return (out)
     }
 
+    index <- grep ("heavy_multiplication_x\\:\\s+Error\\:", srr_rep)
+    errors <- NULL
+    if (length (index) > 0L) {
+        errors <- c (srr_rep [index], "")
+    }
+
     index <- grep ("^\\#\\#\\sMissing Standards", srr_rep)
 
     if (length (index) > 0L) {
@@ -94,7 +100,7 @@ srr_counts <- function (repourl, repo, issue_id, post_to_issue = TRUE) {
         out <- roreviewapi::srr_counts_summary (srr_rep)
     }
 
-    out <- paste0 (out, collapse = "\n")
+    out <- paste0 (c (errors, out), collapse = "\n")
 
     if (post_to_issue) {
 
