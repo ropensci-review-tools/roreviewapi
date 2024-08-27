@@ -1,6 +1,6 @@
 Package: roreviewapi
 Title: Plumber API to report package structure and function
-Version: 0.1.0.032
+Version: 0.1.0.033
 Authors@R: 
     person("Mark", "Padgham", , "mark.padgham@email.com", role = c("aut", "cre"),
            comment = c(ORCID = "0000-0003-2172-5265"))
@@ -36,6 +36,7 @@ Suggests:
     bspm,
     knitr,
     rmarkdown,
+    roxygen2,
     rvest,
     testthat (>= 3.0.0),
     withr

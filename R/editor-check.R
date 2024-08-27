@@ -85,13 +85,19 @@ collate_editor_check <- function (checks) {
     check <- strsplit (check, "\n") [[1]]
     attributes (check) <- a
 
-    u <- push_to_gh_pages (check)
-    if (!u$push_success) {
-        out <- paste0 (
-            "Sorry, something went wrong trying to push function ",
-            "call network to GitHub. Please try again later."
-        )
-        return (out)
+    git_hash <- check [grep ("^git\\shash", check)]
+    has_git_hash <- !grepl ("\\[\\]", git_hash)
+    if (has_git_hash) {
+        u <- push_to_gh_pages (check)
+        if (!u$push_success) {
+            out <- paste0 (
+                "Sorry, something went wrong trying to push function ",
+                "call network to GitHub. Please try again later."
+            )
+            return (out)
+        }
+    } else {
+        u <- list (network_file = "", srr_report_file = "")
     }
 
     if (!is.null (a$network_file)) { # pkg has a network, and network_file
