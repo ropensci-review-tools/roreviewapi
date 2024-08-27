@@ -48,6 +48,18 @@ srr_counts <- function (repourl, repo, issue_id, post_to_issue = TRUE) {
         return (out)
     }
 
+    out <- srr_counts_from_report (srr_rep)
+
+    if (post_to_issue) {
+
+        out <- roreviewapi::post_to_issue (out, repo, issue_id)
+    }
+
+    return (out)
+}
+
+srr_counts_from_report <- function (srr_rep) {
+
     index <- grep ("heavy_multiplication_x\\:\\s+Error\\:", srr_rep)
     errors <- NULL
     if (length (index) > 0L) {
@@ -101,11 +113,6 @@ srr_counts <- function (repourl, repo, issue_id, post_to_issue = TRUE) {
     }
 
     out <- paste0 (c (errors, out), collapse = "\n")
-
-    if (post_to_issue) {
-
-        out <- roreviewapi::post_to_issue (out, repo, issue_id)
-    }
 
     return (out)
 }
