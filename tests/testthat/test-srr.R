@@ -3,6 +3,10 @@ test_all <- identical (Sys.getenv ("MPADGE_LOCAL"), "true") ||
 testthat::skip_if (!test_all)
 
 test_that ("srr", {
+    path <- fs::path (fs::path_temp (), "demo")
+    if (fs::dir_exists (path)) {
+        fs::dir_delete (path)
+    }
     path <- srr::srr_stats_pkg_skeleton ()
 
     expect_message (
