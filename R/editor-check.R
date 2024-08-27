@@ -80,7 +80,7 @@ collate_editor_check <- function (checks) {
 
     check <- paste0 (checks_md, collapse = "\n")
     a <- attributes (check) <- attributes (checks_md)
-    attr (check, "srr_okay") <- checks$srr$okay
+    attr (check, "srr_okay") <- checks$info$srr$okay
 
     check <- strsplit (check, "\n") [[1]]
     attributes (check) <- a
