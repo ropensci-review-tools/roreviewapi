@@ -51,29 +51,7 @@ push_to_gh_pages <- function (check) {
     files <- gsub (rorev_dir, "", unlist (files))
     files <- gsub (paste0 ("^", .Platform$file.sep), "", files)
 
-    # rm any older files:
-    older_files <- NULL
-    if ("network_file" %in% names (attributes (check))) {
-
-        older_files <- gsub (
-            "\\.html$",
-            "",
-            fs::path_file (attr (check, "network_file"))
-        )
-    }
-
-    if ("srr_report_file" %in% names (attributes (check))) {
-
-        older_files <- c (
-            older_files,
-            gsub (
-                "\\.html$",
-                "",
-                basename (attr (check, "srr_report_file"))
-            )
-        )
-    }
-
+    older_files <- identify_older_files (check)
     older_files <- older_files [which (!grep (this_hash, older_files))]
 
     index <- lapply (older_files, function (i) grep (i, git_files))
@@ -232,4 +210,30 @@ get_pkg_hash <- function (check, out) {
     }
 
     return (this_hash)
+}
+
+identify_older_files <- function (check) {
+    older_files <- NULL
+    if ("network_file" %in% names (attributes (check))) {
+
+        older_files <- gsub (
+            "\\.html$",
+            "",
+            fs::path_file (attr (check, "network_file"))
+        )
+    }
+
+    if ("srr_report_file" %in% names (attributes (check))) {
+
+        older_files <- c (
+            older_files,
+            gsub (
+                "\\.html$",
+                "",
+                basename (attr (check, "srr_report_file"))
+            )
+        )
+    }
+
+    return (older_files)
 }
