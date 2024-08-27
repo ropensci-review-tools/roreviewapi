@@ -79,8 +79,10 @@ collate_editor_check <- function (checks) {
     checks_md <- pkgcheck::checks_to_markdown (checks, render = FALSE)
 
     check <- paste0 (checks_md, collapse = "\n")
-    a <- attributes (check) <- attributes (checks_md)
-    attr (check, "srr_okay") <- checks$info$srr$okay
+    a <- attributes (checks_md)
+    if ("srr" %in% names (checks$info)) {
+        a$srr_okay <- checks$info$srr$okay
+    }
 
     check <- strsplit (check, "\n") [[1]]
     attributes (check) <- a
