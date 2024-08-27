@@ -258,6 +258,11 @@ stats_badge <- function (repo = "ropensci/software-review",
 
     out <- system2 ("gh", args = args, stdout = TRUE, wait = TRUE)
 
+    return (stats_badge_from_opening_comment (out))
+}
+
+stats_badge_from_opening_comment <- function (out) {
+
     type <- get_html_var (out, "submission-type")
     if (length (type) == 0L) {
         return (NULL)
@@ -267,6 +272,7 @@ stats_badge <- function (repo = "ropensci/software-review",
     }
 
     labels <- grep ("^labels\\:", out, value = TRUE) [1]
+    res <- NULL
 
     if (grepl ("approved", labels)) {
 
@@ -279,8 +285,10 @@ stats_badge <- function (repo = "ropensci/software-review",
     } else {
 
         grade <- get_html_var (out, "statsgrade")
-        version <- stats_version (truncated = TRUE)
-        res <- paste0 ("6/approved-", grade, "-v", version)
+        if (length (grade) > 0L) {
+            version <- stats_version (truncated = TRUE)
+            res <- paste0 ("6/approved-", grade, "-v", version)
+        }
 
     }
 

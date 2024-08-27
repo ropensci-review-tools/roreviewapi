@@ -53,3 +53,47 @@ test_that ("srr", {
     # But should include non-zero counts of stds not complied with:
     expect_true (grepl ("Not complied with", counts, fixed = TRUE))
 })
+
+test_that ("srr stats version", {
+    v <- stats_version ()
+    expect_type (v, "character")
+    expect_length (v, 1L)
+    expect_true (grepl ("^[0-9]\\.[0-9]$", v))
+})
+
+test_that ("html-var", {
+    x <- "<!--submission-type-->Standard<!--end-submission-type-->"
+    v <- get_html_var (x)
+    expect_type (v, "character")
+    expect_length (v, 1L)
+    expect_equal (v, "Standard")
+})
+
+test_that ("stats_badge", {
+    expect_null (stats_badge_from_opening_comment (""))
+    out <- "Submission type: <!--submission-type-->Not-Stats<!--end-submission-type-->"
+    expect_null (stats_badge_from_opening_comment (out))
+    out <- c (
+        "Submission type: <!--submission-type-->Stats<!--end-submission-type-->",
+        "labels: A label"
+    )
+    expect_null (stats_badge_from_opening_comment (out))
+    out [2] <- "labels: approved"
+    b <- stats_badge_from_opening_comment (out)
+    expect_length (b, 0L) # character(0) rather than NULL
+    lbl <- "6/approved-bronze-v1.2"
+    out [2] <- paste0 ("labels: ", lbl)
+    b <- stats_badge_from_opening_comment (out)
+    expect_type (b, "character")
+    expect_length (b, 1L)
+    expect_equal (b, lbl)
+
+    out <- c (
+        "Submission type: <!--submission-type-->Stats<!--end-submission-type-->",
+        "Badge grade: <!--statsgrade-->gold<!--end-statsgrade-->"
+    )
+    b <- stats_badge_from_opening_comment (out)
+    expect_type (b, "character")
+    expect_length (b, 1L)
+    expect_true (grepl ("^6\\/approved\\-gold\\-", b))
+})
