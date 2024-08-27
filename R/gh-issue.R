@@ -123,9 +123,10 @@ has_html_variable <- function (x, variable) {
     open_pos <- grep (var_open, x)
     close_pos <- grep (var_close, x)
 
-    chk <- length (open_pos) == 1 &
-        length (close_pos) == 1L &
-        identical (open_pos, close_pos)
+    chk <- length (open_pos) == 1L &&
+        length (close_pos) == 1L &&
+        (identical (open_pos, close_pos) ||
+            max (diff (c (open_pos, close_pos)) == 1))
 
     return (chk)
 }
