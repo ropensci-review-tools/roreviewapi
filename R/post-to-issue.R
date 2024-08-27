@@ -13,6 +13,15 @@ post_to_issue <- function (cmt, repo, issue_id) {
     f <- tempfile (fileext = ".txt")
     # 'cmt' is then written to this tempfile below.
 
+    gh_content <- get_gh_args (cmt, repo, issue_id, f)
+
+    writeLines (gh_content$cmt, f)
+
+    system2 ("gh", args = gh_content$args, stdout = TRUE)
+}
+
+get_gh_args <- function (cmt, repo, issue_id, f) {
+
     if (grepl ("^Oops\\,\\ssomething went wrong", cmt)) {
 
         repo_bug <- "ropensci-review-tools/roreviewapi"
@@ -49,7 +58,5 @@ post_to_issue <- function (cmt, repo, issue_id) {
         )
     }
 
-    writeLines (cmt, f)
-
-    system2 ("gh", args = args, stdout = TRUE)
+    list (cmt = cmt, args = args)
 }
