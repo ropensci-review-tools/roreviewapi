@@ -32,6 +32,8 @@ get_github_user <- function () {
     login <- grep ("\\\"login\\\"\\:", x, value = TRUE)
     if (length (login) > 0L) {
         login <- gsub ("\\\"|,$", "", strsplit (login, "\\:\\s+") [[1]] [2])
+    } else {
+        login <- ""
     }
 
     return (login)
