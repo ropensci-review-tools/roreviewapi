@@ -30,20 +30,7 @@ push_to_gh_pages <- function (check) {
         git_files$path
     )
 
-    # clean up any untracked files:
-    all_files <- fs::dir_ls (rorev_dir, recurse = TRUE, type = "file")
-    all_files <- gsub (rorev_dir, "", all_files)
-    all_files <- gsub (paste0 ("^", .Platform$file.sep), "", all_files)
-    untracked <- all_files [which (!all_files %in% git_files)]
-    untracked <- fs::path (rorev_dir, untracked)
-
-    if (length (untracked) > 0L) {
-        tryCatch (
-            fs::file_delete (untracked),
-            error = function (e) NULL
-        )
-    }
-    # TODO# also need to unlink empty directories
+    clean_untracked_files(rorev_dir, git_files)
 
     files <- NULL
     # pkgs with no networks do not have 'network_file' attribute:
@@ -219,4 +206,21 @@ path_to_url <- function (path) {
         "https://ropensci-review-tools.github.io/roreviewapi/static/",
         fs::path_file (path)
     )
+}
+
+clean_untracked_files <- function (rorev_dir, git_files) {
+
+    all_files <- fs::dir_ls (rorev_dir, recurse = TRUE, type = "file")
+    all_files <- gsub (rorev_dir, "", all_files)
+    all_files <- gsub (paste0 ("^", .Platform$file.sep), "", all_files)
+    untracked <- all_files [which (!all_files %in% git_files)]
+    untracked <- fs::path (rorev_dir, untracked)
+
+    if (length (untracked) > 0L) {
+        tryCatch (
+            fs::file_delete (untracked),
+            error = function (e) NULL
+        )
+    }
+    # TODO# also need to unlink empty directories
 }
