@@ -10,10 +10,16 @@ test_that ("utils symbols", {
 test_that ("utils gh user", {
     g <- get_github_user ()
     expect_type (g, "character")
-    expect_length (g, 1L)
+    is_local <- identical (Sys.getenv ("MPADGE_LOCAL"), "true")
+    # On GH, 'get_github_user()' returns 'char(0)':
+    expect_length (g, as.integer (is_local))
 
-    is_auth <- identical (Sys.getenv ("MPADGE_LOCAL"), "true")
-    expect_equal (is_user_authorized (), is_auth)
+    is_auth <- is_user_authorized ()
+    if (is_local) {
+        expect_equal (is_user_authorized (), is_auth)
+    } else {
+        expect_length (is_auth, 0L)
+    }
 })
 
 test_that ("utils gh branch", {
