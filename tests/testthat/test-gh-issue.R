@@ -12,3 +12,22 @@ test_that ("gh issue template check", {
     expect_false (nzchar (chk))
     expect_true (attr (chk, "proceed_with_checks"))
 })
+
+test_that ("post_to_issue functionality", {
+    repo <- "ropensci/test"
+    issue_id <- 1L
+    cmt <- "Yep"
+    f <- tempfile (fileext = ".txt")
+
+    args <- get_gh_args (cmt, repo, issue_id, f)
+    expect_equal (args$cmt, cmt)
+    expect_equal (names (args), c ("cmt", "args"))
+    expect_length (args$args, 7L)
+
+    cmt <- "Oops, something went wrong"
+    args <- get_gh_args (cmt, repo, issue_id, f)
+    expect_false (args$cmt == cmt)
+    expect_true (grepl ("There was a problem", args$cmt, fixed = TRUE))
+    expect_equal (names (args), c ("cmt", "args"))
+    expect_length (args$args, 10L)
+})
