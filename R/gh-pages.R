@@ -30,27 +30,13 @@ push_to_gh_pages <- function (check) {
         git_files$path
     )
 
-    clean_untracked_files(rorev_dir, git_files)
+    clean_untracked_files (rorev_dir, git_files)
 
+    this_hash <- get_pkg_hash (check, out)
     files <- NULL
-    # pkgs with no networks do not have 'network_file' attribute:
     if ("network_file" %in% names (attributes (check))) {
-
-        files <- "network_file"
         out$network_file <- path_to_url (attr (check, "network_file"))
-        # get hash of current file to exclude from list of current files to be
-        # removed
-        this_hash <- utils::tail (strsplit (out$network_file, "pkgstats") [[1]], 1)
-        this_hash <- gsub ("\\.html$", "", this_hash)
-
-    } else {
-
-        hash_line <- grep ("^git\\shash\\:", check, value = TRUE)
-        hash <- regmatches (
-            hash_line,
-            gregexpr ("\\[.*\\]", hash_line)
-        ) [[1]]
-        this_hash <- gsub ("^\\[|\\]$", "", hash)
+        files <- "network_file"
     }
 
     if ("srr_report_file" %in% names (attributes (check))) {
@@ -223,4 +209,27 @@ clean_untracked_files <- function (rorev_dir, git_files) {
         )
     }
     # TODO# also need to unlink empty directories
+}
+
+get_pkg_hash <- function (check, out) {
+    # pkgs with no networks do not have 'network_file' attribute:
+    if ("network_file" %in% names (attributes (check))) {
+
+        network_file <- path_to_url (attr (check, "network_file"))
+        # get hash of current file to exclude from list of current files to be
+        # removed
+        this_hash <- utils::tail (strsplit (network_file, "pkgstats") [[1]], 1)
+        this_hash <- gsub ("\\.html$", "", this_hash)
+
+    } else {
+
+        hash_line <- grep ("^git\\shash\\:", check, value = TRUE)
+        hash <- regmatches (
+            hash_line,
+            gregexpr ("\\[.*\\]", hash_line)
+        ) [[1]]
+        this_hash <- gsub ("^\\[|\\]$", "", hash)
+    }
+
+    return (this_hash)
 }
