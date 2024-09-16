@@ -48,7 +48,7 @@ srr_counts <- function (repourl, repo, issue_id, post_to_issue = TRUE) {
         return (out)
     }
 
-    out <- srr::srr_counts_from_report (srr_rep)
+    out <- roreviewapi::srr_counts_from_report (srr_rep)
 
     if (post_to_issue) {
 
