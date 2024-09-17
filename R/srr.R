@@ -27,12 +27,6 @@ srr_counts <- function (repourl, repo, issue_id, post_to_issue = TRUE) {
 
     path <- roreviewapi::dl_gh_repo (u = repourl, branch = branch)
 
-    deps <- roreviewapi::pkgrep_install_deps (path, repo, issue_id)
-    deps <- ifelse (is.null (deps), "", deps)
-    if (grepl ("failed with error", deps)) {
-        return (deps)
-    }
-
     # Then the 'srr' bit:
     if (is.null (branch)) {
         branch <- "" # for srr_report fn
