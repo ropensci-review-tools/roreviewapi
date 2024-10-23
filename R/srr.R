@@ -44,6 +44,21 @@ srr_counts <- function (repourl, repo, issue_id, post_to_issue = TRUE) {
 
     out <- roreviewapi::srr_counts_from_report (srr_rep)
 
+    # Check any extra issues about unusual distributions of standards among
+    # package files:
+    stds_in_code <- tryCatch (
+        srr:::get_stds_from_code (path),
+        error = function (e) NULL
+    )
+    if (!is.null (stds_in_code)) {
+        stds_msg <- srr:::check_standards_in_files (stds_in_code, quiet = TRUE)
+        if (length (stds_msg) > 0L) {
+            stds_msg <- paste0 (":exclamation: ", stds_msg)
+            out <- gsub (" and may be submitted", "", out)
+            out <- paste0 (c (out, stds_msg), collapse = "\n")
+        }
+    }
+
     if (post_to_issue) {
 
         out <- roreviewapi::post_to_issue (out, repo, issue_id)
