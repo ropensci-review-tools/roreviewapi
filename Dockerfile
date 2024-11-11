@@ -3,6 +3,7 @@ MAINTAINER Mark Padgham <mark.padgham@email.com>
 
 ENV R_REMOTES_UPGRADE "always"
 ENV NOT_CRAN "true"
+ENV CI "ropensci"
 ENV GITHUB_PAT "<my_github_token>"
 
 # seasonal -> roreviewapi#13
