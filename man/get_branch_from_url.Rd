@@ -7,7 +7,7 @@
 get_branch_from_url(repourl)
 }
 \arguments{
-\item{repourl}{Potentially with "/tree/branch_name" appended}
+\item{repourl}{Potentially with "/tree/branch_name/sub-directory" appended}
 }
 \value{
 Branch as single string.
