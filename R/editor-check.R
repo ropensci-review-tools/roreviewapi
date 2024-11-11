@@ -26,6 +26,8 @@ editor_check <- function (repourl, repo, issue_id, post_to_issue = TRUE) {
     }
 
     path <- roreviewapi::dl_gh_repo (u = repourl, branch = branch)
+    convert_path <- utils::getFromNamespace ("convert_path", "pkgcheck")
+    path <- convert_path (path)
 
     deps <- roreviewapi::pkgrep_install_deps (path, repo, issue_id)
     if (any (grepl ("failed with error", deps))) {
