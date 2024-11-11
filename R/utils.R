@@ -78,7 +78,8 @@ get_branch_from_url <- function (repourl) {
     branch <- NULL
     domains <- strsplit (repourl, "\\/+") [[1]]
     if (length (domains) > 4L & any (domains == "tree")) {
-        branch <- utils::tail (domains, 1L)
+        i <- which (domains == "tree")
+        branch <- domains [which (domains == "tree") + 1L]
     }
     return (branch)
 }
