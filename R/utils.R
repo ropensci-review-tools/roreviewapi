@@ -93,7 +93,7 @@ get_branch_from_url <- function (repourl) {
 #'
 #' @inheritParams get_branch_from_url
 #' @export
-get_subdir_from_url <- function (reporul) {
+get_subdir_from_url <- function (repourl) {
 
     subdir <- NULL
     domains <- strsplit (repourl, "\\/+") [[1]]
