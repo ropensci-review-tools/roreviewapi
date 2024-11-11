@@ -69,7 +69,7 @@ authorized_users <- c (
 )
 
 #' Get branch from a GitHub URL if non-default branch specified there
-#' @param repourl Potentially with "/tree/branch_name" appended
+#' @param repourl Potentially with "/tree/branch_name/sub-directory" appended
 #' @return Branch as single string.
 #' @family github
 #' @export
@@ -78,9 +78,32 @@ get_branch_from_url <- function (repourl) {
     branch <- NULL
     domains <- strsplit (repourl, "\\/+") [[1]]
     if (length (domains) > 4L & any (domains == "tree")) {
-        branch <- utils::tail (domains, 1L)
+        i <- which (domains == "tree")
+        branch <- domains [which (domains == "tree") + 1L]
+        if (branch %in% c ("main", "master") && length (domains) > (i + 1)) {
+            # URL has branch only as prefix to sub-directory
+            branch <- NULL
+        }
     }
     return (branch)
+}
+
+#' Return sub-directory from URL if present. This function is also intended to
+#' test whether packages are in sub-directories (issue #64)
+#'
+#' @inheritParams get_branch_from_url
+#' @export
+get_subdir_from_url <- function (repourl) {
+
+    subdir <- NULL
+    domains <- strsplit (repourl, "\\/+") [[1]]
+    if (length (domains) > 4L & any (domains == "tree")) {
+        i <- which (domains == "tree")
+        if (length (domains) > (i + 1)) {
+            subdir <- domains [i + 2L]
+        }
+    }
+    return (subdir)
 }
 
 #' Bob Rudis's URL checker function

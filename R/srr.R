@@ -19,6 +19,10 @@
 #' @export
 srr_counts <- function (repourl, repo, issue_id, post_to_issue = TRUE) {
 
+    check_standards_in_files <-
+        utils::getFromNamespace ("check_standards_in_files", "srr")
+    get_stds_from_code <- utils::getFromNamespace ("get_stds_from_code", "srr")
+
     # Content taken directly from editor_check():
     branch <- roreviewapi::get_branch_from_url (repourl)
     if (!is.null (branch)) {
@@ -47,11 +51,11 @@ srr_counts <- function (repourl, repo, issue_id, post_to_issue = TRUE) {
     # Check any extra issues about unusual distributions of standards among
     # package files:
     stds_in_code <- tryCatch (
-        srr:::get_stds_from_code (path),
+        get_stds_from_code (path),
         error = function (e) NULL
     )
     if (!is.null (stds_in_code)) {
-        stds_msg <- srr:::check_standards_in_files (stds_in_code, quiet = TRUE)
+        stds_msg <- check_standards_in_files (stds_in_code, quiet = TRUE)
         if (length (stds_msg) > 0L) {
             stds_msg <- paste0 (":exclamation: ", stds_msg)
             out <- gsub (" and may be submitted", "", out)
