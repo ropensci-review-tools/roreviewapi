@@ -7,18 +7,8 @@
 #' @export
 dl_gh_repo <- function (u, branch = NULL) {
 
-    subdir <- get_subdir_from_url (u)
-    if (length (subdir) > 0L) {
-        domains <- strsplit (u, "\\/+") [[1]] [-1] # rm "https"
-        i <- which (domains == "tree")
-        if (length (i) == 0L) {
-            stop ("URL [", u, "] is improperly formatted.", call. = FALSE)
-        }
-        u <- paste0 (
-            "https://",
-            paste0 (domains [seq_len (i - 1)], collapse = "/")
-        )
-    }
+    u <- rm_subdir_from_url (u)
+
     repo <- utils::tail (strsplit (u, "/") [[1]], 1)
     org <- utils::tail (strsplit (u, "/") [[1]], 2) [1]
 
@@ -54,4 +44,22 @@ dl_gh_repo <- function (u, branch = NULL) {
     }
 
     return (path)
+}
+
+rm_subdir_from_url <- function (u) {
+
+    subdir <- get_subdir_from_url (u)
+    if (length (subdir) > 0L) {
+        domains <- strsplit (u, "\\/+") [[1]] [-1] # rm "https"
+        i <- which (domains == "tree")
+        if (length (i) == 0L) {
+            stop ("URL [", u, "] is improperly formatted.", call. = FALSE)
+        }
+        u <- paste0 (
+            "https://",
+            paste0 (domains [seq_len (i - 1)], collapse = "/")
+        )
+    }
+
+    return (u)
 }
