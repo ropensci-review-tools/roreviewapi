@@ -18,6 +18,7 @@ Get branch from a GitHub URL if non-default branch specified there
 \seealso{
 Other github: 
 \code{\link{dl_gh_repo}()},
+\code{\link{get_subdir_from_url}()},
 \code{\link{post_to_issue}()}
 }
 \concept{github}

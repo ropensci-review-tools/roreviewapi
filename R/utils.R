@@ -92,6 +92,7 @@ get_branch_from_url <- function (repourl) {
 #' test whether packages are in sub-directories (issue #64)
 #'
 #' @inheritParams get_branch_from_url
+#' @family github
 #' @export
 get_subdir_from_url <- function (repourl) {
 
