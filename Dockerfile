@@ -1,5 +1,5 @@
-FROM mpadge/pkgcheck
-MAINTAINER Mark Padgham <mark.padgham@email.com>
+FROM ghcr.io/ropensci-review-tools/pkgcheck
+LABEL org.opencontainers.image.authors="mark.padgham@email.com"
 
 ENV R_REMOTES_UPGRADE "always"
 ENV NOT_CRAN "true"
