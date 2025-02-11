@@ -5,7 +5,7 @@ DOCKERFILE=$PROJDIR/Dockerfile
 COMPOSE_FILE=$PROJDIR/docker-compose.yml
 
 docker-compose -f $COMPOSE_FILE down
-docker pull mpadge/pkgcheck
+docker pull ghcr.io/ropensci-review-tools/pkgcheck:latest
 docker-compose -f $COMPOSE_FILE pull
 # also need to rebuild roreviewapi container for testing:
 docker build --no-cache --rm -f $DOCKERFILE --force-rm --no-cache -t roreviewapi $PROJDIR/
