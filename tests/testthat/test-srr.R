@@ -46,10 +46,12 @@ test_that ("srr", {
 
     srr_rep <- srr::srr_report (path, view = FALSE)
     counts <- srr_counts_from_report (srr_rep)
-    # No errors, so starts with compliance report:
-    expect_true (grepl ("^\\#\\#\\s+\\'srr\\' standards compliance", counts))
-    # Should pass count checks, so state that it may be submitted:
-    expect_true (grepl ("may be submitted", counts, fixed = TRUE))
+    # Starts with an error because standards text has not been modified:
+    expect_true (grepl ("^\\:heavy\\_multiplication\\_x\\:", counts))
+    # Should still have main header:
+    expect_true (grepl ("\\#\\#\\s+\\'srr\\' standards compliance", counts))
+    # Should fail checks, so should not state that it may be submitted:
+    expect_false (grepl ("may be submitted", counts, fixed = TRUE))
     # But should include non-zero counts of stds not complied with:
     expect_true (grepl ("Not complied with", counts, fixed = TRUE))
 })
