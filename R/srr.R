@@ -56,7 +56,7 @@ srr_counts <- function (repourl, repo, issue_id, post_to_issue = TRUE) {
     )
     if (!is.null (stds_in_code)) {
         stds_msg <- check_standards_in_files (stds_in_code, quiet = TRUE)
-        if (length (stds_msg) > 0L) {
+        if (length (which (nzchar (stds_msg))) > 0L) {
             stds_msg <- paste0 (":exclamation: ", stds_msg)
             out <- gsub (" and may be submitted", "", out)
             out <- paste0 (c (out, stds_msg), collapse = "\n")
