@@ -13,8 +13,10 @@ test_that ("srr", {
         srr_rep <- srr::srr_report (path, view = FALSE)
     )
 
-    counts <- srr_counts_from_report (srr_rep)
-    expect_true (grepl ("^The following standards are missing", counts))
+    counts <- strsplit (srr_counts_from_report (srr_rep), "\\n") [[1]]
+    errs <- grep (":heavy_multiplication_x:", counts, fixed = TRUE)
+    expect_length (errs, 2L)
+    expect_true (any (grepl ("^The following standards are missing", counts)))
 
     # Fill all standards, leaving single "TODO":
     f <- file.path (path, "R", "srr-stats-standards.R")
@@ -45,15 +47,16 @@ test_that ("srr", {
     writeLines (x, f)
 
     srr_rep <- srr::srr_report (path, view = FALSE)
-    counts <- srr_counts_from_report (srr_rep)
+    counts <- strsplit (srr_counts_from_report (srr_rep), "\\n") [[1]]
+    errs <- grep (":heavy_multiplication_x:", counts, fixed = TRUE)
     # Starts with an error because standards text has not been modified:
-    expect_true (grepl ("^\\:heavy\\_multiplication\\_x\\:", counts))
+    expect_length (errs, 1L)
     # Should still have main header:
-    expect_true (grepl ("\\#\\#\\s+\\'srr\\' standards compliance", counts))
+    expect_true (any (grepl ("\\#\\#\\s+\\'srr\\' standards compliance", counts)))
     # Should fail checks, so should not state that it may be submitted:
-    expect_false (grepl ("may be submitted", counts, fixed = TRUE))
+    expect_false (any (grepl ("may be submitted", counts, fixed = TRUE)))
     # But should include non-zero counts of stds not complied with:
-    expect_true (grepl ("Not complied with", counts, fixed = TRUE))
+    expect_true (any (grepl ("Not complied with", counts, fixed = TRUE)))
 })
 
 test_that ("srr stats version", {
