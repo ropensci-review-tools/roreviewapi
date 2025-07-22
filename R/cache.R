@@ -88,7 +88,7 @@ stdout_stderr_cache <- function (repourl) {
     org <- utils::tail (strsplit (repourl, "/") [[1]], 2) [1]
     repo <- utils::tail (strsplit (repourl, "/") [[1]], 1)
 
-    cmt <- pkgcheck::get_latest_commit (org = org, repo = repo, branch)
+    cmt <- pkgcheck::get_latest_commit (org = org, repo = repo, branch) [[1]]
     not_github_repo <- (is.null (cmt))
     if (not_github_repo) {
         path <- roreviewapi::dl_gh_repo (u = repourl, branch = branch)
