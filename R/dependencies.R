@@ -219,5 +219,5 @@ install_dev_deps <- function (path, deps, repos) {
         }
     }
 
-    return (upgradeable_pkgs (path))
+    return (upgradeable_pkgs (path, repos))
 }
