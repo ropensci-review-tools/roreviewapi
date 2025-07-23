@@ -15,7 +15,7 @@
 #' @export
 check_cache <- function (org, repo, cache_dir = fs::path_temp ()) {
 
-    cmt <- pkgcheck::get_latest_commit (org = org, repo = repo)
+    cmt <- pkgcheck::get_latest_commit (org = org, repo = repo) [[1]]
 
     if (is.null (cmt)) { # If not GitHub; plus #21
         cmt <- list (
