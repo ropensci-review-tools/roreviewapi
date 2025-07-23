@@ -14,8 +14,8 @@ is_user_authorized(secret = NULL)
 Logical value indicating whether or not a user is authorized.
 }
 \description{
-This function is used only in the \pkg{plumber} endpoints, to prevent them
-being called by unauthorized users.
+This function is used only in the \pkg{plumber} endpoints, to
+prevent them being called by unauthorized users.
 }
 \seealso{
 Other ropensci: 

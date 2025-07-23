@@ -1,4 +1,5 @@
 #' Tick symbol, exported for direct use in plumber API
+#'
 #' @family utils
 #' @export
 symbol_tck <- function () {
@@ -6,6 +7,7 @@ symbol_tck <- function () {
 }
 
 #' Cross symbol, exported for direct use in plumber API
+#'
 #' @family utils
 #' @export
 symbol_crs <- function () {
@@ -14,8 +16,10 @@ symbol_crs <- function () {
 
 #' Get GitHub user name from token.
 #'
-#' This is only intended to be used within the main docker container, in which
-#' token is always hard-coded in precisely the way assumed here.
+#' @description This is only intended to be used within the main docker
+#' container, in which token is always hard-coded in precisely the way assumed
+#' here.
+#'
 #' @return User name ("login") associated with specified token
 #' @noRd
 get_github_user <- function () {
@@ -42,10 +46,12 @@ get_github_user <- function () {
 #' Check whether a user, identified from GitHub API token, is authorized to call
 #' endpoints.
 #'
-#' This function is used only in the \pkg{plumber} endpoints, to prevent them
-#' being called by unauthorized users.
+#' @description This function is used only in the \pkg{plumber} endpoints, to
+#' prevent them being called by unauthorized users.
+#'
 #' @param secret Environment variable `PKGCHECK_TOKEN` sent from bot.
 #' @return Logical value indicating whether or not a user is authorized.
+#'
 #' @family ropensci
 #' @export
 is_user_authorized <- function (secret = NULL) {
@@ -59,8 +65,9 @@ is_user_authorized <- function (secret = NULL) {
     return (yes)
 }
 
-# The users are currently only used to authorize opening issues on the
-# `pkgcheck` repo for packages which fail checks:
+#' The users are currently only used to authorize opening issues on the
+#' `pkgcheck` repo for packages which fail checks:
+#' @noRd
 authorized_users <- c (
     "ropensci-review-bot",
     "mpadge",
@@ -69,8 +76,10 @@ authorized_users <- c (
 )
 
 #' Get branch from a GitHub URL if non-default branch specified there
+#'
 #' @param repourl Potentially with "/tree/branch_name/sub-directory" appended
 #' @return Branch as single string.
+#'
 #' @family github
 #' @export
 get_branch_from_url <- function (repourl) {
@@ -92,6 +101,7 @@ get_branch_from_url <- function (repourl) {
 #' test whether packages are in sub-directories (issue #64)
 #'
 #' @inheritParams get_branch_from_url
+#'
 #' @family github
 #' @export
 get_subdir_from_url <- function (repourl) {
