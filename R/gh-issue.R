@@ -29,6 +29,13 @@ check_issue_template <- function (orgrepo, issue_num) {
     x <- strsplit (x$data$repository$issue$body, "\\n") [[1]]
 
     html_must_have <- html_variables [html_variables != "statsgrade"]
+
+    submission_type <- get_html_variable (x, "submission-type")
+    if (submission_type %in% c ("Pre-submission", "pre-envio")) {
+        not_in_presub <- c ("editor", "reviewers-list", "due-dates-list")
+        html_must_have <- html_must_have [!html_must_have %in% not_in_presub]
+    }
+
     chk <- vapply (
         html_must_have,
         function (i) check_html_variable (x, i),
@@ -40,22 +47,18 @@ check_issue_template <- function (orgrepo, issue_num) {
         chk <- c (chk, check_html_variable (x, "statsgrade"))
     }
 
-    chk <- chk [which (nchar (chk) > 0L)]
+    chk <- chk [which (nzchar (chk))]
 
     out <- ""
-    if (length (chk) == 1L) {
+    if (length (chk) > 0L) {
 
-        out <- paste0 (
-            "The following problem was found in your ",
-            "submission template:\n\n- ",
-            unname (chk)
+        msg <- paste0 (
+            "The following problem",
+            ifelse (length (chk) == 1, " was ", "s were "),
+            "found in your submission template:\n\n"
         )
-
-    } else if (length (chk) > 1L) {
-
         out <- paste0 (
-            "The following problems were found in your ",
-            "submission template:\n\n",
+            msg,
             paste0 ("- ", unname (chk), collapse = "\n")
         )
     }
@@ -103,7 +106,8 @@ html_variables <- c (
 
 # Note "Estandar" has to be converted to non-accented "a"
 # to avoid warnings about non-ASCII characters in code
-submission_types <- c ("Standard", "Estandar", "Stats")
+submission_types <-
+    c ("Standard", "Estandar", "Stats", "Pre-submission", "pre-envio")
 
 stats_grades <- c ("bronze", "silver", "gold")
 
