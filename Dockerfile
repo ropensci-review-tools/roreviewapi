@@ -6,6 +6,7 @@ ENV NOT_CRAN "true"
 ENV CI "true"
 ENV ROPENSCI "true"
 ENV GITHUB_PAT "<my_github_token>"
+ENV ROPENSCI_REVIEW_BOT "true"
 
 # seasonal -> roreviewapi#13
 RUN install2.r \
