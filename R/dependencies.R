@@ -77,18 +77,6 @@ install_sys_deps <- function (path, os, os_release) {
 
     install_scripts <- sysreqs_rspm (desc_file, os, os_release)
 
-    if (is.integer (install_scripts)) {
-        # use rhub (see #22)
-        install_scripts <- NULL
-        sysreqs <- sysreqs_rhub (desc_file)
-        if (length (sysreqs) > 0L) {
-            install_scripts <- paste0 (
-                "apt-get install -y ",
-                sysreqs
-            )
-        }
-    }
-
     if (length (install_scripts) > 0L) {
         tmp <- lapply (install_scripts, system) # nolint
     }
@@ -111,47 +99,17 @@ sysreqs_rspm <- function (desc_file, os, os_release) {
         os,
         os_release
     )
-    res <- httr::POST (url = u, body = httr::upload_file (desc_file))
+    req <- httr2::request (u)
+    req <- httr2::req_headers (req, "Content-Type" = "application/json")
+    req <- httr2::req_body_file (req, path = desc_file)
+    resp <- httr2::req_perform (req)
+    httr2::resp_check_status (resp)
 
-    if (res$status != 200L) {
-        return (res$status)
-    }
+    body <- httr2::resp_body_json (resp, simplifyVector = TRUE)
 
-    res <- httr::content (res, type = "text", encoding = "UTF-8")
-    res <- jsonlite::fromJSON (res, simplifyDataFrame = TRUE)$dependencies
-
-    install_scripts <- unique (unlist (res$install_scripts))
+    install_scripts <- unique (unlist (body$dependencies$install_scripts))
 
     return (install_scripts)
-}
-
-#' Get system requirements from rhub.io
-#'
-#' @param desc_file Path to DESC file
-#' @return Character vector of system requirements, but not in full form of
-#' install scripts.
-#' @noRd
-sysreqs_rhub <- function (desc_file) {
-
-    d <- data.frame (read.dcf (desc_file))
-
-    sr <- gsub ("\\s", "%20", d$SystemRequirements)
-
-    if (length (sr) == 0L) {
-        return (NULL)
-    }
-
-    rhub <- sprintf ("http://sysreqs.r-hub.io/map/%s", sr)
-
-    res <- httr::GET (url = rhub)
-    res <- httr::content (res, type = "text", encoding = "UTF-8")
-    req <- jsonlite::fromJSON (res, simplifyDataFrame = TRUE)
-
-    req <- lapply (req, function (i) i$platforms$DEB)
-    req <- unique (unname (unlist (req)))
-    req <- req [which (!is.na (req))]
-
-    return (req)
 }
 
 upgradeable_pkgs <- function (path, repos) {
