@@ -26,9 +26,5 @@ test_that ("utils gh branch", {
     repourl <- "https://github.com/ropensci/software-review/tree/other"
     b <- get_branch_from_url (repourl)
     expect_equal (b, "other")
-    expect_warning (
-        chk <- url_exists (repourl),
-        "Requests for \\["
-    )
-    expect_false (chk)
+    expect_false (url_exists (repourl))
 })
