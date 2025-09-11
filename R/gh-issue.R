@@ -228,43 +228,12 @@ check_html_variable <- function (x, variable) {
 #' Get GitHub token
 #'
 #' (Same as in `pkgcheck`)
-#' @param token_name Optional name of token to use
-#' @return The value of the GitHub access token extracted from environment
-#' variables.
+#' @return The value of the GitHub access token
 #' @family github
 #' @noRd
-get_gh_token <- function (token_name = "") {
+get_gh_token <- function () {
 
-    e <- Sys.getenv ()
-    if (token_name != "") {
-
-        toks <- unique (e [grep (token_name, names (e))])
-
-    } else {
-
-        toks <- e [grep ("GITHUB", names (e))]
-        if (length (unique (toks)) > 1) {
-            toks <- toks [grep ("TOKEN|PAT", names (toks))]
-        }
-        # GitHub runners have "GITHUB_PATH" and "GITHUB_EVENT_PATH"
-        if (length (unique (toks)) > 1) {
-            toks <- toks [grep ("TOKEN$|PAT$", names (toks))]
-        }
-    }
-
-    if (length (unique (toks)) > 1) {
-
-        stop (
-            "There are ",
-            length (unique (toks)),
-            " possible tokens named [",
-            paste0 (names (toks), collapse = ", "),
-            "]; please ensure one distinct ",
-            "token named 'GITHUB_TOKEN' or similar."
-        )
-    }
-
-    return (unique (toks))
+    gitcreds::gitcreds_get ()$password
 }
 
 issue_cmt_qry <- function (gh_cli, org, repo, issue_num) {

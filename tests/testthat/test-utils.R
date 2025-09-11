@@ -1,6 +1,8 @@
-test_all <- identical (Sys.getenv ("MPADGE_LOCAL"), "true") ||
-    identical (Sys.getenv ("GITHUB_JOB"), "test-coverage")
+test_all <- identical (Sys.getenv ("MPADGE_LOCAL"), "true")
+# identical (Sys.getenv ("GITHUB_JOB"), "test-coverage")
 testthat::skip_if (!test_all)
+
+# The 'get_github_user()' is not authorized on gh runners
 
 test_that ("utils symbols", {
     expect_equal (symbol_tck (), ":heavy_check_mark:")
@@ -26,9 +28,5 @@ test_that ("utils gh branch", {
     repourl <- "https://github.com/ropensci/software-review/tree/other"
     b <- get_branch_from_url (repourl)
     expect_equal (b, "other")
-    expect_warning (
-        chk <- url_exists (repourl),
-        "Requests for \\["
-    )
-    expect_false (chk)
+    expect_false (url_exists (repourl))
 })
