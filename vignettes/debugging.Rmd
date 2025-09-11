@@ -10,14 +10,14 @@ vignette: >
 ---
 
 ```{r setup, include=FALSE}
-knitr::opts_chunk$set(
-  collapse = TRUE,
-  warning = TRUE,
-  message = TRUE,
-  width = 120,
-  comment = "#>",
-  fig.retina = 2,
-  fig.path = "README-"
+knitr::opts_chunk$set (
+    collapse = TRUE,
+    warning = TRUE,
+    message = TRUE,
+    width = 120,
+    comment = "#>",
+    fig.retina = 2,
+    fig.path = "README-"
 )
 ```
 
@@ -56,8 +56,9 @@ called by the endpoint as a background process.
 The following code will confirm that the API is online, by returning a single numeric value:
 
 ```{r do-check, eval = FALSE}
-httr::GET ("http://<ip-address>:8000/mean") |>
-    httr::content ()
+httr2::request ("http://<ip-address>:8000/mean") |>
+    httr2::req_perform () |>
+    httr2::resp_body_json ()
 ```
 
 ## Check log of recent requests
@@ -71,8 +72,10 @@ the submission template. These should be caught by the initial call make by the
 function](https://github.com/ropensci-review-tools/roreviewapi/blob/82c9724a712094e4ccabb3974cb952f68ad5180f/R/plumber.R#L23). Potential issues can be debugged by calling that function locally:
 
 ```{r check-template, eval = FALSE}
-roreviewapi::check_issue_template (orgrepo = "ropensci/software-review",
-                                   issue_num = <issue_num>)
+roreviewapi::check_issue_template (
+    orgrepo = "ropensci/software-review",
+    issue_num = "<issue_num>"
+)
 ```
 
 That should return an empty string with an additional attribute,
@@ -156,7 +159,7 @@ path <- roreviewapi::dl_gh_repo (repourl)
 os <- "ubuntu"
 os_release <- "20.04"
 p <- roreviewapi::pkgrep_install_deps (path, os, os_release)
-checks <- pkgcheck::pkgcheck(path)
+checks <- pkgcheck::pkgcheck (path)
 out <- roreviewapi::collate_editor_check (checks)
 orgrepo <- "ropensci/software-review" # or somewhere else for testing purposes
 out <- roreviewapi::post_to_issue (out, orgrepo, issue_num)
