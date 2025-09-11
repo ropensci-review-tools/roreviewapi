@@ -20,24 +20,39 @@ editor_check <- function (repourl, repo, issue_id, post_to_issue = TRUE) {
         attachNamespace ("pkgcheck")
     }
 
+    is_r_pkg <- TRUE
+    if (grepl ("github", repourl)) {
+        is_r_pkg <- url_is_r_pkg (repourl)
+    }
+
     branch <- roreviewapi::get_branch_from_url (repourl)
     if (!is.null (branch)) {
         repourl <- gsub (paste0 ("\\/tree\\/", branch, ".*$"), "", repourl)
     }
 
-    path <- roreviewapi::dl_gh_repo (u = repourl, branch = branch)
-    convert_path <- utils::getFromNamespace ("convert_path", "pkgcheck")
-    path <- convert_path (path)
+    if (!is_r_pkg) {
 
-    deps <- roreviewapi::pkgrep_install_deps (path, repo, issue_id)
-    if (any (grepl ("failed with error", deps))) {
-        return (deps)
+        checks <- tryCatch (
+            stop ("Repository link does not appear to be an R package", call. = FALSE),
+            error = function (e) e
+        )
+
+    } else {
+
+        path <- roreviewapi::dl_gh_repo (u = repourl, branch = branch)
+        convert_path <- utils::getFromNamespace ("convert_path", "pkgcheck")
+        path <- convert_path (path)
+
+        deps <- roreviewapi::pkgrep_install_deps (path, repo, issue_id)
+        if (any (grepl ("failed with error", deps))) {
+            return (deps)
+        }
+
+        checks <- tryCatch (
+            pkgcheck::pkgcheck (path),
+            error = function (e) e
+        )
     }
-
-    checks <- tryCatch (
-        pkgcheck::pkgcheck (path),
-        error = function (e) e
-    )
 
     if (!methods::is (checks, "error")) {
 
