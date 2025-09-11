@@ -29,11 +29,16 @@ get_github_user <- function () {
     # Check corresponding user name:
     u <- "https://api.github.com/user"
     req <- httr2::request (u)
-    req <- httr2::req_headers (
-        req,
-        "Authorization" = paste0 ("Bearer ", gh_tok),
-        "Content-Type" = "application/json"
-    )
+
+    on_gh_runner <- identical (Sys.getenv ("GITHUB_JOB"), "test-coverage")
+    if (!on_gh_runner) {
+        req <- httr2::req_headers (
+            req,
+            "Authorization" = paste0 ("Bearer ", gh_tok)
+        )
+    }
+    req <- httr2::req_headers (req, "Content-Type" = "application/json")
+
     resp <- httr2::req_perform (req)
     httr2::resp_check_status (resp)
 
