@@ -28,16 +28,19 @@ get_github_user <- function () {
 
     # Check corresponding user name:
     u <- "https://api.github.com/user"
-    h <- httr::add_headers (Authorization = paste ("Bearer", gh_tok, sep = " "))
-    x <- httr::content (httr::GET (u, h), "text")
+    req <- httr2::request (u)
+    req <- httr2::req_headers (
+        req,
+        "Authorization" = paste0 ("Bearer ", gh_tok),
+        "Content-Type" = "application/json"
+    )
+    resp <- httr2::req_perform (req)
+    httr2::resp_check_status (resp)
 
-    # Then extract user:
-    x <- strsplit (x, "\\n") [[1]]
-    login <- grep ("\\\"login\\\"\\:", x, value = TRUE)
-    if (length (login) > 0L) {
-        login <- gsub ("\\\"|,$", "", strsplit (login, "\\:\\s+") [[1]] [2])
-    } else {
-        login <- ""
+    x <- httr2::resp_body_json (resp)
+    login <- ""
+    if ("login" %in% names (x)) {
+        login <- x$login
     }
 
     return (login)
