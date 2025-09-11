@@ -25,3 +25,33 @@ test_that ("editor check", {
     expect_true (any (grepl ("^(\\#+)\\sEditor\\-in\\-Chief\\s+Instructions\\:", res)))
     expect_true (any (grepl ("Processing may not proceed", res, fixed = TRUE)))
 })
+
+test_that ("editor check with bad url", {
+
+    repourl <- "https://github.com/does-not-exist"
+    repo <- "https://github.com/ropensci/software-review"
+    issue_id <- 1
+
+    out <- editor_check (
+        repourl,
+        repo = repo,
+        issue_id = issue_id,
+        post_to_issue = FALSE
+    )
+    expect_type (out, "character")
+    expect_length (out, 1L)
+    expect_true (grepl ("does not appear to be an R package", out))
+    expect_true (grepl (repourl, out, fixed = TRUE))
+
+    repourl <- repo # now exists, but still not R package
+    out <- editor_check (
+        repourl,
+        repo = repo,
+        issue_id = issue_id,
+        post_to_issue = FALSE
+    )
+    expect_type (out, "character")
+    expect_length (out, 1L)
+    expect_true (grepl ("does not appear to be an R package", out))
+    expect_true (grepl (repourl, out, fixed = TRUE))
+})
