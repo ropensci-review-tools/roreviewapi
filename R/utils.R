@@ -121,4 +121,41 @@ get_subdir_from_url <- function (repourl) {
     return (subdir)
 }
 
+url_is_r_pkg <- function (repourl) {
+
+    ret <- TRUE
+
+    if (!grepl ("github\\.com", repourl)) {
+        return (FALSE)
+    }
+    repourl <- gsub ("^https\\:\\/\\/", "", repourl)
+    repourl <- gsub ("github\\.com\\/", "", repourl)
+
+    repourl_split <- fs::path_split (repourl) [[1]]
+    if (length (repourl_split) != 2L) {
+        return (FALSE)
+    }
+    repourl <- paste0 (repourl_split, collapse = "/")
+
+    u_base <- "https://api.github.com/repos/"
+
+    url <- paste0 (u_base, repourl, "/contents")
+
+    req <- httr2::request (url)
+    resp <- tryCatch (
+        httr2::req_perform (req),
+        error = function (e) NULL
+    )
+    if (is.null (resp)) {
+        return (FALSE)
+    }
+    httr2::resp_check_status (resp)
+
+    body_files <- httr2::resp_body_json (resp, simplify = TRUE)
+    required <- c ("DESCRIPTION", "NAMESPACE", "R", "man")
+    ret <- all (required %in% body_files$name)
+
+    return (ret)
+}
+
 url_exists <- getFromNamespace ("url_exists", "pkgcheck")

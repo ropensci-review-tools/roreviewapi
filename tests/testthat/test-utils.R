@@ -30,3 +30,10 @@ test_that ("utils gh branch", {
     expect_equal (b, "other")
     expect_false (url_exists (repourl))
 })
+
+test_that ("is R pkg", {
+    repourl <- "https://github.com/ropensci/software-review"
+    expect_false (url_is_r_pkg (repourl))
+    repourl <- "https://github.com/ropensci-review-tools/roreviewapi"
+    expect_true (url_is_r_pkg (repourl))
+})
