@@ -121,6 +121,13 @@ get_subdir_from_url <- function (repourl) {
     return (subdir)
 }
 
+#' Check whether a given GitHub URL contains an R package.
+#'
+#' @inheritParams get_branch_from_url
+#' @return `TRUE` if 'repourl' is an R package, otherwise `FALSE`
+#'
+#' @family github
+#' @export
 url_is_r_pkg <- function (repourl) {
 
     ret <- TRUE

@@ -21,6 +21,7 @@ Download a GitHub repo to local cache
 Other github: 
 \code{\link{get_branch_from_url}()},
 \code{\link{get_subdir_from_url}()},
-\code{\link{post_to_issue}()}
+\code{\link{post_to_issue}()},
+\code{\link{url_is_r_pkg}()}
 }
 \concept{github}

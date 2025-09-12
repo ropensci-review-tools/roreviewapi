@@ -23,6 +23,7 @@ Post review checks to GitHub issue
 Other github: 
 \code{\link{dl_gh_repo}()},
 \code{\link{get_branch_from_url}()},
-\code{\link{get_subdir_from_url}()}
+\code{\link{get_subdir_from_url}()},
+\code{\link{url_is_r_pkg}()}
 }
 \concept{github}

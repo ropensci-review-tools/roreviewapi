@@ -22,7 +22,7 @@ editor_check <- function (repourl, repo, issue_id, post_to_issue = TRUE) {
 
     is_r_pkg <- TRUE
     if (grepl ("github", repourl)) {
-        is_r_pkg <- url_is_r_pkg (repourl)
+        is_r_pkg <- roreviewapi::url_is_r_pkg (repourl)
     }
 
     branch <- roreviewapi::get_branch_from_url (repourl)

@@ -18,6 +18,7 @@ test whether packages are in sub-directories (issue #64)
 Other github: 
 \code{\link{dl_gh_repo}()},
 \code{\link{get_branch_from_url}()},
-\code{\link{post_to_issue}()}
+\code{\link{post_to_issue}()},
+\code{\link{url_is_r_pkg}()}
 }
 \concept{github}
