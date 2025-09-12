@@ -14,7 +14,11 @@ RUN install2.r \
   plumber \
   visNetwork \
 && installGithub.r \
-      ropensci-review-tools/roreviewapi
+      ropensci-review-tools/roreviewapi \
+      r-lib/credentials
+
+# Rm credentials when this is on CRAN:
+# https://github.com/r-lib/credentials/commit/10b549febfa52b01a6f861d128f02f72ccb8e378
 
 RUN echo "GITHUB_TOKEN='<my_github_token>'" > ~/.Renviron \
     && echo "GITHUB_PAT='<my_github_token>'" >> ~/.Renviron \
