@@ -135,20 +135,25 @@ url_is_r_pkg <- function (repourl) {
     if (!grepl ("github\\.com", repourl)) {
         return (FALSE)
     }
+    branch <- get_branch_from_url (repourl)
     repourl <- gsub ("^https\\:\\/\\/", "", repourl)
     repourl <- gsub ("github\\.com\\/", "", repourl)
 
     repourl_split <- fs::path_split (repourl) [[1]]
-    if (length (repourl_split) != 2L) {
+    if (length (repourl_split) < 2L) {
         return (FALSE)
     }
-    repourl <- paste0 (repourl_split, collapse = "/")
+    repourl <- paste0 (repourl_split [1:2], collapse = "/")
 
     u_base <- "https://api.github.com/repos/"
 
     url <- paste0 (u_base, repourl, "/contents")
 
     req <- httr2::request (url)
+    if (!is.null (branch)) {
+        req <- httr2::req_url_query (req, ref = branch)
+    }
+
     resp <- tryCatch (
         httr2::req_perform (req),
         error = function (e) NULL
