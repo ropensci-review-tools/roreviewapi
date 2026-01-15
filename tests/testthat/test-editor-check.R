@@ -8,7 +8,7 @@ test_that ("editor check", {
         fs::dir_delete (path)
     }
     path <- srr::srr_stats_pkg_skeleton ()
-    roxygen2::roxygenise (path)
+    roxygen2::roxygenise (path, load_code = roxygen2::load_source)
     Sys.setenv ("PKGCHECK_CACHE_DIR" = fs::path_temp ())
     checks <- pkgcheck::pkgcheck (path, goodpractice = FALSE)
 
@@ -18,7 +18,7 @@ test_that ("editor check", {
 
     res <- strsplit (res, "\\n") [[1]]
     expect_true (grepl ("^\\#\\#\\s+Checks for \\[demo", res [1]))
-    expect_length (grep ("^\\-\\s\\:heavy\\_multiplication\\_x\\:", res), 11L)
+    expect_length (grep ("^\\-\\s\\:heavy\\_multiplication\\_x\\:", res), 10L)
     expect_length (grep ("^\\-\\s\\:heavy\\_check\\_mark\\:", res), 3L)
     # Should have a stats section:
     expect_true (any (grepl ("^(\\#+)\\s1\\.\\s+rOpenSci\\s+Statistical\\s+Standards", res)))
