@@ -36,4 +36,6 @@ test_that ("is R pkg", {
     expect_false (url_is_r_pkg (repourl))
     repourl <- "https://github.com/ropensci-review-tools/roreviewapi"
     expect_true (url_is_r_pkg (repourl))
+    repourl <- "https://github.com/ropensci-review-tools/roreviewapi/tree/gh-pages"
+    expect_false (url_is_r_pkg (repourl))
 })
