@@ -26,7 +26,8 @@ editor_check <- function (repourl, repo, issue_id, post_to_issue = TRUE) {
     }
 
     branch <- roreviewapi::get_branch_from_url (repourl)
-    if (!is.null (branch)) {
+    branch_is_default <- is.null (branch)
+    if (!branch_is_default) {
         repourl <- gsub (paste0 ("\\/tree\\/", branch, ".*$"), "", repourl)
     }
 
@@ -56,6 +57,7 @@ editor_check <- function (repourl, repo, issue_id, post_to_issue = TRUE) {
 
     if (!methods::is (checks, "error")) {
 
+        attr (checks, "branch_is_default") <- branch_is_default
         out <- roreviewapi::collate_editor_check (checks)
 
     } else {
@@ -94,6 +96,15 @@ editor_check <- function (repourl, repo, issue_id, post_to_issue = TRUE) {
 collate_editor_check <- function (checks) {
 
     checks_md <- pkgcheck::checks_to_markdown (checks, render = FALSE)
+    branch_is_default <- !isFALSE (attr (checks, "branch_is_default"))
+    if (!branch_is_default) {
+        checks_md [1] <- paste0 (
+            checks_md [1],
+            " on branch '",
+            checks$info$git$branch,
+            "'"
+        )
+    }
 
     check <- paste0 (checks_md, collapse = "\n")
     a <- attributes (checks_md)
