@@ -24,6 +24,30 @@ test_that ("editor check", {
     expect_true (any (grepl ("^(\\#+)\\s1\\.\\s+rOpenSci\\s+Statistical\\s+Standards", res)))
     expect_true (any (grepl ("^(\\#+)\\sEditor\\-in\\-Chief\\s+Instructions\\:", res)))
     expect_true (any (grepl ("Processing may not proceed", res, fixed = TRUE)))
+
+    fs::dir_delete (path)
+})
+
+test_that ("editor check with non-default url", {
+    path <- fs::path (fs::path_temp (), "demo")
+    if (fs::dir_exists (path)) {
+        fs::dir_delete (path)
+    }
+    path <- srr::srr_stats_pkg_skeleton ()
+    roxygen2::roxygenise (path, load_code = roxygen2::load_source)
+    Sys.setenv ("PKGCHECK_CACHE_DIR" = fs::path_temp ())
+    checks <- pkgcheck::pkgcheck (path, goodpractice = FALSE)
+
+    res0 <- strsplit (collate_editor_check (checks), "\\n") [[1]]
+    # title ends with direct href to package and nothing else:
+    expect_true (grepl ("\\)$", res0 [1]))
+    expect_false (grepl ("on branch", res0 [1]))
+
+    checks$info$git$branch <- "testbranch"
+    attr (checks, "branch_is_default") <- FALSE
+    res1 <- strsplit (collate_editor_check (checks), "\\n") [[1]]
+    expect_false (grepl ("\\)$", res1 [1]))
+    expect_true (grepl (" on branch \'testbranch\'", res1 [1]))
 })
 
 test_that ("editor check with bad url", {
