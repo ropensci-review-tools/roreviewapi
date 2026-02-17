@@ -99,8 +99,12 @@ collate_editor_check <- function (checks) {
 
     a <- attributes (checks)
     checks_md <- pkgcheck::checks_to_markdown (checks, render = FALSE) |>
-        add_non_default_branch_info (checks) |>
-        add_subdir_info (a$repo, a$issue_num)
+        add_non_default_branch_info (checks)
+    if (pkg_in_subdir (checks_md)) {
+        if (!issue_template_has_subdir (a$repo, a$issue_num)) {
+            checks_md <- edit_issue_with_subdir (checks_md, a$repo, a$issue_num)
+        }
+    }
 
     out <- paste0 (checks_md, collapse = "\n")
     a <- attributes (checks_md)
@@ -170,7 +174,14 @@ add_non_default_branch_info <- function (checks_md, checks) {
     return (checks_md)
 }
 
-add_subdir_info <- function (checks_md, repo, issue_id) {
+pkg_in_subdir <- function (checks_md) {
+
+    # String from pkgcheck/R/format-checks.R, in 'get_subdir_text()' function:
+    ptn <- "R\\spackage\\sis\\sin\\sthe.*sub\\-directory"
+    any (grepl (ptn, checks_md))
+}
+
+edit_issue_with_subdir <- function (checks_md, orgrepo, issue_num) {
 
     a <- attributes (checks_md)
 
@@ -181,7 +192,7 @@ add_subdir_info <- function (checks_md, repo, issue_id) {
     if (length (index) == 1L) {
 
         # This makes GH API call, so inside 'if' to only call if necessary:
-        if (issue_template_has_subdir (repo, issue_id)) {
+        if (issue_template_has_subdir (repo, issue_num)) {
             return (checks_md)
         }
 
@@ -190,18 +201,10 @@ add_subdir_info <- function (checks_md, repo, issue_id) {
         if (length (quotes) == 2L) {
             subdir <- substring (line, quotes [1], quotes [2])
             subdir <- gsub ("\\'", "", subdir)
-            new_info <- c (
-                paste0 (
-                    "Please ensure that the initial submission template ",
-                    "has been manually edited to add the following line ",
-                    "immediately after 'Repository':\n"
-                ),
-                "```",
-                paste0 ("Sub-directory: ", subdir),
-                "```",
-                "",
-                "---"
-            )
+            new_info <- c (paste0 (
+                "The initial submission template has been edited ",
+                "to add an additional 'Sub-directory:' line."
+            ))
 
             index_pre <- seq_len (index)
             index_post <- seq_along (checks_md) [-(index_pre)]
@@ -209,6 +212,22 @@ add_subdir_info <- function (checks_md, repo, issue_id) {
                 checks_md [index_pre],
                 new_info,
                 checks_md [index_post]
+            )
+
+            # Then update the actual issue:
+            requireNamespace ("gh", quietly = TRUE)
+            body <- get_issue_body (orgrepo, issue_num)
+            index <- min (grep ("^Repository\\:", body))
+            index_pre <- seq_len (index)
+            index_post <- seq_along (body) [-(index_pre)]
+            new_body <- c (
+                body [index_pre],
+                paste0 ("Sub-directory: ", subdir),
+                body [index_post]
+            )
+            resp <- gh::gh (
+                paste0 ("PATCH /repos/", orgrepo, "/issues/", issue_num),
+                body = paste0 (new_body, collapse = "\n")
             )
         }
     }
