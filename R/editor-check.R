@@ -145,29 +145,8 @@ collate_editor_check <- function (checks) {
         srr_okay <- a$srr_okay
     }
 
-    eic_instr <- add_eic_srr_info (eic_instr, srr_okay)
-
-    if (!a$checks_okay) {
-
-        eic_instr <- c (
-            eic_instr,
-            paste0 (
-                "Processing may not proceed until the ",
-                "items marked with ",
-                roreviewapi::symbol_crs (),
-                " have been resolved."
-            )
-        )
-    } else {
-
-        eic_instr <- c (
-            eic_instr,
-            paste0 (
-                "This package is in top shape and may ",
-                "be passed on to a handling editor"
-            )
-        )
-    }
+    eic_instr <- add_eic_srr_info (eic_instr, srr_okay) |>
+        add_checks_okay_info (a$checks_okay)
 
     noteworthy <- ifelse (a$is_noteworthy,
         c (
@@ -210,6 +189,33 @@ add_eic_srr_info <- function (eic_instr, srr_okay) {
             paste0 (
                 "Processing may not proceed until the 'srr' ",
                 "issues identified above have been adressed."
+            )
+        )
+    }
+
+    return (eic_instr)
+}
+
+add_checks_okay_info <- function (eic_instr, checks_okay) {
+
+    if (!checks_okay) {
+
+        eic_instr <- c (
+            eic_instr,
+            paste0 (
+                "Processing may not proceed until the ",
+                "items marked with ",
+                roreviewapi::symbol_crs (),
+                " have been resolved."
+            )
+        )
+    } else {
+
+        eic_instr <- c (
+            eic_instr,
+            paste0 (
+                "This package is in top shape and may ",
+                "be passed on to a handling editor"
             )
         )
     }
