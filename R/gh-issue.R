@@ -8,25 +8,7 @@
 #' @export
 check_issue_template <- function (orgrepo, issue_num) {
 
-    org <- strsplit (orgrepo, "/|%2F") [[1]] [1]
-    repo <- strsplit (orgrepo, "/|%2F") [[1]] [2]
-
-    token <- get_gh_token ()
-
-    gh_cli <- ghql::GraphqlClient$new (
-        url = "https://api.github.com/graphql",
-        headers = list (Authorization = paste0 ("Bearer ", token))
-    )
-
-    qry <- issue_cmt_qry (gh_cli,
-        org = org,
-        repo = repo,
-        issue_num = issue_num
-    )
-
-    x <- gh_cli$exec (qry$queries$get_template)
-    x <- jsonlite::fromJSON (x)
-    x <- strsplit (x$data$repository$issue$body, "\\n") [[1]]
+    x <- get_issue_body (orgrepo, issue_num)
 
     html_must_have <- html_variables [html_variables != "statsgrade"]
 
@@ -92,6 +74,30 @@ check_issue_template <- function (orgrepo, issue_num) {
     attr (out, "proceed_with_checks") <- proceed_with_checks
 
     return (out)
+}
+
+get_issue_body <- function (orgrepo, issue_num) {
+
+    org <- strsplit (orgrepo, "/|%2F") [[1]] [1]
+    repo <- strsplit (orgrepo, "/|%2F") [[1]] [2]
+
+    token <- get_gh_token ()
+
+    gh_cli <- ghql::GraphqlClient$new (
+        url = "https://api.github.com/graphql",
+        headers = list (Authorization = paste0 ("Bearer ", token))
+    )
+
+    qry <- issue_cmt_qry (gh_cli,
+        org = org,
+        repo = repo,
+        issue_num = issue_num
+    )
+
+    x <- gh_cli$exec (qry$queries$get_template)
+    x <- jsonlite::fromJSON (x)
+    x <- strsplit (x$data$repository$issue$body, "\\n") [[1]]
+
 }
 
 html_variables <- c (
