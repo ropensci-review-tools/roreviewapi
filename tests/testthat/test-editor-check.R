@@ -53,7 +53,7 @@ test_that ("editor check with non-default url", {
 test_that ("editor check with bad url", {
 
     repourl <- "https://github.com/does-not-exist"
-    repo <- "https://github.com/ropensci/software-review"
+    repo <- "https://github.com/mpadge/mpadge.r-universe.dev"
     issue_id <- 1
 
     out <- editor_check (
