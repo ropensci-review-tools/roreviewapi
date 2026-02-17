@@ -95,16 +95,8 @@ editor_check <- function (repourl, repo, issue_id, post_to_issue = TRUE) {
 #' @export
 collate_editor_check <- function (checks) {
 
-    checks_md <- pkgcheck::checks_to_markdown (checks, render = FALSE)
-    branch_is_default <- !isFALSE (attr (checks, "branch_is_default"))
-    if (!branch_is_default) {
-        checks_md [1] <- paste0 (
-            checks_md [1],
-            " on branch '",
-            checks$info$git$branch,
-            "'"
-        )
-    }
+    checks_md <- pkgcheck::checks_to_markdown (checks, render = FALSE) |>
+        add_non_default_branch_info (checks)
 
     check <- paste0 (checks_md, collapse = "\n")
     a <- attributes (checks_md)
@@ -201,4 +193,19 @@ collate_editor_check <- function (checks) {
     out <- paste0 (c (check, eic_instr), collapse = "\n")
 
     return (out)
+}
+
+add_non_default_branch_info <- function (checks_md, checks) {
+
+    branch_is_default <- !isFALSE (attr (checks, "branch_is_default"))
+    if (!branch_is_default) {
+        checks_md [1] <- paste0 (
+            checks_md [1],
+            " on branch '",
+            checks$info$git$branch,
+            "'"
+        )
+    }
+
+    return (checks_md)
 }
