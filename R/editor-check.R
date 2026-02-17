@@ -98,19 +98,19 @@ collate_editor_check <- function (checks) {
     checks_md <- pkgcheck::checks_to_markdown (checks, render = FALSE) |>
         add_non_default_branch_info (checks)
 
-    check <- paste0 (checks_md, collapse = "\n")
+    out <- paste0 (checks_md, collapse = "\n")
     a <- attributes (checks_md)
     if ("srr" %in% names (checks$info)) {
         a$srr_okay <- checks$info$srr$okay
     }
 
-    check <- strsplit (check, "\n") [[1]]
-    attributes (check) <- a
+    out <- strsplit (out, "\n") [[1]]
+    attributes (out) <- a
 
-    git_hash <- check [grep ("^git\\shash", check)]
+    git_hash <- out [grep ("^git\\shash", out)]
     has_git_hash <- !grepl ("\\[\\]", git_hash)
     if (has_git_hash) {
-        u <- push_to_gh_pages (check)
+        u <- push_to_gh_pages (out)
         if (!u$push_success) {
             out <- paste0 (
                 "Sorry, something went wrong trying to push function ",
@@ -124,12 +124,12 @@ collate_editor_check <- function (checks) {
 
     if (!is.null (a$network_file)) { # pkg has a network, and network_file
 
-        check <- gsub (a$network_file, u$network_file, check)
+        out <- gsub (a$network_file, u$network_file, out)
     }
 
     if (!is.null (a$srr_report_file)) {
 
-        check <- gsub (a$srr_report_file, u$srr_report_file, check)
+        out <- gsub (a$srr_report_file, u$srr_report_file, out)
     }
 
     eic_instr <- c (
@@ -149,7 +149,7 @@ collate_editor_check <- function (checks) {
         add_checks_okay_info (a$checks_okay) |>
         add_noteworthy (a$is_noteworthy)
 
-    out <- paste0 (c (check, eic_instr), collapse = "\n")
+    out <- paste0 (c (out, eic_instr), collapse = "\n")
 
     return (out)
 }
