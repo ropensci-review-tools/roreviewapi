@@ -122,15 +122,8 @@ collate_editor_check <- function (checks) {
         u <- list (network_file = "", srr_report_file = "")
     }
 
-    if (!is.null (a$network_file)) { # pkg has a network, and network_file
-
-        out <- gsub (a$network_file, u$network_file, out)
-    }
-
-    if (!is.null (a$srr_report_file)) {
-
-        out <- gsub (a$srr_report_file, u$srr_report_file, out)
-    }
+    out <- update_file_paths (out, a$network_file, u$network_file) |>
+        update_file_paths (a$srr_report_file, u$srr_report_file)
 
     eic_instr <- c (
         "",
@@ -226,4 +219,14 @@ add_noteworthy <- function (eic_instr, is_noteworthy) {
     }
 
     return (eic_instr)
+}
+
+update_file_paths <- function (out, template, real_value) {
+
+    if (!is.null (template)) { # pkg has a network, and network_file
+
+        out <- gsub (template, real_value, out)
+    }
+
+    return (out)
 }
