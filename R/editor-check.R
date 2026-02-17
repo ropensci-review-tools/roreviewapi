@@ -177,7 +177,7 @@ add_eic_srr_info <- function (eic_instr, srr_okay) {
             eic_instr,
             paste0 (
                 "Processing may not proceed until the 'srr' ",
-                "issues identified above have been addressed."
+                "issues identified above have been addressed.\n"
             )
         )
     }
@@ -195,7 +195,7 @@ add_checks_okay_info <- function (eic_instr, checks_okay) {
                 "Processing may not proceed until the ",
                 "items marked with ",
                 roreviewapi::symbol_crs (),
-                " have been resolved."
+                " have been resolved.\n"
             )
         )
     } else {
@@ -204,7 +204,7 @@ add_checks_okay_info <- function (eic_instr, checks_okay) {
             eic_instr,
             paste0 (
                 "This package is in top shape and may ",
-                "be passed on to a handling editor"
+                "be passed on to a handling editor.\n"
             )
         )
     }
@@ -220,7 +220,7 @@ add_noteworthy <- function (eic_instr, is_noteworthy) {
             paste0 (
                 "This package has some noteworthy ",
                 "properties, see 'Package Statistics' ",
-                "details above"
+                "details above.\n"
             )
         )
     }
