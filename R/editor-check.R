@@ -146,19 +146,8 @@ collate_editor_check <- function (checks) {
     }
 
     eic_instr <- add_eic_srr_info (eic_instr, srr_okay) |>
-        add_checks_okay_info (a$checks_okay)
-
-    noteworthy <- ifelse (a$is_noteworthy,
-        c (
-            paste0 (
-                "This package has some noteworthy ",
-                "properties, see 'Package Statistics' ",
-                "details below"
-            ),
-            ""
-        ),
-        ""
-    )
+        add_checks_okay_info (a$checks_okay) |>
+        add_noteworthy (a$is_noteworthy)
 
     out <- paste0 (c (check, eic_instr), collapse = "\n")
 
@@ -216,6 +205,22 @@ add_checks_okay_info <- function (eic_instr, checks_okay) {
             paste0 (
                 "This package is in top shape and may ",
                 "be passed on to a handling editor"
+            )
+        )
+    }
+
+    return (eic_instr)
+}
+
+add_noteworthy <- function (eic_instr, is_noteworthy) {
+
+    if (is_noteworthy) {
+        eic_instr <- c (
+            eic_instr,
+            paste0 (
+                "This package has some noteworthy ",
+                "properties, see 'Package Statistics' ",
+                "details above"
             )
         )
     }
