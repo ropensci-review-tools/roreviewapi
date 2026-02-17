@@ -177,7 +177,7 @@ add_eic_srr_info <- function (eic_instr, srr_okay) {
             eic_instr,
             paste0 (
                 "Processing may not proceed until the 'srr' ",
-                "issues identified above have been adressed."
+                "issues identified above have been addressed."
             )
         )
     }
