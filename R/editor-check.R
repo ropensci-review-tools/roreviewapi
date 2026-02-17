@@ -145,16 +145,7 @@ collate_editor_check <- function (checks) {
         srr_okay <- a$srr_okay
     }
 
-    if (!srr_okay) {
-
-        eic_instr <- c (
-            eic_instr,
-            paste0 (
-                "Processing may not proceed until the 'srr' ",
-                "issues identified above have been adressed."
-            )
-        )
-    }
+    eic_instr <- add_eic_srr_info (eic_instr, srr_okay)
 
     if (!a$checks_okay) {
 
@@ -208,4 +199,20 @@ add_non_default_branch_info <- function (checks_md, checks) {
     }
 
     return (checks_md)
+}
+
+add_eic_srr_info <- function (eic_instr, srr_okay) {
+
+    if (!srr_okay) {
+
+        eic_instr <- c (
+            eic_instr,
+            paste0 (
+                "Processing may not proceed until the 'srr' ",
+                "issues identified above have been adressed."
+            )
+        )
+    }
+
+    return (eic_instr)
 }
