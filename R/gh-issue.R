@@ -257,3 +257,30 @@ issue_cmt_qry <- function (gh_cli, org, repo, issue_num) {
 
     return (qry)
 }
+
+#' Check whether issue template has sub-directory
+#'
+#' This is only called from within 'collate_editor_check()' and not directly
+#' from plumber, so doesn't need to be exported. It is also only called from
+#' within 'collate_editor_check()', via the 'add_subdir_info()' function. That
+#' is then only triggered for packages already identified as lying within a
+#' sub-directory, so the duplicated 'get_issue_body()' is okay here, as hardly
+#' ever triggered.
+#'
+#' @param orgrepo GitHub organization and repo as single string separated by
+#' forward slash (`org/repo`).
+#' @param issue_num Number of issue from which to extract opening comment
+#' @return 'TRUE' is the issue template specified "Sub-directory:", otherwise
+#' 'FALSE'.
+#' @family ropensci
+#' @noRd
+issue_template_has_subdir <- function (orgrepo, issue_num) {
+
+    x <- get_issue_body (orgrepo, issue_num)
+    yaml_end <- min (grep ("^\\-\\-\\-", x))
+    if (length (yaml_end) != 1L) {
+        return (TRUE)
+    }
+    x_yaml <- x [seq_len (yaml_end)]
+    any (grepl ("^Sub\\-directory\\:", x_yaml))
+}

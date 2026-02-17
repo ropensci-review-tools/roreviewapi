@@ -58,6 +58,8 @@ editor_check <- function (repourl, repo, issue_id, post_to_issue = TRUE) {
     if (!methods::is (checks, "error")) {
 
         attr (checks, "branch_is_default") <- branch_is_default
+        attr (checks, "repo") <- repo
+        attr (checks, "issue_num") <- issue_id
         out <- roreviewapi::collate_editor_check (checks)
 
     } else {
@@ -95,8 +97,10 @@ editor_check <- function (repourl, repo, issue_id, post_to_issue = TRUE) {
 #' @export
 collate_editor_check <- function (checks) {
 
+    a <- attributes (checks)
     checks_md <- pkgcheck::checks_to_markdown (checks, render = FALSE) |>
-        add_non_default_branch_info (checks)
+        add_non_default_branch_info (checks) |>
+        add_subdir_info (a$repo, a$issue_num)
 
     out <- paste0 (checks_md, collapse = "\n")
     a <- attributes (checks_md)
@@ -149,6 +153,8 @@ collate_editor_check <- function (checks) {
 
 add_non_default_branch_info <- function (checks_md, checks) {
 
+    a <- attributes (checks_md)
+
     branch_is_default <- !isFALSE (attr (checks, "branch_is_default"))
     if (!branch_is_default) {
         checks_md [1] <- paste0 (
@@ -158,6 +164,56 @@ add_non_default_branch_info <- function (checks_md, checks) {
             "'"
         )
     }
+
+    attributes (checks_md) <- a
+
+    return (checks_md)
+}
+
+add_subdir_info <- function (checks_md, repo, issue_id) {
+
+    a <- attributes (checks_md)
+
+    # String from pkgcheck/R/format-checks.R, in 'get_subdir_text()' function:
+    ptn <- "R\\spackage\\sis\\sin\\sthe.*sub\\-directory"
+    index <- grep (ptn, checks_md)
+
+    if (length (index) == 1L) {
+
+        # This makes GH API call, so inside 'if' to only call if necessary:
+        if (issue_template_has_subdir (repo, issue_id)) {
+            return (checks_md)
+        }
+
+        line <- checks_md [index]
+        quotes <- gregexpr ("\\'", line) [[1]]
+        if (length (quotes) == 2L) {
+            subdir <- substring (line, quotes [1], quotes [2])
+            subdir <- gsub ("\\'", "", subdir)
+            new_info <- c (
+                paste0 (
+                    "Please ensure that the initial submission template ",
+                    "has been manually edited to add the following line ",
+                    "immediately after 'Repository':\n"
+                ),
+                "```",
+                paste0 ("Sub-directory: ", subdir),
+                "```",
+                "",
+                "---"
+            )
+
+            index_pre <- seq_len (index)
+            index_post <- seq_along (checks_md) [-(index_pre)]
+            checks_md <- c (
+                checks_md [index_pre],
+                new_info,
+                checks_md [index_post]
+            )
+        }
+    }
+
+    attributes (checks_md) <- a
 
     return (checks_md)
 }
