@@ -19,6 +19,7 @@ editor_check <- function (repourl, repo, issue_id, post_to_issue = TRUE) {
     if (!isNamespaceLoaded ("pkgcheck")) {
         attachNamespace ("pkgcheck")
     }
+    convert_path <- utils::getFromNamespace ("convert_path", "pkgcheck")
 
     is_r_pkg <- TRUE
     if (grepl ("github", repourl)) {
@@ -29,6 +30,15 @@ editor_check <- function (repourl, repo, issue_id, post_to_issue = TRUE) {
     branch_is_default <- is.null (branch)
     if (!branch_is_default) {
         repourl <- gsub (paste0 ("\\/tree\\/", branch, ".*$"), "", repourl)
+    }
+    if (!is_r_pkg) {
+        # Clone to see whether pkg is in sub-dir:
+        path <- roreviewapi::dl_gh_repo (u = repourl, branch = branch)
+        path <- tryCatch (
+            convert_path (path),
+            error = function (e) NULL
+        )
+        is_r_pkg <- !is.null (path)
     }
 
     if (!is_r_pkg) {
@@ -41,7 +51,6 @@ editor_check <- function (repourl, repo, issue_id, post_to_issue = TRUE) {
     } else {
 
         path <- roreviewapi::dl_gh_repo (u = repourl, branch = branch)
-        convert_path <- utils::getFromNamespace ("convert_path", "pkgcheck")
         path <- convert_path (path)
 
         deps <- roreviewapi::pkgrep_install_deps (path, repo, issue_id)
