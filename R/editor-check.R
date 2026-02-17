@@ -58,6 +58,8 @@ editor_check <- function (repourl, repo, issue_id, post_to_issue = TRUE) {
     if (!methods::is (checks, "error")) {
 
         attr (checks, "branch_is_default") <- branch_is_default
+        attr (checks, "repo") <- repo
+        attr (checks, "issue_num") <- issue_id
         out <- roreviewapi::collate_editor_check (checks)
 
     } else {
@@ -95,30 +97,28 @@ editor_check <- function (repourl, repo, issue_id, post_to_issue = TRUE) {
 #' @export
 collate_editor_check <- function (checks) {
 
-    checks_md <- pkgcheck::checks_to_markdown (checks, render = FALSE)
-    branch_is_default <- !isFALSE (attr (checks, "branch_is_default"))
-    if (!branch_is_default) {
-        checks_md [1] <- paste0 (
-            checks_md [1],
-            " on branch '",
-            checks$info$git$branch,
-            "'"
-        )
+    a <- attributes (checks)
+    checks_md <- pkgcheck::checks_to_markdown (checks, render = FALSE) |>
+        add_non_default_branch_info (checks)
+    if (pkg_in_subdir (checks_md)) {
+        if (!issue_template_has_subdir (a$repo, a$issue_num)) {
+            checks_md <- edit_issue_with_subdir (checks_md, a$repo, a$issue_num)
+        }
     }
 
-    check <- paste0 (checks_md, collapse = "\n")
+    out <- paste0 (checks_md, collapse = "\n")
     a <- attributes (checks_md)
     if ("srr" %in% names (checks$info)) {
         a$srr_okay <- checks$info$srr$okay
     }
 
-    check <- strsplit (check, "\n") [[1]]
-    attributes (check) <- a
+    out <- strsplit (out, "\n") [[1]]
+    attributes (out) <- a
 
-    git_hash <- check [grep ("^git\\shash", check)]
+    git_hash <- out [grep ("^git\\shash", out)]
     has_git_hash <- !grepl ("\\[\\]", git_hash)
     if (has_git_hash) {
-        u <- push_to_gh_pages (check)
+        u <- push_to_gh_pages (out)
         if (!u$push_success) {
             out <- paste0 (
                 "Sorry, something went wrong trying to push function ",
@@ -130,15 +130,8 @@ collate_editor_check <- function (checks) {
         u <- list (network_file = "", srr_report_file = "")
     }
 
-    if (!is.null (a$network_file)) { # pkg has a network, and network_file
-
-        check <- gsub (a$network_file, u$network_file, check)
-    }
-
-    if (!is.null (a$srr_report_file)) {
-
-        check <- gsub (a$srr_report_file, u$srr_report_file, check)
-    }
+    out <- update_file_paths (out, a$network_file, u$network_file) |>
+        update_file_paths (a$srr_report_file, u$srr_report_file)
 
     eic_instr <- c (
         "",
@@ -153,18 +146,116 @@ collate_editor_check <- function (checks) {
         srr_okay <- a$srr_okay
     }
 
+    eic_instr <- add_eic_srr_info (eic_instr, srr_okay) |>
+        add_checks_okay_info (a$checks_okay) |>
+        add_noteworthy (a$is_noteworthy)
+
+    out <- paste0 (c (out, eic_instr), collapse = "\n")
+
+    return (out)
+}
+
+add_non_default_branch_info <- function (checks_md, checks) {
+
+    a <- attributes (checks_md)
+
+    branch_is_default <- !isFALSE (attr (checks, "branch_is_default"))
+    if (!branch_is_default) {
+        checks_md [1] <- paste0 (
+            checks_md [1],
+            " on branch '",
+            checks$info$git$branch,
+            "'"
+        )
+    }
+
+    attributes (checks_md) <- a
+
+    return (checks_md)
+}
+
+pkg_in_subdir <- function (checks_md) {
+
+    # String from pkgcheck/R/format-checks.R, in 'get_subdir_text()' function:
+    ptn <- "R\\spackage\\sis\\sin\\sthe.*sub\\-directory"
+    any (grepl (ptn, checks_md))
+}
+
+edit_issue_with_subdir <- function (checks_md, orgrepo, issue_num) {
+
+    a <- attributes (checks_md)
+
+    # String from pkgcheck/R/format-checks.R, in 'get_subdir_text()' function:
+    ptn <- "R\\spackage\\sis\\sin\\sthe.*sub\\-directory"
+    index <- grep (ptn, checks_md)
+
+    if (length (index) == 1L) {
+
+        # This makes GH API call, so inside 'if' to only call if necessary:
+        if (issue_template_has_subdir (repo, issue_num)) {
+            return (checks_md)
+        }
+
+        line <- checks_md [index]
+        quotes <- gregexpr ("\\'", line) [[1]]
+        if (length (quotes) == 2L) {
+            subdir <- substring (line, quotes [1], quotes [2])
+            subdir <- gsub ("\\'", "", subdir)
+            new_info <- c (paste0 (
+                "The initial submission template has been edited ",
+                "to add an additional 'Sub-directory:' line."
+            ))
+
+            index_pre <- seq_len (index)
+            index_post <- seq_along (checks_md) [-(index_pre)]
+            checks_md <- c (
+                checks_md [index_pre],
+                new_info,
+                checks_md [index_post]
+            )
+
+            # Then update the actual issue:
+            requireNamespace ("gh", quietly = TRUE)
+            body <- get_issue_body (orgrepo, issue_num)
+            index <- min (grep ("^Repository\\:", body))
+            index_pre <- seq_len (index)
+            index_post <- seq_along (body) [-(index_pre)]
+            new_body <- c (
+                body [index_pre],
+                paste0 ("Sub-directory: ", subdir),
+                body [index_post]
+            )
+            resp <- gh::gh (
+                paste0 ("PATCH /repos/", orgrepo, "/issues/", issue_num),
+                body = paste0 (new_body, collapse = "\n")
+            )
+        }
+    }
+
+    attributes (checks_md) <- a
+
+    return (checks_md)
+}
+
+add_eic_srr_info <- function (eic_instr, srr_okay) {
+
     if (!srr_okay) {
 
         eic_instr <- c (
             eic_instr,
             paste0 (
                 "Processing may not proceed until the 'srr' ",
-                "issues identified above have been adressed."
+                "issues identified above have been addressed.\n"
             )
         )
     }
 
-    if (!a$checks_okay) {
+    return (eic_instr)
+}
+
+add_checks_okay_info <- function (eic_instr, checks_okay) {
+
+    if (!checks_okay) {
 
         eic_instr <- c (
             eic_instr,
@@ -172,7 +263,7 @@ collate_editor_check <- function (checks) {
                 "Processing may not proceed until the ",
                 "items marked with ",
                 roreviewapi::symbol_crs (),
-                " have been resolved."
+                " have been resolved.\n"
             )
         )
     } else {
@@ -181,24 +272,36 @@ collate_editor_check <- function (checks) {
             eic_instr,
             paste0 (
                 "This package is in top shape and may ",
-                "be passed on to a handling editor"
+                "be passed on to a handling editor.\n"
             )
         )
     }
 
-    noteworthy <- ifelse (a$is_noteworthy,
-        c (
+    return (eic_instr)
+}
+
+add_noteworthy <- function (eic_instr, is_noteworthy) {
+
+    if (is_noteworthy) {
+        eic_instr <- c (
+            eic_instr,
             paste0 (
                 "This package has some noteworthy ",
                 "properties, see 'Package Statistics' ",
-                "details below"
-            ),
-            ""
-        ),
-        ""
-    )
+                "details above.\n"
+            )
+        )
+    }
 
-    out <- paste0 (c (check, eic_instr), collapse = "\n")
+    return (eic_instr)
+}
+
+update_file_paths <- function (out, template, real_value) {
+
+    if (!is.null (template)) { # pkg has a network, and network_file
+
+        out <- gsub (template, real_value, out)
+    }
 
     return (out)
 }

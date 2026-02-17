@@ -8,13 +8,13 @@
   "codeRepository": "https://github.com/ropensci-review-tools/roreviewapi",
   "issueTracker": "https://github.com/ropensci-review-tools/roreviewapi/issues",
   "license": "https://spdx.org/licenses/GPL-3.0",
-  "version": "0.1.1.043",
+  "version": "0.1.1.52",
   "programmingLanguage": {
     "@type": "ComputerLanguage",
     "name": "R",
     "url": "https://r-project.org"
   },
-  "runtimePlatform": "R version 4.5.1 (2025-06-13)",
+  "runtimePlatform": "R version 4.5.2 (2025-10-31)",
   "author": [
     {
       "@type": "Person",
@@ -45,6 +45,18 @@
         "url": "https://cran.r-project.org"
       },
       "sameAs": "https://CRAN.R-project.org/package=bspm"
+    },
+    {
+      "@type": "SoftwareApplication",
+      "identifier": "gh",
+      "name": "gh",
+      "provider": {
+        "@id": "https://cran.r-project.org",
+        "@type": "Organization",
+        "name": "Comprehensive R Archive Network (CRAN)",
+        "url": "https://cran.r-project.org"
+      },
+      "sameAs": "https://CRAN.R-project.org/package=gh"
     },
     {
       "@type": "SoftwareApplication",
@@ -350,7 +362,7 @@
     },
     "SystemRequirements": "gh, dos2unix"
   },
-  "fileSize": "127.539KB",
+  "fileSize": "153.794KB",
   "readme": "https://github.com/ropensci-review-tools/roreviewapi/blob/main/README.md",
   "contIntegration": "https://github.com/ropensci-review-tools/roreviewapi/actions?query=workflow%3AR-CMD-check",
   "developmentStatus": "https://www.repostatus.org/#active"
