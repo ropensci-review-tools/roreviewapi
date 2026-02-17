@@ -209,7 +209,7 @@ edit_issue_with_subdir <- function (checks_md, orgrepo, issue_num) {
     if (length (index) == 1L) {
 
         # This makes GH API call, so inside 'if' to only call if necessary:
-        if (issue_template_has_subdir (repo, issue_num)) {
+        if (issue_template_has_subdir (orgrepo, issue_num)) {
             return (checks_md)
         }
 
