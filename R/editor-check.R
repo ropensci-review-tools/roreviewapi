@@ -56,16 +56,18 @@ editor_check <- function (repourl, repo, issue_id, post_to_issue = TRUE) {
 
     } else {
 
-        path <- roreviewapi::dl_gh_repo (u = repourl, branch = branch)
-        path <- convert_path (path)
+        path_dl <- roreviewapi::dl_gh_repo (u = repourl, branch = branch)
+        path <- convert_path (path_dl)
 
         deps <- roreviewapi::pkgrep_install_deps (path, repo, issue_id)
         if (any (grepl ("failed with error", deps))) {
             return (deps)
         }
 
+        # Need to pass original path here to ensure any sub-dir info
+        # is added in final check reports:
         checks <- tryCatch (
-            pkgcheck::pkgcheck (path),
+            pkgcheck::pkgcheck (path_dl),
             error = function (e) e
         )
     }
