@@ -54,3 +54,4 @@ Roxygen: list(markdown = TRUE)
 RoxygenNote: 7.3.3
 SystemRequirements: gh, dos2unix
 Config/testthat/edition: 3
+Config/ropensci/maintainer: staff
