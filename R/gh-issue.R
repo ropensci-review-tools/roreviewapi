@@ -277,7 +277,11 @@ issue_cmt_qry <- function (gh_cli, org, repo, issue_num) {
 issue_template_has_subdir <- function (orgrepo, issue_num) {
 
     x <- get_issue_body (orgrepo, issue_num)
-    yaml_end <- min (grep ("^\\-\\-\\-", x))
+    yaml_start <- min (grep ("^\\-+>$", x))
+    if (length (yaml_start) > 0L) {
+        x <- x [-seq_len (yaml_start)]
+    }
+    yaml_end <- min (grep ("^\\-+$", x))
     if (length (yaml_end) != 1L) {
         return (TRUE)
     }
