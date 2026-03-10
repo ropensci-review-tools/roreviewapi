@@ -12,6 +12,7 @@ ENV ROPENSCI_REVIEW_BOT "true"
 RUN install2.r \
   BiocManager \
   plumber \
+  toml \
   visNetwork \
 && installGithub.r \
       ropensci-review-tools/roreviewapi \
