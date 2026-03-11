@@ -115,8 +115,10 @@ editor_check <- function (repourl, repo, issue_id, post_to_issue = TRUE) {
 collate_editor_check <- function (checks) {
 
     a <- attributes (checks)
-    checks_md <- pkgcheck::checks_to_markdown (checks, render = FALSE) |>
+    checks_md <- reduce_pkgstats_table (checks) |>
+        pkgcheck::checks_to_markdown (render = FALSE) |>
         add_non_default_branch_info (checks)
+
     if (pkg_in_subdir (checks_md)) {
         if (!issue_template_has_subdir (a$repo, a$issue_num)) {
             checks_md <- edit_issue_with_subdir (checks_md, a$repo, a$issue_num)
@@ -170,6 +172,16 @@ collate_editor_check <- function (checks) {
     out <- paste0 (c (out, eic_instr), collapse = "\n")
 
     return (out)
+}
+
+reduce_pkgstats_table <- function (checks) {
+
+    s <- checks$info$pkgstats
+    index <- grep ("^rel\\_white", s$measure)
+    index <- seq_len (nrow (s)) [-index]
+    checks$info$pkgstats <- s [index, ]
+
+    return (checks)
 }
 
 add_non_default_branch_info <- function (checks_md, checks) {
