@@ -170,4 +170,4 @@ url_is_r_pkg <- function (repourl) {
     return (ret)
 }
 
-url_exists <- getFromNamespace ("url_exists", "pkgcheck")
+url_exists <- utils::getFromNamespace ("url_exists", "pkgcheck")

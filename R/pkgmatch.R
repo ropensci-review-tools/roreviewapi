@@ -21,7 +21,7 @@ pkgmatch_repo <- function (repourl, repo, issue_id, n_top = 5L, post_to_issue = 
         attachNamespace ("pkgmatch")
     }
     convert_path <- utils::getFromNamespace ("convert_path", "pkgcheck")
-    url_exists <- getFromNamespace ("url_exists", "pkgcheck")
+    url_exists <- utils::getFromNamespace ("url_exists", "pkgcheck")
 
     is_r_pkg <- TRUE
     if (grepl ("github", repourl)) {
