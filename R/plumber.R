@@ -85,6 +85,49 @@ function (repourl = "", secret = NULL) {
 
 
 # --------------------------------------------------
+# -----------         pkgmatch         -------------
+# --------------------------------------------------
+
+#* @name pkgmatch
+#* @description Generate top 5 matching CRAN and rOpenSci packages.
+#* @param repourl The URL for the repo being checked
+#* @param repo The 'context.repo' parameter defining the repository from which
+#* the command was invoked, passed in `org/repo` format.
+#* @param issue_id The id of the issue form which the command was invoked
+#* @param secret Secret token passed by the bot; checked for match with internal
+#* token specified in the Docker container. This allows authors and reviewers of
+#* packages/issues to run package checks.
+#*
+#* @get /pkgmatch
+function (repourl = "", repo, issue_id, secret = NULL) {
+
+    if (nchar (repourl) == 0L) {
+        return ("Error: Issue template has no 'repourl'")
+    }
+    if (!roreviewapi::is_user_authorized (secret)) {
+        return ("Only authorized users may call this endpoint")
+    }
+
+    ps_pkgmatch <<- callr::r_bg (
+        func = roreviewapi::pkgmatch_repo,
+        args = list (
+            repourl = repourl,
+            repo = repo,
+            issue_id = issue_id,
+            n_top = 5L,
+            post_to_issue = TRUE
+        ),
+        stdout = NULL,
+        stderr = NULL,
+        poll_connection = TRUE,
+        supervise = TRUE
+    )
+
+    return (NULL)
+}
+
+
+# --------------------------------------------------
 # ----------------   srrcheck   -----------------
 # --------------------------------------------------
 
@@ -175,7 +218,6 @@ function (repourl = "", repo, issue_id, secret = NULL) {
 
     return (NULL)
 }
-
 
 
 # --------------------------------------------------
