@@ -88,7 +88,7 @@ get_issue_body <- function (orgrepo, issue_num) {
         headers = list (Authorization = paste0 ("Bearer ", token))
     )
 
-    qry <- issue_cmt_qry (gh_cli,
+    qry <- issue_body_qry (gh_cli,
         org = org,
         repo = repo,
         issue_num = issue_num
@@ -242,14 +242,14 @@ get_gh_token <- function () {
     gitcreds::gitcreds_get ()$password
 }
 
-issue_cmt_qry <- function (gh_cli, org, repo, issue_num) {
+issue_body_qry <- function (gh_cli, org, repo, issue_num) {
 
     q <- paste0 ("{
         repository(owner:\"", org, "\", name:\"", repo, "\") {
             issue(number:", issue_num, ") {
                   body
-                }
             }
+        }
     }")
 
     qry <- ghql::Query$new ()
