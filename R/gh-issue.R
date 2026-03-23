@@ -96,7 +96,7 @@ get_issue_body <- function (orgrepo, issue_num) {
 
     x <- gh_cli$exec (qry$queries$get_template)
     x <- jsonlite::fromJSON (x)
-    x <- strsplit (x$data$repository$issue$body, "\\n") [[1]]
+    strsplit (x$data$repository$issue$body, "\\n") [[1]]
 
 }
 
