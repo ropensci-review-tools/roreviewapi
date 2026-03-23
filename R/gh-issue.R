@@ -88,7 +88,7 @@ get_issue_body <- function (orgrepo, issue_num) {
         headers = list (Authorization = paste0 ("Bearer ", token))
     )
 
-    qry <- issue_cmt_qry (gh_cli,
+    qry <- issue_body_qry (gh_cli,
         org = org,
         repo = repo,
         issue_num = issue_num
@@ -96,7 +96,7 @@ get_issue_body <- function (orgrepo, issue_num) {
 
     x <- gh_cli$exec (qry$queries$get_template)
     x <- jsonlite::fromJSON (x)
-    x <- strsplit (x$data$repository$issue$body, "\\n") [[1]]
+    strsplit (x$data$repository$issue$body, "\\n") [[1]]
 
 }
 
@@ -231,6 +231,49 @@ check_html_variable <- function (x, variable) {
     return (out)
 }
 
+#' identify whether an issue already has a 'pkgmatch' suggestions.
+#'
+#' @param orgrepo GitHub 'org/repo', generally 'ropensci/software-review'.
+#' @param issue_num Number of issue to search.
+#' @return 'NULL' is issue has no 'pkgmatch' suggestions, otherwise the date of
+#' the latest 'pkgmatch' comment.
+#' @noRd
+issue_has_pkgmatch <- function (orgrepo, issue_num) {
+
+    org <- strsplit (orgrepo, "/|%2F") [[1]] [1]
+    repo <- strsplit (orgrepo, "/|%2F") [[1]] [2]
+
+    token <- get_gh_token ()
+
+    gh_cli <- ghql::GraphqlClient$new (
+        url = "https://api.github.com/graphql",
+        headers = list (Authorization = paste0 ("Bearer ", token))
+    )
+
+    qry <- issue_cmt_qry (gh_cli,
+        org = org,
+        repo = repo,
+        issue_num = issue_num
+    )
+
+    x <- gh_cli$exec (qry$queries$get_template)
+    x <- jsonlite::fromJSON (x)
+    cmts <- x$data$repository$issue$comments$nodes
+    cmts_bot <- cmts [which (cmts$author$login == "ropensci-review-bot"), ]
+    cmts_bot_body <- strsplit (cmts_bot$body, "\\n")
+    ptn <- "^\\s*\\#\\#\\sFive\\smost\\ssimilar"
+    pkgmatch_cmt <- vapply (cmts_bot_body, function (b) {
+        any (grepl (ptn, b))
+    }, logical (1L))
+    ret <- NULL
+    if (any (pkgmatch_cmt)) {
+        cmt_index <- which (pkgmatch_cmt)
+        ret <- max (cmts_bot$createdAt [cmt_index])
+    }
+
+    return (ret)
+}
+
 #' Get GitHub token
 #'
 #' (Same as in `pkgcheck`)
@@ -242,14 +285,38 @@ get_gh_token <- function () {
     gitcreds::gitcreds_get ()$password
 }
 
-issue_cmt_qry <- function (gh_cli, org, repo, issue_num) {
+issue_body_qry <- function (gh_cli, org, repo, issue_num) {
 
     q <- paste0 ("{
         repository(owner:\"", org, "\", name:\"", repo, "\") {
             issue(number:", issue_num, ") {
                   body
+            }
+        }
+    }")
+
+    qry <- ghql::Query$new ()
+    qry$query ("get_template", q)
+
+    return (qry)
+}
+
+issue_cmt_qry <- function (gh_cli, org, repo, issue_num) {
+
+    q <- paste0 ("{
+        repository(owner:\"", org, "\", name:\"", repo, "\") {
+            issue(number:", issue_num, ") {
+                comments (first: 30) {
+                    nodes {
+                        author {
+                            login
+                        }
+                        body
+                        createdAt
+                    }
                 }
             }
+        }
     }")
 
     qry <- ghql::Query$new ()

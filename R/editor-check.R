@@ -20,7 +20,7 @@ editor_check <- function (repourl, repo, issue_id, post_to_issue = TRUE) {
         attachNamespace ("pkgcheck")
     }
     convert_path <- utils::getFromNamespace ("convert_path", "pkgcheck")
-    url_exists <- getFromNamespace ("url_exists", "pkgcheck")
+    url_exists <- utils::getFromNamespace ("url_exists", "pkgcheck")
 
     is_r_pkg <- TRUE
     if (grepl ("github", repourl)) {

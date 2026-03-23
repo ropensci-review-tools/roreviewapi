@@ -22,6 +22,7 @@ usage.
 \seealso{
 Other main: 
 \code{\link{editor_check}()},
+\code{\link{pkgmatch_repo}()},
 \code{\link{serve_api}()}
 }
 \concept{main}
