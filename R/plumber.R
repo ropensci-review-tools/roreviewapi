@@ -107,12 +107,13 @@ function (repourl = "", repo, issue_id, secret = NULL) {
         return ("Only authorized users may call this endpoint")
     }
 
+    requireNamespace ("pkgcheck", quietly = TRUE) # to load ennvar for templogs path
     temp_dir <- fs::path (Sys.getenv ("PKGCHECK_CACHE_DIR"), "templogs")
     if (!fs::dir_exists (temp_dir)) {
         fs::dir_create (temp_dir, recurse = TRUE)
     }
     sout <- fs::path (temp_dir, "pkgmatch_check1")
-    writeLines (sout, "okay")
+    writeLines (sout, paste0 (repourl, ": okay"))
 
     logfiles <- roreviewapi::stdout_stderr_cache (repourl)
     logfiles$stdout <- gsub ("\\_stdout$", "_pkgmatch_stdout", logfiles$stdout)
@@ -127,7 +128,7 @@ function (repourl = "", repo, issue_id, secret = NULL) {
     )
 
     sout <- fs::path (temp_dir, "pkgmatch_check2")
-    writeLines (sout, "okay")
+    writeLines (sout, paste0 (repourl, ": okay"))
 
     ps_pkgmatch <<- callr::r_bg (
         func = roreviewapi::pkgmatch_repo,
