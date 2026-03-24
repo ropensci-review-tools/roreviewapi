@@ -108,27 +108,9 @@ function (repourl = "", repo, issue_id, secret = NULL) {
     }
 
     requireNamespace ("pkgcheck", quietly = TRUE) # to load ennvar for templogs path
-    temp_dir <- fs::path (Sys.getenv ("PKGCHECK_CACHE_DIR"), "templogs")
-    if (!fs::dir_exists (temp_dir)) {
-        fs::dir_create (temp_dir, recurse = TRUE)
-    }
-    sout <- fs::path (temp_dir, "pkgmatch_check1")
-    writeLines (paste0 (repourl, ": okay"), sout)
-
     logfiles <- roreviewapi::stdout_stderr_cache (repourl)
     logfiles$stdout <- gsub ("\\_stdout$", "_pkgmatch_stdout", logfiles$stdout)
     logfiles$stderr <- gsub ("\\_stderr$", "_pkgmatch_stderr", logfiles$stderr)
-    writeLines (
-        paste0 ("stdout for ", repourl),
-        logfiles$stdout
-    )
-    writeLines (
-        paste0 ("stderr for ", repourl),
-        logfiles$stderr
-    )
-
-    sout <- fs::path (temp_dir, "pkgmatch_check2")
-    writeLines (paste0 (repourl, ": okay"), sout)
 
     ps_pkgmatch <<- callr::r_bg (
         func = roreviewapi::pkgmatch_repo,
