@@ -94,6 +94,15 @@ pkgmatch_repo <- function (repourl, repo, issue_id, n_top = 5L, post_to_issue = 
     return (out)
 }
 
+#' Convert names of CRAN packages to markdown-formatted list.
+#'
+#' This function is exported because it needs to be called in the main plumber
+#' endpoint function.
+#'
+#' @param matches A \pkg{pkgmatch} `data.frame` object with columns of
+#' ("package", "version", "rank").
+#' @param n Number of matches to return in list.
+#' @export
 cran_to_list <- function (matches, n = 5L) {
 
     ap <- tools::CRAN_package_db ()
@@ -117,6 +126,15 @@ cran_to_list <- function (matches, n = 5L) {
     }, character (1L), USE.NAMES = FALSE)
 }
 
+#' Convert names of rOpenSci packages to markdown-formatted list.
+#'
+#' This function is exported because it needs to be called in the main plumber
+#' endpoint function.
+#'
+#' @param matches A \pkg{pkgmatch} `data.frame` object with columns of
+#' ("package", "version", "rank").
+#' @param n Number of matches to return in list.
+#' @export
 ros_to_list <- function (matches, n = 5L) {
 
     u <- "https://ropensci.r-universe.dev/api/packages"
