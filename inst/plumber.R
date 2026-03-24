@@ -108,6 +108,10 @@ function (repourl = "", repo, issue_id, secret = NULL) {
         return ("Only authorized users may call this endpoint")
     }
 
+    logfiles <- roreviewapi::stdout_stderr_cache (repourl)
+    logfiles$stdout <- gsub ("\\_stdout$", "_pkgmatch_stdout", logfiles$stdout)
+    logfiles$stderr <- gsub ("\\_stderr$", "_pkgmatch_stderr", logfiles$stderr)
+
     ps_pkgmatch <<- callr::r_bg (
         func = roreviewapi::pkgmatch_repo,
         args = list (
@@ -117,8 +121,8 @@ function (repourl = "", repo, issue_id, secret = NULL) {
             n_top = 5L,
             post_to_issue = TRUE
         ),
-        stdout = NULL,
-        stderr = NULL,
+        stdout = logfiles$stdout,
+        stderr = logfiles$stderr,
         poll_connection = TRUE,
         supervise = TRUE
     )
