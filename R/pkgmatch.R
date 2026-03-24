@@ -80,6 +80,7 @@ pkgmatch_repo <- function (repourl, repo, issue_id, n_top = 5L, post_to_issue = 
             "",
             roreviewapi::cran_to_list (matches_cran, n = n_top)
         )
+        out <- paste0 (out, collapse = "\n")
 
     } else {
 
