@@ -8,7 +8,7 @@
   "codeRepository": "https://github.com/ropensci-review-tools/roreviewapi",
   "issueTracker": "https://github.com/ropensci-review-tools/roreviewapi/issues",
   "license": "https://spdx.org/licenses/GPL-3.0",
-  "version": "0.1.1.080",
+  "version": "0.2.0",
   "programmingLanguage": {
     "@type": "ComputerLanguage",
     "name": "R",
@@ -69,6 +69,12 @@
         "url": "https://cran.r-project.org"
       },
       "sameAs": "https://CRAN.R-project.org/package=knitr"
+    },
+    {
+      "@type": "SoftwareApplication",
+      "identifier": "pkgmatch",
+      "name": "pkgmatch",
+      "sameAs": "https://github.com/ropensci-review-tools/pkgmatch"
     },
     {
       "@type": "SoftwareApplication",
@@ -362,7 +368,7 @@
     },
     "SystemRequirements": "gh, dos2unix"
   },
-  "fileSize": "153.794KB",
+  "fileSize": "160.074KB",
   "readme": "https://github.com/ropensci-review-tools/roreviewapi/blob/main/README.md",
   "contIntegration": "https://github.com/ropensci-review-tools/roreviewapi/actions?query=workflow%3AR-CMD-check",
   "developmentStatus": "https://www.repostatus.org/#active"
