@@ -111,6 +111,14 @@ function (repourl = "", repo, issue_id, secret = NULL) {
     logfiles <- roreviewapi::stdout_stderr_cache (repourl)
     logfiles$stdout <- gsub ("\\_stdout$", "_pkgmatch_stdout", logfiles$stdout)
     logfiles$stderr <- gsub ("\\_stderr$", "_pkgmatch_stderr", logfiles$stderr)
+    writeLines (
+        paste0 ("stdout for ", repourl),
+        logfiles$stdout
+    )
+    writeLines (
+        paste0 ("stderr for ", repourl),
+        logfiles$stderr
+    )
 
     ps_pkgmatch <<- callr::r_bg (
         func = roreviewapi::pkgmatch_repo,
