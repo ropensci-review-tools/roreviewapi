@@ -113,7 +113,7 @@ function (repourl = "", repo, issue_id, secret = NULL) {
         fs::dir_create (temp_dir, recurse = TRUE)
     }
     sout <- fs::path (temp_dir, "pkgmatch_check1")
-    writeLines (sout, paste0 (repourl, ": okay"))
+    writeLines (paste0 (repourl, ": okay"), sout)
 
     logfiles <- roreviewapi::stdout_stderr_cache (repourl)
     logfiles$stdout <- gsub ("\\_stdout$", "_pkgmatch_stdout", logfiles$stdout)
@@ -128,7 +128,7 @@ function (repourl = "", repo, issue_id, secret = NULL) {
     )
 
     sout <- fs::path (temp_dir, "pkgmatch_check2")
-    writeLines (sout, paste0 (repourl, ": okay"))
+    writeLines (paste0 (repourl, ": okay"), sout)
 
     ps_pkgmatch <<- callr::r_bg (
         func = roreviewapi::pkgmatch_repo,
