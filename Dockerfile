@@ -15,6 +15,7 @@ RUN install2.r \
   toml \
   visNetwork \
 && installGithub.r \
+      ropensci-review-tools/pkgmatch \
       ropensci-review-tools/roreviewapi \
       r-lib/credentials
 
