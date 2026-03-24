@@ -74,11 +74,11 @@ pkgmatch_repo <- function (repourl, repo, issue_id, n_top = 5L, post_to_issue = 
         out <- c (
             "## Five most similar rOpenSci packages",
             "",
-            ros_to_list (matches_ros, n = n_top),
+            roreviewapi::ros_to_list (matches_ros, n = n_top),
             "",
             "## Five most similar CRAN packages",
             "",
-            cran_to_list (matches_cran, n = n_top)
+            roreviewapi::cran_to_list (matches_cran, n = n_top)
         )
 
     } else {
