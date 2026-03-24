@@ -97,7 +97,6 @@ function (repourl = "", secret = NULL) {
 #* @param secret Secret token passed by the bot; checked for match with internal
 #* token specified in the Docker container. This allows authors and reviewers of
 #* packages/issues to run package checks.
-#*
 #* @get /pkgmatch
 function (repourl = "", repo, issue_id, secret = NULL) {
 
@@ -107,6 +106,13 @@ function (repourl = "", repo, issue_id, secret = NULL) {
     if (!roreviewapi::is_user_authorized (secret)) {
         return ("Only authorized users may call this endpoint")
     }
+
+    temp_dir <- fs::path (Sys.getenv ("PKGCHECK_CACHE_DIR"), "templogs")
+    if (!fs::dir_exists (temp_dir)) {
+        fs::dir_create (temp_dir, recurse = TRUE)
+    }
+    sout <- fs::path (temp_dir, "pkgmatch_check1")
+    writeLines (sout, "okay")
 
     logfiles <- roreviewapi::stdout_stderr_cache (repourl)
     logfiles$stdout <- gsub ("\\_stdout$", "_pkgmatch_stdout", logfiles$stdout)
@@ -119,6 +125,9 @@ function (repourl = "", repo, issue_id, secret = NULL) {
         paste0 ("stderr for ", repourl),
         logfiles$stderr
     )
+
+    sout <- fs::path (temp_dir, "pkgmatch_check2")
+    writeLines (sout, "okay")
 
     ps_pkgmatch <<- callr::r_bg (
         func = roreviewapi::pkgmatch_repo,
