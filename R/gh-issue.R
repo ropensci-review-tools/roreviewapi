@@ -259,6 +259,9 @@ issue_has_pkgmatch <- function (orgrepo, issue_num) {
     x <- gh_cli$exec (qry$queries$get_template)
     x <- jsonlite::fromJSON (x)
     cmts <- x$data$repository$issue$comments$nodes
+    if (length (cmts) == 0L || nrow (cmts) < 1L) {
+        return (FALSE)
+    }
     cmts_bot <- cmts [which (cmts$author$login == "ropensci-review-bot"), ]
     cmts_bot_body <- strsplit (cmts_bot$body, "\\n")
     ptn <- "^\\s*\\#\\#\\sFive\\smost\\ssimilar"
