@@ -13,6 +13,11 @@ check_issue_template <- function (orgrepo, issue_num) {
     html_must_have <- html_variables [html_variables != "statsgrade"]
 
     submission_type <- get_html_variable (x, "submission-type")
+    if (length (submission_type) == 0L) {
+        out <- c ("Submission template is missing HTML variables.")
+        attr (out, "proceed_with_checks") <- FALSE
+        return (out)
+    }
     if (submission_type %in% c ("Pre-submission", "pre-envio")) {
         not_in_presub <- c ("editor", "reviewers-list", "due-dates-list")
         html_must_have <- html_must_have [!html_must_have %in% not_in_presub]
