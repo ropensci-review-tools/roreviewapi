@@ -122,6 +122,8 @@ get_issue_body <- function (orgrepo, issue_num) {
 #' @noRd
 yaml_space <- function (body) {
 
+    # Remove any terminal (windows) carriage returns:
+    body <- gsub ("\\r$", "", body)
     yaml_close <- grep ("^\\-\\-\\-$", body)
     if (length (yaml_close) == 0L) {
         return (FALSE)
