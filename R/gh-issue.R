@@ -10,11 +10,18 @@ check_issue_template <- function (orgrepo, issue_num) {
 
     x <- get_issue_body (orgrepo, issue_num)
 
+    yaml_space_check <- yaml_space (x)
+    if (!yaml_space (x)) {
+        out <- "Error: Submission template must have space before closing '---' in YAML header"
+        attr (out, "proceed_with_checks") <- FALSE
+        return (out)
+    }
+
     html_must_have <- html_variables [html_variables != "statsgrade"]
 
     submission_type <- get_html_variable (x, "submission-type")
     if (length (submission_type) == 0L) {
-        out <- c ("Submission template is missing HTML variables.")
+        out <- c ("Error: Submission template is missing HTML variables.")
         attr (out, "proceed_with_checks") <- FALSE
         return (out)
     }
@@ -103,6 +110,26 @@ get_issue_body <- function (orgrepo, issue_num) {
     x <- jsonlite::fromJSON (x)
     strsplit (x$data$repository$issue$body, "\\n") [[1]]
 
+}
+
+#' The YAML front-matter in issue template MUST have a blank line before the
+#' final `---` for the HTML variables in the template to be parsed properly.
+#'
+#' @param body The direct body of the opening issue template, as a character
+#' vector.
+#' @return `FALSE` if there is no space between the final YAML header line and
+#' the closing `---`; otherwise `TRUE`
+#' @noRd
+yaml_space <- function (body) {
+
+    yaml_close <- grep ("^\\-\\-\\-$", body)
+    if (length (yaml_close) == 0L) {
+        return (FALSE)
+    }
+    head <- body [seq_len (min (yaml_close))]
+    empty <- which (!nzchar (head))
+    # And there should be an "empty" just before 'yaml_close':
+    min (yaml_close - empty) == 1L
 }
 
 html_variables <- c (
