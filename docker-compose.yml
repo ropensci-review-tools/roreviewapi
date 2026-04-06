@@ -13,6 +13,6 @@ services:
       - plumber
   plumber:
     build: .
-    expose:
-      - "8000"
+    ports:
+      - "8000:8000"
     restart: always
