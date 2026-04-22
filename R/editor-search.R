@@ -1,0 +1,247 @@
+# editor-search.R
+
+#' Resolve path to the email search SQLite database
+#'
+#' Reads \code{ROREVIEWAPI_EMAIL_DB} env var; falls back to a path within the
+#' user data directory if unset.
+#'
+#' @return Absolute path as a character string.
+#' @noRd
+email_db_path <- function () {
+    p <- Sys.getenv ("ROREVIEWAPI_EMAIL_DB")
+    if (!nzchar (p)) {
+        p <- file.path (
+            rappdirs::user_data_dir ("roreviewapi"),
+            "searches.sqlite"
+        )
+    }
+    p
+}
+
+#' Open a connection to the email search database
+#'
+#' Creates the \code{searches} and \code{recipients} tables if they do not
+#' already exist.
+#'
+#' @return A \pkg{DBI} connection object.
+#' @noRd
+email_db_init <- function () {
+
+    path <- email_db_path ()
+    dir.create (dirname (path), recursive = TRUE, showWarnings = FALSE)
+
+    con <- DBI::dbConnect (RSQLite::SQLite (), path)
+
+    DBI::dbExecute (con, "
+        CREATE TABLE IF NOT EXISTS searches (
+            id           INTEGER PRIMARY KEY AUTOINCREMENT,
+            created_at   TEXT NOT NULL,
+            notify_email TEXT NOT NULL,
+            active       INTEGER NOT NULL DEFAULT 1
+        )
+    ")
+
+    DBI::dbExecute (con, "
+        CREATE TABLE IF NOT EXISTS recipients (
+            id          INTEGER PRIMARY KEY AUTOINCREMENT,
+            search_id   INTEGER NOT NULL REFERENCES searches(id),
+            email       TEXT NOT NULL,
+            token       TEXT NOT NULL UNIQUE,
+            clicked_at  TEXT
+        )
+    ")
+
+    con
+}
+
+#' Generate a cryptographically random 64-character hex token
+#'
+#' @return Single character string of 64 hex characters.
+#' @noRd
+generate_token <- function () {
+    paste0 (as.character (openssl::rand_bytes (32L)), collapse = "")
+}
+
+#' @noRd
+is_valid_email <- function (x) {
+    grepl ("^[^@\\s]+@[^@\\s]+\\.[^@\\s]+$", trimws (x))
+}
+
+#' @noRd
+is_valid_base_url <- function (x) {
+    grepl ("^https://", x) || grepl ("^http://(localhost|127\\.0\\.0\\.1)", x)
+}
+
+#' Send a batch of volunteer search emails
+#'
+#' Inserts a new search record and one recipient row per address into the
+#' database, then dispatches emails via Postmark (Phase 2).
+#'
+#' @param emails Character vector of recipient email addresses.
+#' @param notify_address Single address to notify when any link is clicked.
+#' @param base_url Base URL of the deployed API; used to build click links.
+#' @return Named list with \code{search_id} (integer) and \code{sent} (integer).
+#' @export
+send_search <- function (emails, notify_address, base_url) {
+
+    if (!length (emails) || !all (is_valid_email (emails))) {
+        stop ("'emails' must be a non-empty vector of valid email addresses")
+    }
+    if (length (notify_address) != 1L || !is_valid_email (notify_address)) {
+        stop ("'notify_address' must be a single valid email address")
+    }
+    if (length (base_url) != 1L || !is_valid_base_url (base_url)) {
+        stop ("'base_url' must start with https:// or http://localhost")
+    }
+
+    con <- email_db_init ()
+    on.exit (DBI::dbDisconnect (con))
+
+    created_at <- strftime (Sys.time (), "%Y-%m-%dT%H:%M:%SZ", tz = "UTC")
+    DBI::dbExecute (
+        con,
+        "INSERT INTO searches (created_at, notify_email) VALUES (?, ?)",
+        params = list (created_at, notify_address)
+    )
+    search_id <- DBI::dbGetQuery (con, "SELECT last_insert_rowid() AS id") [["id"]]
+
+    tokens <- vapply (
+        seq_along (emails),
+        function (i) generate_token (),
+        character (1L)
+    )
+
+    for (i in seq_along (emails)) {
+        DBI::dbExecute (
+            con,
+            "INSERT INTO recipients (search_id, email, token) VALUES (?, ?, ?)",
+            params = list (search_id, emails [[i]], tokens [[i]])
+        )
+    }
+
+    # Postmark dispatch — placeholder, implemented in Phase 2
+    # links <- paste0 (base_url, "/click/", tokens)
+    # postmark_send_batch (emails, links)
+
+    list (search_id = search_id, sent = length (emails))
+}
+
+#' List all volunteer searches with recipient and click counts
+#'
+#' @return Data frame with columns \code{search_id}, \code{created_at},
+#'   \code{notify_email}, \code{active}, \code{total}, \code{clicked}.
+#' @export
+list_searches <- function () {
+
+    con <- email_db_init ()
+    on.exit (DBI::dbDisconnect (con))
+
+    DBI::dbGetQuery (con, "
+        SELECT
+            s.id    AS search_id,
+            s.created_at,
+            s.notify_email,
+            s.active,
+            COUNT (r.id)                                          AS total,
+            SUM (CASE WHEN r.clicked_at IS NOT NULL THEN 1 ELSE 0 END) AS clicked
+        FROM searches s
+        LEFT JOIN recipients r ON r.search_id = s.id
+        GROUP BY s.id
+        ORDER BY s.id
+    ")
+}
+
+#' Handle a volunteer link click
+#'
+#' Looks up the token, checks whether the parent search is still active, guards
+#' against double-clicks, records the click timestamp, and triggers a Postmark
+#' notification (Phase 2).
+#'
+#' @param token 64-character hex token from the recipient's unique link.
+#' @return Named list with \code{status} (integer HTTP status code) and
+#'   \code{body} (character HTML string).
+#' @export
+handle_click <- function (token) {
+
+    con <- email_db_init ()
+    on.exit (DBI::dbDisconnect (con))
+
+    recipient <- DBI::dbGetQuery (
+        con,
+        "SELECT * FROM recipients WHERE token = ?",
+        params = list (token)
+    )
+    if (nrow (recipient) == 0L) {
+        return (list (status = 404L, body = "Link not found."))
+    }
+
+    search <- DBI::dbGetQuery (
+        con,
+        "SELECT * FROM searches WHERE id = ?",
+        params = list (recipient [["search_id"]])
+    )
+    if (search [["active"]] == 0L) {
+        return (list (status = 200L, body = "This link has expired."))
+    }
+
+    if (!is.na (recipient [["clicked_at"]])) {
+        return (list (status = 200L, body = "You have already used this link."))
+    }
+
+    clicked_at <- strftime (Sys.time (), "%Y-%m-%dT%H:%M:%SZ", tz = "UTC")
+    DBI::dbExecute (
+        con,
+        "UPDATE recipients SET clicked_at = ? WHERE token = ?",
+        params = list (clicked_at, token)
+    )
+
+    # Postmark notification — placeholder, implemented in Phase 2
+    # postmark_send (
+    #     to        = search [["notify_email"]],
+    #     subject   = "Volunteer link clicked",
+    #     html_body = paste0 ("<p>", recipient [["email"]], " responded at ", clicked_at, "</p>")
+    # )
+
+    list (status = 200L, body = "Thank you for your interest. We will be in touch.")
+}
+
+#' Deactivate a volunteer search and delete all associated data
+#'
+#' Sets \code{active = 0} first as a guard against concurrent clicks, then
+#' deletes all recipient rows followed by the search row itself.
+#'
+#' @param search_id Integer search ID as returned by \code{\link{send_search}}.
+#' @return Named list with \code{deactivated} (logical) and \code{search_id}.
+#' @export
+deactivate_search <- function (search_id) {
+
+    con <- email_db_init ()
+    on.exit (DBI::dbDisconnect (con))
+
+    existing <- DBI::dbGetQuery (
+        con,
+        "SELECT id FROM searches WHERE id = ?",
+        params = list (search_id)
+    )
+    if (nrow (existing) == 0L) {
+        stop ("search_id ", search_id, " not found")
+    }
+
+    DBI::dbExecute (
+        con,
+        "UPDATE searches SET active = 0 WHERE id = ?",
+        params = list (search_id)
+    )
+    DBI::dbExecute (
+        con,
+        "DELETE FROM recipients WHERE search_id = ?",
+        params = list (search_id)
+    )
+    DBI::dbExecute (
+        con,
+        "DELETE FROM searches WHERE id = ?",
+        params = list (search_id)
+    )
+
+    list (deactivated = TRUE, search_id = search_id)
+}
