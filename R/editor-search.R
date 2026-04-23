@@ -63,6 +63,45 @@ generate_email_token <- function () {
     paste0 (as.character (openssl::rand_bytes (32L)), collapse = "")
 }
 
+#' Fetch editor email addresses from AirTable and GitHub
+#'
+#' Queries the AirTable reviewers-prod table and filters to members of the
+#' GitHub \code{ropensci/editors} (or \code{ropensci/stats-editors}) team.
+#'
+#' @param airtable_base_id AirTable base ID (from \code{AIRTABLE_BASE_ID} env var).
+#' @param stats If \code{TRUE}, fetch stats editors; otherwise fetch regular editors.
+#' @return Character vector of email addresses.
+#' @noRd
+get_editor_emails <- function (airtable_base_id, stats = FALSE) {
+
+    rev_prod <- airtabler::airtable (
+        base = airtable_base_id, table = "reviewers-prod"
+    )
+    fields <- list ("github", "name", "email")
+    eds <- rev_prod$`reviewers-prod`$select_all (fields = fields)
+
+    team <- ifelse (stats, "stats-editors", "editors")
+    q <- paste0 ("{
+        organization(login:\"ropensci\") {
+            team(slug: \"", team, "\") {
+                members(first: 100, membership: IMMEDIATE) {
+                    nodes {
+                        login
+                    }
+                }
+            }
+        }
+    }")
+    dat <- gh::gh_gql (query = q)
+    nodes <- dat$data$organization$team$members$nodes
+    team_gh <- vapply (nodes, function (n) n$login, character (1L))
+
+    index <- which (tolower (eds$github) %in% tolower (team_gh))
+    eds <- eds [index, unlist (fields)]
+    index <- which (!is.na (eds$email) & !duplicated (eds))
+    eds$email [index]
+}
+
 #' @noRd
 is_valid_email <- function (x) {
     grepl ("^[^@\\s]+@[^@\\s]+\\.[^@\\s]+$", trimws (x))
@@ -216,27 +255,33 @@ postmark_send_batch <- function (emails, links, subject) {
 
 #' Send a batch of editor search emails
 #'
-#' Inserts a new search record and one recipient row per address into the
-#' database, then dispatches emails via Postmark.  The notify address is read
-#' from the AirTable cache written by \code{\link{notify_email_refresh}}.
+#' Fetches current editor email addresses via \code{get_editor_emails()}, inserts
+#' a new search record and one recipient row per address into the database, then
+#' dispatches emails via Postmark.  The notify address is read from the AirTable
+#' cache written by \code{\link{notify_email_refresh}}.
 #'
-#' @param emails Character vector of recipient email addresses.
 #' @param repourl URL of the package repository this search is for.
 #' @param base_url Base URL of the deployed API; used to build click links.
+#' @param stats If \code{TRUE}, target stats editors instead of regular editors.
 #' @param subject Subject line for the outgoing emails.
+#' @param fetcher Function used to fetch editor emails; injectable for testing.
+#'   Must accept \code{(airtable_base_id, stats)} and return a character vector.
 #' @return Named list with \code{search_id} (integer) and \code{sent} (integer).
 #' @export
-send_search <- function (emails, repourl, base_url,
-                         subject = "Seeking editors for rOpenSci software submission") {
+send_search <- function (repourl, base_url, stats = FALSE,
+                         subject = "Seeking editors for rOpenSci software submission",
+                         fetcher = get_editor_emails) {
 
-    if (!length (emails) || !all (is_valid_email (emails))) {
-        stop ("'emails' must be a non-empty vector of valid email addresses")
-    }
     if (length (repourl) != 1L || !nzchar (repourl)) {
         stop ("'repourl' must be a single non-empty string")
     }
     if (length (base_url) != 1L || !is_valid_base_url (base_url)) {
         stop ("'base_url' must start with https:// or http://localhost")
+    }
+
+    emails <- fetcher (Sys.getenv ("AIRTABLE_BASE_ID"), stats = stats)
+    if (!length (emails) || !all (is_valid_email (emails))) {
+        stop ("fetcher returned no valid email addresses")
     }
 
     notify_address <- notify_email_read ()

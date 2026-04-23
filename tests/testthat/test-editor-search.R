@@ -11,6 +11,10 @@ local_notify_cache <- function (email = "editor@example.com", env = parent.frame
     withr::local_envvar (ROREVIEWAPI_EMAIL_DB = db, .local_envir = env)
 }
 
+email_fetcher <- function (base_id, stats = FALSE) {
+    c ("a@example.com", "b@example.com")
+}
+
 postmark_mock <- function (env = parent.frame ()) {
     httr2::local_mocked_responses (function (req) {
         httr2::response (200L, body = charToRaw ('{"ErrorCode":0,"Message":"OK"}'))
@@ -38,9 +42,9 @@ test_that ("send_search inserts correct rows", {
     postmark_mock ()
 
     result <- send_search (
-        emails   = c ("a@example.com", "b@example.com"),
         repourl  = "https://github.com/org/pkg",
-        base_url = "http://localhost"
+        base_url = "http://localhost",
+        fetcher  = email_fetcher
     )
     expect_equal (result$search_id, 1L)
     expect_equal (result$sent, 2L)
@@ -61,10 +65,13 @@ test_that ("send_search inserts correct rows", {
 
 test_that ("send_search rejects invalid inputs", {
     local_notify_cache ()
-    expect_error (send_search (character (0), "https://github.com/org/pkg", "http://localhost"))
-    expect_error (send_search ("not-an-email", "https://github.com/org/pkg", "http://localhost"))
-    expect_error (send_search ("a@b.com", "", "http://localhost"))
-    expect_error (send_search ("a@b.com", "https://github.com/org/pkg", "ftp://bad"))
+    expect_error (send_search ("", "http://localhost", fetcher = email_fetcher))
+    expect_error (send_search ("https://github.com/org/pkg", "ftp://bad", fetcher = email_fetcher))
+    bad_fetcher <- function (base_id, stats) character (0)
+    expect_error (
+        send_search ("https://github.com/org/pkg", "http://localhost", fetcher = bad_fetcher),
+        regexp = "no valid email"
+    )
 })
 
 test_that ("list_searches returns correct totals and click counts", {
@@ -72,9 +79,9 @@ test_that ("list_searches returns correct totals and click counts", {
     postmark_mock ()
 
     send_search (
-        emails   = c ("a@example.com", "b@example.com"),
         repourl  = "https://github.com/org/pkg",
-        base_url = "http://localhost"
+        base_url = "http://localhost",
+        fetcher  = email_fetcher
     )
 
     lst <- list_searches ()
@@ -90,9 +97,9 @@ test_that ("handle_click state machine: not found / valid / already used / expir
     postmark_mock ()
 
     send_search (
-        emails   = c ("a@example.com", "b@example.com"),
         repourl  = "https://github.com/org/pkg",
-        base_url = "http://localhost"
+        base_url = "http://localhost",
+        fetcher  = email_fetcher
     )
 
     con <- email_db_init ()
@@ -132,9 +139,9 @@ test_that ("deactivate_search deletes all associated rows", {
     postmark_mock ()
 
     send_search (
-        emails   = c ("a@example.com", "b@example.com"),
         repourl  = "https://github.com/org/pkg",
-        base_url = "http://localhost"
+        base_url = "http://localhost",
+        fetcher  = email_fetcher
     )
 
     deactivate_search ("https://github.com/org/pkg")
