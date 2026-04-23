@@ -11,6 +11,7 @@ ENV POSTMARK_API_TOKEN "<postmark_api_token>"
 ENV POSTMARK_FROM "<verified_sender_address>"
 ENV AIRTABLE_API_KEY "<airtable_api_key>"
 ENV AIRTABLE_BASE_ID "<airtable_base_id>"
+ENV ROREVIEWAPI_BASE_URL "<api_base_url>"
 
 # seasonal -> roreviewapi#13
 RUN install2.r \
@@ -29,6 +30,7 @@ RUN echo "GITHUB_TOKEN='${GITHUB_PAT}'" > ~/.Renviron \
     && echo "POSTMARK_FROM='${POSTMARK_FROM}'" >> ~/.Renviron \
     && echo "AIRTABLE_API_KEY='${AIRTABLE_API_KEY}'" >> ~/.Renviron \
     && echo "AIRTABLE_BASE_ID='${AIRTABLE_BASE_ID}'" >> ~/.Renviron \
+    && echo "ROREVIEWAPI_BASE_URL='${ROREVIEWAPI_BASE_URL}'" >> ~/.Renviron \
     && echo "ROREV_CONTAINER='true'" >> ~/.Renviron \
     && git config --global user.name "username" \
     && git config --global user.email "my.address@mail.com"

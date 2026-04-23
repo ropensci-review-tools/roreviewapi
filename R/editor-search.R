@@ -258,25 +258,27 @@ postmark_send_batch <- function (emails, links, subject) {
 #' Fetches current editor email addresses via \code{get_editor_emails()}, inserts
 #' a new search record and one recipient row per address into the database, then
 #' dispatches emails via Postmark.  The notify address is read from the AirTable
-#' cache written by \code{\link{notify_email_refresh}}.
+#' cache written by \code{\link{notify_email_refresh}}.  The base URL for click
+#' links is read from the \code{ROREVIEWAPI_BASE_URL} environment variable.
 #'
 #' @param repourl URL of the package repository this search is for.
-#' @param base_url Base URL of the deployed API; used to build click links.
 #' @param stats If \code{TRUE}, target stats editors instead of regular editors.
 #' @param subject Subject line for the outgoing emails.
 #' @param fetcher Function used to fetch editor emails; injectable for testing.
 #'   Must accept \code{(airtable_base_id, stats)} and return a character vector.
 #' @return Named list with \code{search_id} (integer) and \code{sent} (integer).
 #' @export
-send_search <- function (repourl, base_url, stats = FALSE,
+send_search <- function (repourl, stats = FALSE,
                          subject = "Seeking editors for rOpenSci software submission",
                          fetcher = get_editor_emails) {
 
     if (length (repourl) != 1L || !nzchar (repourl)) {
         stop ("'repourl' must be a single non-empty string")
     }
-    if (length (base_url) != 1L || !is_valid_base_url (base_url)) {
-        stop ("'base_url' must start with https:// or http://localhost")
+
+    base_url <- Sys.getenv ("ROREVIEWAPI_BASE_URL")
+    if (!is_valid_base_url (base_url)) {
+        stop ("ROREVIEWAPI_BASE_URL must be set and start with https:// or http://localhost")
     }
 
     emails <- fetcher (Sys.getenv ("AIRTABLE_BASE_ID"), stats = stats)
