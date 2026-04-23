@@ -257,9 +257,10 @@ postmark_send_batch <- function (emails, links, subject) {
 #'
 #' Fetches current editor email addresses via \code{get_editor_emails()}, inserts
 #' a new search record and one recipient row per address into the database, then
-#' dispatches emails via Postmark.  The notify address is read from the AirTable
-#' cache written by \code{\link{notify_email_refresh}}.  The base URL for click
-#' links is read from the \code{ROREVIEWAPI_BASE_URL} environment variable.
+#' dispatches emails via Postmark.  The notify address is read from the
+#' AirTable cache written by the internal 'notify_email_refresh' function.  The
+#' base URL for click links is read from the \code{ROREVIEWAPI_BASE_URL}
+#' environment variable.
 #'
 #' @param repourl URL of the package repository this search is for.
 #' @param stats If \code{TRUE}, target stats editors instead of regular editors.
