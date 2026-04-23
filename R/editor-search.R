@@ -36,6 +36,7 @@ email_db_init <- function () {
         CREATE TABLE IF NOT EXISTS searches (
             id           INTEGER PRIMARY KEY AUTOINCREMENT,
             created_at   TEXT NOT NULL,
+            repourl      TEXT NOT NULL UNIQUE,
             notify_email TEXT NOT NULL,
             active       INTEGER NOT NULL DEFAULT 1
         )
@@ -220,15 +221,19 @@ postmark_send_batch <- function (emails, links, subject) {
 #' from the AirTable cache written by \code{\link{notify_email_refresh}}.
 #'
 #' @param emails Character vector of recipient email addresses.
+#' @param repourl URL of the package repository this search is for.
 #' @param base_url Base URL of the deployed API; used to build click links.
 #' @param subject Subject line for the outgoing emails.
 #' @return Named list with \code{search_id} (integer) and \code{sent} (integer).
 #' @export
-send_search <- function (emails, base_url,
+send_search <- function (emails, repourl, base_url,
                          subject = "Seeking editors for rOpenSci software submission") {
 
     if (!length (emails) || !all (is_valid_email (emails))) {
         stop ("'emails' must be a non-empty vector of valid email addresses")
+    }
+    if (length (repourl) != 1L || !nzchar (repourl)) {
+        stop ("'repourl' must be a single non-empty string")
     }
     if (length (base_url) != 1L || !is_valid_base_url (base_url)) {
         stop ("'base_url' must start with https:// or http://localhost")
@@ -242,8 +247,8 @@ send_search <- function (emails, base_url,
     created_at <- strftime (Sys.time (), "%Y-%m-%dT%H:%M:%SZ", tz = "UTC")
     DBI::dbExecute (
         con,
-        "INSERT INTO searches (created_at, notify_email) VALUES (?, ?)",
-        params = list (created_at, notify_address)
+        "INSERT INTO searches (created_at, repourl, notify_email) VALUES (?, ?, ?)",
+        params = list (created_at, repourl, notify_address)
     )
     search_id <- DBI::dbGetQuery (con, "SELECT last_insert_rowid() AS id") [["id"]]
 
@@ -281,6 +286,7 @@ list_searches <- function () {
         SELECT
             s.id    AS search_id,
             s.created_at,
+            s.repourl,
             s.notify_email,
             s.active,
             COUNT (r.id)                                          AS total,
@@ -353,22 +359,23 @@ handle_click <- function (token) {
 #' Sets \code{active = 0} first as a guard against concurrent clicks, then
 #' deletes all recipient rows followed by the search row itself.
 #'
-#' @param search_id Integer search ID as returned by \code{\link{send_search}}.
-#' @return Named list with \code{deactivated} (logical) and \code{search_id}.
+#' @param repourl Repository URL used when the search was created.
+#' @return Named list with \code{deactivated} (logical) and \code{repourl}.
 #' @export
-deactivate_search <- function (search_id) {
+deactivate_search <- function (repourl) {
 
     con <- email_db_init ()
     on.exit (DBI::dbDisconnect (con))
 
     existing <- DBI::dbGetQuery (
         con,
-        "SELECT id FROM searches WHERE id = ?",
-        params = list (search_id)
+        "SELECT id FROM searches WHERE repourl = ?",
+        params = list (repourl)
     )
     if (nrow (existing) == 0L) {
-        stop ("search_id ", search_id, " not found")
+        stop ("No search found for repourl '", repourl, "'")
     }
+    search_id <- existing [["id"]]
 
     DBI::dbExecute (
         con,
@@ -386,5 +393,5 @@ deactivate_search <- function (search_id) {
         params = list (search_id)
     )
 
-    list (deactivated = TRUE, search_id = search_id)
+    list (deactivated = TRUE, repourl = repourl)
 }

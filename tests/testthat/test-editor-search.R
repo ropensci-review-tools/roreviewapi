@@ -39,6 +39,7 @@ test_that ("send_search inserts correct rows", {
 
     result <- send_search (
         emails   = c ("a@example.com", "b@example.com"),
+        repourl  = "https://github.com/org/pkg",
         base_url = "http://localhost"
     )
     expect_equal (result$search_id, 1L)
@@ -51,6 +52,7 @@ test_that ("send_search inserts correct rows", {
     recipients <- DBI::dbReadTable (con, "recipients")
 
     expect_equal (nrow (searches), 1L)
+    expect_equal (searches$repourl, "https://github.com/org/pkg")
     expect_equal (searches$active, 1L)
     expect_equal (nrow (recipients), 2L)
     expect_equal (nchar (recipients$token [[1]]), 64L)
@@ -59,9 +61,10 @@ test_that ("send_search inserts correct rows", {
 
 test_that ("send_search rejects invalid inputs", {
     local_notify_cache ()
-    expect_error (send_search (character (0), "http://localhost"))
-    expect_error (send_search ("not-an-email", "http://localhost"))
-    expect_error (send_search ("a@b.com", "ftp://bad"))
+    expect_error (send_search (character (0), "https://github.com/org/pkg", "http://localhost"))
+    expect_error (send_search ("not-an-email", "https://github.com/org/pkg", "http://localhost"))
+    expect_error (send_search ("a@b.com", "", "http://localhost"))
+    expect_error (send_search ("a@b.com", "https://github.com/org/pkg", "ftp://bad"))
 })
 
 test_that ("list_searches returns correct totals and click counts", {
@@ -70,11 +73,13 @@ test_that ("list_searches returns correct totals and click counts", {
 
     send_search (
         emails   = c ("a@example.com", "b@example.com"),
+        repourl  = "https://github.com/org/pkg",
         base_url = "http://localhost"
     )
 
     lst <- list_searches ()
     expect_equal (nrow (lst), 1L)
+    expect_equal (lst$repourl, "https://github.com/org/pkg")
     expect_equal (lst$total, 2L)
     expect_equal (lst$clicked, 0L)
     expect_equal (lst$active, 1L)
@@ -86,6 +91,7 @@ test_that ("handle_click state machine: not found / valid / already used / expir
 
     send_search (
         emails   = c ("a@example.com", "b@example.com"),
+        repourl  = "https://github.com/org/pkg",
         base_url = "http://localhost"
     )
 
@@ -125,12 +131,13 @@ test_that ("deactivate_search deletes all associated rows", {
     local_notify_cache ()
     postmark_mock ()
 
-    result <- send_search (
+    send_search (
         emails   = c ("a@example.com", "b@example.com"),
+        repourl  = "https://github.com/org/pkg",
         base_url = "http://localhost"
     )
 
-    deactivate_search (result$search_id)
+    deactivate_search ("https://github.com/org/pkg")
 
     con <- email_db_init ()
     on.exit (DBI::dbDisconnect (con))
@@ -139,9 +146,9 @@ test_that ("deactivate_search deletes all associated rows", {
     expect_equal (nrow (DBI::dbReadTable (con, "recipients")), 0L)
 })
 
-test_that ("deactivate_search errors on unknown search_id", {
+test_that ("deactivate_search errors on unknown repourl", {
     local_search_db ()
-    expect_error (deactivate_search (99L))
+    expect_error (deactivate_search ("https://github.com/org/unknown"), regexp = "No search found")
 })
 
 test_that ("notify_email_read returns address from cache", {
