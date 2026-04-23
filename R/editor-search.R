@@ -72,17 +72,92 @@ is_valid_base_url <- function (x) {
     grepl ("^https://", x) || grepl ("^http://(localhost|127\\.0\\.0\\.1)", x)
 }
 
-#' Send a batch of volunteer search emails
+#' Send a single email via the Postmark API
+#'
+#' @param to Recipient email address.
+#' @param subject Email subject line.
+#' @param html_body HTML body of the email.
+#' @return The \pkg{httr2} response object, invisibly.
+#' @noRd
+postmark_send <- function (to, subject, html_body) {
+
+    token <- Sys.getenv ("POSTMARK_API_TOKEN")
+    from <- Sys.getenv ("POSTMARK_FROM")
+
+    resp <- httr2::request ("https://api.postmarkapp.com/email") |>
+        httr2::req_method ("POST") |>
+        httr2::req_headers (
+            "X-Postmark-Server-Token" = token,
+            "Content-Type"            = "application/json",
+            "Accept"                  = "application/json"
+        ) |>
+        httr2::req_body_json (list (
+            From          = from,
+            To            = to,
+            Subject       = subject,
+            HtmlBody      = html_body,
+            MessageStream = "outbound"
+        )) |>
+        httr2::req_perform ()
+
+    invisible (resp)
+}
+
+#' Send a batch of emails via the Postmark API
+#'
+#' Note: Postmark's \code{/email/batch} endpoint accepts a maximum of 500
+#' messages per call.
+#'
+#' @param emails Character vector of recipient addresses.
+#' @param links Character vector of personalised click links, parallel to \code{emails}.
+#' @param subject Email subject line.
+#' @return The \pkg{httr2} response object, invisibly.
+#' @noRd
+postmark_send_batch <- function (emails, links, subject) {
+
+    token <- Sys.getenv ("POSTMARK_API_TOKEN")
+    from <- Sys.getenv ("POSTMARK_FROM")
+
+    messages <- lapply (seq_along (emails), function (i) {
+        list (
+            From = from,
+            To = emails [[i]],
+            Subject = subject,
+            HtmlBody = paste0 (
+                "<p>You have been invited to volunteer with rOpenSci. ",
+                "Please click the link below to express your interest:</p>",
+                "<p><a href=\"", links [[i]], "\">Click here to respond</a></p>"
+            ),
+            MessageStream = "outbound"
+        )
+    })
+
+    resp <- httr2::request ("https://api.postmarkapp.com/email/batch") |>
+        httr2::req_method ("POST") |>
+        httr2::req_headers (
+            "X-Postmark-Server-Token" = token,
+            "Content-Type"            = "application/json",
+            "Accept"                  = "application/json"
+        ) |>
+        httr2::req_body_json (messages) |>
+        httr2::req_perform ()
+
+    invisible (resp)
+}
+
+#' Send a batch of editor search emails
 #'
 #' Inserts a new search record and one recipient row per address into the
-#' database, then dispatches emails via Postmark (Phase 2).
+#' database, then dispatches emails via Postmark.
 #'
 #' @param emails Character vector of recipient email addresses.
 #' @param notify_address Single address to notify when any link is clicked.
 #' @param base_url Base URL of the deployed API; used to build click links.
+#' @param subject Subject line for the outgoing emails.
 #' @return Named list with \code{search_id} (integer) and \code{sent} (integer).
 #' @export
-send_search <- function (emails, notify_address, base_url) {
+send_search <- function (emails, notify_address, base_url,
+                         subject = "Seeking editors for rOpenSci software submission") {
 
     if (!length (emails) || !all (is_valid_email (emails))) {
         stop ("'emails' must be a non-empty vector of valid email addresses")
@@ -119,9 +194,8 @@ send_search <- function (emails, notify_address, base_url) {
         )
     }
 
-    # Postmark dispatch — placeholder, implemented in Phase 2
-    # links <- paste0 (base_url, "/click/", tokens)
-    # postmark_send_batch (emails, links)
+    links <- paste0 (base_url, "/click/", tokens)
+    postmark_send_batch (emails, links, subject)
 
     list (search_id = search_id, sent = length (emails))
 }
@@ -195,12 +269,14 @@ handle_click <- function (token) {
         params = list (clicked_at, token)
     )
 
-    # Postmark notification — placeholder, implemented in Phase 2
-    # postmark_send (
-    #     to        = search [["notify_email"]],
-    #     subject   = "Volunteer link clicked",
-    #     html_body = paste0 ("<p>", recipient [["email"]], " responded at ", clicked_at, "</p>")
-    # )
+    postmark_send (
+        to = search [["notify_email"]],
+        subject = "rOpenSci editor search: new response",
+        html_body = paste0 (
+            "<p><strong>", recipient [["email"]], "</strong>",
+            " responded at ", clicked_at, ".</p>"
+        )
+    )
 
     list (status = 200L, body = "Thank you for your interest. We will be in touch.")
 }

@@ -8,6 +8,7 @@ ENV ROPENSCI "true"
 ENV GITHUB_PAT "<my_github_token>"
 ENV ROPENSCI_REVIEW_BOT "true"
 ENV POSTMARK_API_TOKEN "<postmark_api_token>"
+ENV POSTMARK_FROM "<verified_sender_address>"
 
 # seasonal -> roreviewapi#13
 RUN install2.r \
@@ -23,6 +24,7 @@ RUN echo "GITHUB_TOKEN='${GITHUB_PAT}'" > ~/.Renviron \
     && echo "GITHUB_PAT='${GITHUB_PAT}'" >> ~/.Renviron \
     && echo "PKGCHECK_TOKEN='<pkgcheck_token>'" >> ~/.Renviron \
     && echo "POSTMARK_API_TOKEN='${POSTMARK_API_TOKEN}'" >> ~/.Renviron \
+    && echo "POSTMARK_FROM='${POSTMARK_FROM}'" >> ~/.Renviron \
     && echo "ROREV_CONTAINER='true'" >> ~/.Renviron \
     && git config --global user.name "username" \
     && git config --global user.email "my.address@mail.com"
