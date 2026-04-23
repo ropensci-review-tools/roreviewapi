@@ -4,13 +4,13 @@
 \alias{deactivate_search}
 \title{Deactivate a volunteer search and delete all associated data}
 \usage{
-deactivate_search(search_id)
+deactivate_search(repourl)
 }
 \arguments{
-\item{search_id}{Integer search ID as returned by \code{\link{send_search}}.}
+\item{repourl}{Repository URL used when the search was created.}
 }
 \value{
-Named list with \code{deactivated} (logical) and \code{search_id}.
+Named list with \code{deactivated} (logical) and \code{repourl}.
 }
 \description{
 Sets \code{active = 0} first as a guard against concurrent clicks, then

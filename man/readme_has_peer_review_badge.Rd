@@ -22,6 +22,7 @@ Check whether 'README.md' has a "peer reviewed" badge
 Other ropensci: 
 \code{\link{check_issue_template}()},
 \code{\link{is_user_authorized}()},
+\code{\link{issue_is_stats}()},
 \code{\link{push_to_gh_pages}()},
 \code{\link{srr_counts}()},
 \code{\link{srr_counts_from_report}()},

@@ -2,21 +2,32 @@
 % Please edit documentation in R/editor-search.R
 \name{send_search}
 \alias{send_search}
-\title{Send a batch of volunteer search emails}
+\title{Send a batch of editor search emails}
 \usage{
-send_search(emails, notify_address, base_url)
+send_search(
+  repourl,
+  stats = FALSE,
+  subject = "Seeking editors for rOpenSci software submission",
+  fetcher = get_editor_emails
+)
 }
 \arguments{
-\item{emails}{Character vector of recipient email addresses.}
+\item{repourl}{URL of the package repository this search is for.}
 
-\item{notify_address}{Single address to notify when any link is clicked.}
+\item{stats}{If \code{TRUE}, target stats editors instead of regular editors.}
 
-\item{base_url}{Base URL of the deployed API; used to build click links.}
+\item{subject}{Subject line for the outgoing emails.}
+
+\item{fetcher}{Function used to fetch editor emails; injectable for testing.
+Must accept \code{(airtable_base_id, stats)} and return a character vector.}
 }
 \value{
 Named list with \code{search_id} (integer) and \code{sent} (integer).
 }
 \description{
-Inserts a new search record and one recipient row per address into the
-database, then dispatches emails via Postmark (Phase 2).
+Fetches current editor email addresses via \code{get_editor_emails()}, inserts
+a new search record and one recipient row per address into the database, then
+dispatches emails via Postmark.  The notify address is read from the AirTable
+cache written by \code{\link{notify_email_refresh}}.  The base URL for click
+links is read from the \code{ROREVIEWAPI_BASE_URL} environment variable.
 }
