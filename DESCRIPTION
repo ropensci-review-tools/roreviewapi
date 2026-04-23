@@ -12,6 +12,7 @@ BugReports: https://github.com/ropensci-review-tools/roreviewapi/issues
 Depends: 
     R (>= 4.1.0)
 Imports:
+    airtabler,
     BiocManager,
     callr,
     commonmark,
@@ -23,6 +24,7 @@ Imports:
     here,
     httr2,
     jsonlite,
+    later,
     logger,
     magrittr,
     methods,

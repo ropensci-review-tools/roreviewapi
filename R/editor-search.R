@@ -58,7 +58,7 @@ email_db_init <- function () {
 #'
 #' @return Single character string of 64 hex characters.
 #' @noRd
-generate_token <- function () {
+generate_email_token <- function () {
     paste0 (as.character (openssl::rand_bytes (32L)), collapse = "")
 }
 
@@ -70,6 +70,74 @@ is_valid_email <- function (x) {
 #' @noRd
 is_valid_base_url <- function (x) {
     grepl ("^https://", x) || grepl ("^http://(localhost|127\\.0\\.0\\.1)", x)
+}
+
+#' Fetch the current editor-in-chief email address from AirTable
+#'
+#' @param airtable_base_id AirTable base ID (from \code{AIRTABLE_BASE_ID} env var).
+#' @return Single email address as a character string.
+#' @noRd
+eic_email_address <- function (airtable_base_id) {
+
+    eic_table <- airtabler::airtable (
+        base = airtable_base_id, table = "editor-in-chief-rotation"
+    )
+    eic <- eic_table$`editor-in-chief-rotation`$select_all ()
+    eic$period_start <- as.Date (eic$period_start)
+    eic$period_end <- as.Date (eic$period_end)
+    eic <- eic [order (eic$period_start), ]
+    i <- which (eic$period_start < Sys.Date () & eic$period_end > Sys.Date ())
+    eic$acting_eic_email [[i]]
+}
+
+#' Path to the cached notify email address file
+#'
+#' Stored alongside the SQLite database on the mounted volume.
+#'
+#' @return Absolute path as a character string.
+#' @noRd
+notify_email_cache_path <- function () {
+    file.path (dirname (email_db_path ()), "notify_email.txt")
+}
+
+#' Read the cached notify email address
+#'
+#' @return Email address as a character string.
+#' @noRd
+notify_email_read <- function () {
+    path <- notify_email_cache_path ()
+    if (!file.exists (path)) {
+        stop (
+            "Notify email cache not found at '", path, "'. ",
+            "Ensure serve_api() has completed its initial AirTable refresh."
+        )
+    }
+    trimws (readLines (path, warn = FALSE))
+}
+
+#' Fetch the current EiC email from AirTable and write to cache
+#'
+#' On failure, logs the error and preserves any existing cached value.
+#'
+#' @param fetcher Function that takes the AirTable base ID and returns an email
+#'   address. Defaults to \code{eic_email_address}; override in tests.
+#' @return The fetched email address, or \code{NULL} on failure, invisibly.
+#' @noRd
+notify_email_refresh <- function (fetcher = eic_email_address) {
+
+    base_id <- Sys.getenv ("AIRTABLE_BASE_ID")
+    email <- tryCatch (
+        fetcher (base_id),
+        error = function (e) {
+            message ("AirTable fetch failed: ", e$message)
+            NULL
+        }
+    )
+    if (!is.null (email) && nzchar (email)) {
+        dir.create (dirname (notify_email_cache_path ()), recursive = TRUE, showWarnings = FALSE)
+        writeLines (email, notify_email_cache_path ())
+    }
+    invisible (email)
 }
 
 #' Send a single email via the Postmark API
@@ -148,26 +216,25 @@ postmark_send_batch <- function (emails, links, subject) {
 #' Send a batch of editor search emails
 #'
 #' Inserts a new search record and one recipient row per address into the
-#' database, then dispatches emails via Postmark.
+#' database, then dispatches emails via Postmark.  The notify address is read
+#' from the AirTable cache written by \code{\link{notify_email_refresh}}.
 #'
 #' @param emails Character vector of recipient email addresses.
-#' @param notify_address Single address to notify when any link is clicked.
 #' @param base_url Base URL of the deployed API; used to build click links.
 #' @param subject Subject line for the outgoing emails.
 #' @return Named list with \code{search_id} (integer) and \code{sent} (integer).
 #' @export
-send_search <- function (emails, notify_address, base_url,
+send_search <- function (emails, base_url,
                          subject = "Seeking editors for rOpenSci software submission") {
 
     if (!length (emails) || !all (is_valid_email (emails))) {
         stop ("'emails' must be a non-empty vector of valid email addresses")
     }
-    if (length (notify_address) != 1L || !is_valid_email (notify_address)) {
-        stop ("'notify_address' must be a single valid email address")
-    }
     if (length (base_url) != 1L || !is_valid_base_url (base_url)) {
         stop ("'base_url' must start with https:// or http://localhost")
     }
+
+    notify_address <- notify_email_read ()
 
     con <- email_db_init ()
     on.exit (DBI::dbDisconnect (con))
@@ -182,7 +249,7 @@ send_search <- function (emails, notify_address, base_url,
 
     tokens <- vapply (
         seq_along (emails),
-        function (i) generate_token (),
+        function (i) generate_email_token (),
         character (1L)
     )
 

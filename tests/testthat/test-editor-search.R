@@ -3,15 +3,23 @@ local_search_db <- function (env = parent.frame ()) {
     withr::local_envvar (ROREVIEWAPI_EMAIL_DB = db, .local_envir = env)
 }
 
+local_notify_cache <- function (email = "editor@example.com", env = parent.frame ()) {
+    dir <- withr::local_tempdir (.local_envir = env)
+    cache <- file.path (dir, "notify_email.txt")
+    writeLines (email, cache)
+    db <- file.path (dir, "searches.sqlite")
+    withr::local_envvar (ROREVIEWAPI_EMAIL_DB = db, .local_envir = env)
+}
+
 postmark_mock <- function (env = parent.frame ()) {
     httr2::local_mocked_responses (function (req) {
         httr2::response (200L, body = charToRaw ('{"ErrorCode":0,"Message":"OK"}'))
     }, env = env)
 }
 
-test_that ("generate_token returns unique 64-char hex strings", {
-    t1 <- generate_token ()
-    t2 <- generate_token ()
+test_that ("generate_email_token returns unique 64-char hex strings", {
+    t1 <- generate_email_token ()
+    t2 <- generate_email_token ()
     expect_type (t1, "character")
     expect_equal (nchar (t1), 64L)
     expect_false (identical (t1, t2))
@@ -26,13 +34,12 @@ test_that ("email_db_init creates both tables", {
 })
 
 test_that ("send_search inserts correct rows", {
-    local_search_db ()
+    local_notify_cache ()
     postmark_mock ()
 
     result <- send_search (
-        emails         = c ("a@example.com", "b@example.com"),
-        notify_address = "editor@example.com",
-        base_url       = "http://localhost"
+        emails   = c ("a@example.com", "b@example.com"),
+        base_url = "http://localhost"
     )
     expect_equal (result$search_id, 1L)
     expect_equal (result$sent, 2L)
@@ -51,21 +58,19 @@ test_that ("send_search inserts correct rows", {
 })
 
 test_that ("send_search rejects invalid inputs", {
-    local_search_db ()
-    expect_error (send_search (character (0), "e@x.com", "http://localhost"))
-    expect_error (send_search ("not-an-email", "e@x.com", "http://localhost"))
-    expect_error (send_search ("a@b.com", "not-an-email", "http://localhost"))
-    expect_error (send_search ("a@b.com", "e@x.com", "ftp://bad"))
+    local_notify_cache ()
+    expect_error (send_search (character (0), "http://localhost"))
+    expect_error (send_search ("not-an-email", "http://localhost"))
+    expect_error (send_search ("a@b.com", "ftp://bad"))
 })
 
 test_that ("list_searches returns correct totals and click counts", {
-    local_search_db ()
+    local_notify_cache ()
     postmark_mock ()
 
     send_search (
-        emails         = c ("a@example.com", "b@example.com"),
-        notify_address = "editor@example.com",
-        base_url       = "http://localhost"
+        emails   = c ("a@example.com", "b@example.com"),
+        base_url = "http://localhost"
     )
 
     lst <- list_searches ()
@@ -76,13 +81,12 @@ test_that ("list_searches returns correct totals and click counts", {
 })
 
 test_that ("handle_click state machine: not found / valid / already used / expired", {
-    local_search_db ()
+    local_notify_cache ()
     postmark_mock ()
 
     send_search (
-        emails         = c ("a@example.com", "b@example.com"),
-        notify_address = "editor@example.com",
-        base_url       = "http://localhost"
+        emails   = c ("a@example.com", "b@example.com"),
+        base_url = "http://localhost"
     )
 
     con <- email_db_init ()
@@ -118,13 +122,12 @@ test_that ("handle_click state machine: not found / valid / already used / expir
 })
 
 test_that ("deactivate_search deletes all associated rows", {
-    local_search_db ()
+    local_notify_cache ()
     postmark_mock ()
 
     result <- send_search (
-        emails         = c ("a@example.com", "b@example.com"),
-        notify_address = "editor@example.com",
-        base_url       = "http://localhost"
+        emails   = c ("a@example.com", "b@example.com"),
+        base_url = "http://localhost"
     )
 
     deactivate_search (result$search_id)
@@ -139,4 +142,28 @@ test_that ("deactivate_search deletes all associated rows", {
 test_that ("deactivate_search errors on unknown search_id", {
     local_search_db ()
     expect_error (deactivate_search (99L))
+})
+
+test_that ("notify_email_read returns address from cache", {
+    local_notify_cache ("eic@example.com")
+    expect_equal (notify_email_read (), "eic@example.com")
+})
+
+test_that ("notify_email_read stops when cache is absent", {
+    local_search_db ()
+    expect_error (notify_email_read (), regexp = "Notify email cache not found")
+})
+
+test_that ("notify_email_refresh writes address to cache", {
+    local_search_db ()
+    fetcher <- function (base_id) "fetched@example.com"
+    notify_email_refresh (fetcher = fetcher)
+    expect_equal (notify_email_read (), "fetched@example.com")
+})
+
+test_that ("notify_email_refresh preserves existing cache on error", {
+    local_notify_cache ("existing@example.com")
+    bad_fetcher <- function (base_id) stop ("AirTable down")
+    expect_message (notify_email_refresh (fetcher = bad_fetcher), "AirTable fetch failed")
+    expect_equal (notify_email_read (), "existing@example.com")
 })
