@@ -262,7 +262,7 @@ function (repourl = "", repo, issue_id, secret = NULL) {
         supervise = TRUE
     )
 
-    return (NULL)
+    return ("Editors have been notified.")
 }
 
 
