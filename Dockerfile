@@ -1,17 +1,17 @@
 FROM ghcr.io/ropensci-review-tools/pkgcheck
 LABEL org.opencontainers.image.authors="mark.padgham@email.com"
 
-ENV R_REMOTES_UPGRADE "always"
-ENV NOT_CRAN "true"
-ENV CI "true"
-ENV ROPENSCI "true"
-ENV GITHUB_PAT "<my_github_token>"
-ENV ROPENSCI_REVIEW_BOT "true"
-ENV POSTMARK_API_TOKEN "<postmark_api_token>"
-ENV POSTMARK_FROM "<verified_sender_address>"
-ENV AIRTABLE_API_KEY "<airtable_api_key>"
-ENV AIRTABLE_BASE_ID "<airtable_base_id>"
-ENV ROREVIEWAPI_BASE_URL "<api_base_url>"
+ENV R_REMOTES_UPGRADE="always"
+ENV NOT_CRAN="true"
+ENV CI="true"
+ENV ROPENSCI="true"
+ENV GITHUB_PAT="<my_github_token>"
+ENV ROPENSCI_REVIEW_BOT="true"
+ENV POSTMARK_API_TOKEN="<postmark_api_token>"
+ENV POSTMARK_FROM="<verified_sender_address>"
+ENV AIRTABLE_API_KEY="<airtable_api_key>"
+ENV AIRTABLE_BASE_ID="<airtable_base_id>"
+ENV ROREVIEWAPI_BASE_URL="<api_base_url>"
 
 # seasonal -> roreviewapi#13
 RUN install2.r \
