@@ -7,7 +7,7 @@ services:
       - /etc/letsencrypt:/etc/letsencrypt:ro
     environment:
       - PLUMBER_SERVER_ADDR=plumber:8000
-      - NGINX_SERVER_NAME=${NGINX_SERVER_NAME}
+      - NGINX_SERVER_NAME=reviewbot.ropensci.org
     command: /bin/bash -c "envsubst '$${PLUMBER_SERVER_ADDR} $${NGINX_SERVER_NAME}' < /tmp/nginx.conf > /etc/nginx/conf.d/default.conf && nginx -g 'daemon off;'"
     ports:
       - 80:80
