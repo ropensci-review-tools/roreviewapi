@@ -314,8 +314,8 @@ send_search <- function (repourl, repo, issue_id,
     # TEMPORARY: bypass all external API calls for live deployment testing.
     # Remove this block once Phase 6 integration testing is complete.
     if (repo == "ropenscilabs/statistical-software-review") {
-        emails <- c ("mark.padgham@email.com")
-        notify_address <- "mark@ropensci.org"
+        emails <- c (Sys.getenv ("POSTMARK_FROM"))
+        notify_address <- Sys.getenv ("POSTMARK_FROM")
         message (
             "[send_search] using test override: emails=", paste (emails, collapse = ","),
             " notify=", notify_address
