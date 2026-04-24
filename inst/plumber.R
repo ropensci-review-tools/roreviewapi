@@ -235,7 +235,7 @@ function (repourl = "", repo, issue_id, secret = NULL) {
 #* the command was invoked, passed in `org/repo` format.
 #* @param issue_id The id of the issue from which the command was invoked
 #* @param secret Secret token for authorization
-#* @post /send_search
+#* @get /send_search
 function (repourl = "", repo, issue_id, secret = NULL) {
 
     if (!roreviewapi::is_user_authorized (secret)) {
@@ -286,7 +286,7 @@ function (secret = NULL) {
 #* the command was invoked, passed in `org/repo` format.
 #* @param issue_id The id of the issue from which the command was invoked
 #* @param secret Secret token for authorization
-#* @post /deactivate_search
+#* @get /deactivate_search
 function (repourl = "", repo, issue_id, secret = NULL) {
 
     if (!roreviewapi::is_user_authorized (secret)) {
