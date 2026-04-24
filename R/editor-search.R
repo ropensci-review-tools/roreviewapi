@@ -36,7 +36,7 @@ email_db_init <- function () {
         CREATE TABLE IF NOT EXISTS searches (
             id           INTEGER PRIMARY KEY AUTOINCREMENT,
             created_at   TEXT NOT NULL,
-            repourl      TEXT NOT NULL UNIQUE,
+            issue_ref    TEXT NOT NULL UNIQUE,
             notify_email TEXT NOT NULL,
             active       INTEGER NOT NULL DEFAULT 1
         )
@@ -219,12 +219,15 @@ postmark_send <- function (to, subject, html_body) {
 #' @param emails Character vector of recipient addresses.
 #' @param links Character vector of personalised click links, parallel to \code{emails}.
 #' @param subject Email subject line.
+#' @param repo GitHub review repository in \code{org/repo} format.
+#' @param issue_id Integer issue number in the review repository.
 #' @return The \pkg{httr2} response object, invisibly.
 #' @noRd
-postmark_send_batch <- function (emails, links, subject) {
+postmark_send_batch <- function (emails, links, subject, repo, issue_id) {
 
     token <- Sys.getenv ("POSTMARK_API_TOKEN")
     from <- Sys.getenv ("POSTMARK_FROM")
+    issue_url <- paste0 ("https://github.com/", repo, "/issues/", issue_id)
 
     messages <- lapply (seq_along (emails), function (i) {
         list (
@@ -232,8 +235,10 @@ postmark_send_batch <- function (emails, links, subject) {
             To = emails [[i]],
             Subject = subject,
             HtmlBody = paste0 (
-                "<p>You have been invited to volunteer with rOpenSci. ",
-                "Please click the link below to express your interest:</p>",
+                "<p>You have been invited to volunteer as an editor for an ",
+                "rOpenSci software submission: ",
+                "<a href=\"", issue_url, "\">", issue_url, "</a></p>",
+                "<p>Please click the link below to express your interest:</p>",
                 "<p><a href=\"", links [[i]], "\">Click here to respond</a></p>"
             ),
             MessageStream = "outbound"
@@ -260,27 +265,40 @@ postmark_send_batch <- function (emails, links, subject) {
 #' dispatches emails via Postmark.  The notify address is read from the
 #' AirTable cache written by the internal 'notify_email_refresh' function.  The
 #' base URL for click links is read from the \code{ROREVIEWAPI_BASE_URL}
-#' environment variable.
+#' environment variable.  The stats/standard distinction is determined by
+#' calling \code{issue_is_stats()} on the supplied \code{repo} and
+#' \code{issue_id}.
 #'
-#' @param repourl URL of the package repository this search is for.
-#' @param stats If \code{TRUE}, target stats editors instead of regular editors.
+#' @param repourl URL of the package repository; included in the outgoing emails.
+#' @param repo GitHub review repository in \code{org/repo} format.
+#' @param issue_id Integer issue number in the review repository.
 #' @param subject Subject line for the outgoing emails.
 #' @param fetcher Function used to fetch editor emails; injectable for testing.
 #'   Must accept \code{(airtable_base_id, stats)} and return a character vector.
+#' @param stats_checker Function used to determine submission type; injectable
+#'   for testing.  Must accept \code{(repo, issue_id)} and return a logical.
 #' @return Named list with \code{search_id} (integer) and \code{sent} (integer).
 #' @export
-send_search <- function (repourl, stats = FALSE,
+send_search <- function (repourl, repo, issue_id,
                          subject = "Seeking editors for rOpenSci software submission",
-                         fetcher = get_editor_emails) {
+                         fetcher = get_editor_emails,
+                         stats_checker = issue_is_stats) {
 
     if (length (repourl) != 1L || !nzchar (repourl)) {
         stop ("'repourl' must be a single non-empty string")
     }
+    if (length (repo) != 1L || !nzchar (repo)) {
+        stop ("'repo' must be a single non-empty string")
+    }
+    issue_id <- as.integer (issue_id) [[1L]]
 
     base_url <- Sys.getenv ("ROREVIEWAPI_BASE_URL")
     if (!is_valid_base_url (base_url)) {
         stop ("ROREVIEWAPI_BASE_URL must be set and start with https:// or http://localhost")
     }
+
+    issue_ref <- paste0 (repo, "/issues/", issue_id)
+    stats <- stats_checker (repo, issue_id)
 
     emails <- fetcher (Sys.getenv ("AIRTABLE_BASE_ID"), stats = stats)
     if (!length (emails) || !all (is_valid_email (emails))) {
@@ -295,8 +313,8 @@ send_search <- function (repourl, stats = FALSE,
     created_at <- strftime (Sys.time (), "%Y-%m-%dT%H:%M:%SZ", tz = "UTC")
     DBI::dbExecute (
         con,
-        "INSERT INTO searches (created_at, repourl, notify_email) VALUES (?, ?, ?)",
-        params = list (created_at, repourl, notify_address)
+        "INSERT INTO searches (created_at, issue_ref, notify_email) VALUES (?, ?, ?)",
+        params = list (created_at, issue_ref, notify_address)
     )
     search_id <- DBI::dbGetQuery (con, "SELECT last_insert_rowid() AS id") [["id"]]
 
@@ -315,7 +333,7 @@ send_search <- function (repourl, stats = FALSE,
     }
 
     links <- paste0 (base_url, "/click/", tokens)
-    postmark_send_batch (emails, links, subject)
+    postmark_send_batch (emails, links, subject, repo, issue_id)
 
     list (search_id = search_id, sent = length (emails))
 }
@@ -334,7 +352,7 @@ list_searches <- function () {
         SELECT
             s.id    AS search_id,
             s.created_at,
-            s.repourl,
+            s.issue_ref,
             s.notify_email,
             s.active,
             COUNT (r.id)                                          AS total,
@@ -407,21 +425,24 @@ handle_click <- function (token) {
 #' Sets \code{active = 0} first as a guard against concurrent clicks, then
 #' deletes all recipient rows followed by the search row itself.
 #'
-#' @param repourl Repository URL used when the search was created.
-#' @return Named list with \code{deactivated} (logical) and \code{repourl}.
+#' @param repo GitHub review repository in \code{org/repo} format.
+#' @param issue_id Integer issue number in the review repository.
+#' @return Named list with \code{deactivated} (logical) and \code{issue_ref}.
 #' @export
-deactivate_search <- function (repourl) {
+deactivate_search <- function (repo, issue_id) {
+
+    issue_ref <- paste0 (repo, "/issues/", as.integer (issue_id) [[1L]])
 
     con <- email_db_init ()
     on.exit (DBI::dbDisconnect (con))
 
     existing <- DBI::dbGetQuery (
         con,
-        "SELECT id FROM searches WHERE repourl = ?",
-        params = list (repourl)
+        "SELECT id FROM searches WHERE issue_ref = ?",
+        params = list (issue_ref)
     )
     if (nrow (existing) == 0L) {
-        stop ("No search found for repourl '", repourl, "'")
+        stop ("No search found for '", issue_ref, "'")
     }
     search_id <- existing [["id"]]
 
@@ -441,5 +462,5 @@ deactivate_search <- function (repourl) {
         params = list (search_id)
     )
 
-    list (deactivated = TRUE, repourl = repourl)
+    list (deactivated = TRUE, issue_ref = issue_ref)
 }

@@ -19,6 +19,8 @@ email_fetcher <- function (base_id, stats = FALSE) {
     c ("a@example.com", "b@example.com")
 }
 
+stats_checker_false <- function (repo, issue_id) FALSE
+
 postmark_mock <- function (env = parent.frame ()) {
     httr2::local_mocked_responses (function (req) {
         httr2::response (200L, body = charToRaw ('{"ErrorCode":0,"Message":"OK"}'))
@@ -46,8 +48,11 @@ test_that ("send_search inserts correct rows", {
     postmark_mock ()
 
     result <- send_search (
-        repourl = "https://github.com/org/pkg",
-        fetcher = email_fetcher
+        repourl       = "https://github.com/org/pkg",
+        repo          = "ropensci/software-review",
+        issue_id      = 123L,
+        fetcher       = email_fetcher,
+        stats_checker = stats_checker_false
     )
     expect_equal (result$search_id, 1L)
     expect_equal (result$sent, 2L)
@@ -59,7 +64,7 @@ test_that ("send_search inserts correct rows", {
     recipients <- DBI::dbReadTable (con, "recipients")
 
     expect_equal (nrow (searches), 1L)
-    expect_equal (searches$repourl, "https://github.com/org/pkg")
+    expect_equal (searches$issue_ref, "ropensci/software-review/issues/123")
     expect_equal (searches$active, 1L)
     expect_equal (nrow (recipients), 2L)
     expect_equal (nchar (recipients$token [[1]]), 64L)
@@ -68,14 +73,23 @@ test_that ("send_search inserts correct rows", {
 
 test_that ("send_search rejects invalid inputs", {
     local_notify_cache ()
-    expect_error (send_search ("", fetcher = email_fetcher))
+    expect_error (send_search ("", "ropensci/software-review", 123L,
+        fetcher = email_fetcher, stats_checker = stats_checker_false
+    ))
+    expect_error (send_search ("https://github.com/org/pkg", "", 123L,
+        fetcher = email_fetcher, stats_checker = stats_checker_false
+    ))
     bad_fetcher <- function (base_id, stats) character (0)
     expect_error (
-        send_search ("https://github.com/org/pkg", fetcher = bad_fetcher),
+        send_search ("https://github.com/org/pkg", "ropensci/software-review", 123L,
+            fetcher = bad_fetcher, stats_checker = stats_checker_false
+        ),
         regexp = "no valid email"
     )
     withr::local_envvar (ROREVIEWAPI_BASE_URL = "ftp://bad")
-    expect_error (send_search ("https://github.com/org/pkg", fetcher = email_fetcher))
+    expect_error (send_search ("https://github.com/org/pkg", "ropensci/software-review", 123L,
+        fetcher = email_fetcher, stats_checker = stats_checker_false
+    ))
 })
 
 test_that ("list_searches returns correct totals and click counts", {
@@ -83,13 +97,16 @@ test_that ("list_searches returns correct totals and click counts", {
     postmark_mock ()
 
     send_search (
-        repourl = "https://github.com/org/pkg",
-        fetcher = email_fetcher
+        repourl       = "https://github.com/org/pkg",
+        repo          = "ropensci/software-review",
+        issue_id      = 123L,
+        fetcher       = email_fetcher,
+        stats_checker = stats_checker_false
     )
 
     lst <- list_searches ()
     expect_equal (nrow (lst), 1L)
-    expect_equal (lst$repourl, "https://github.com/org/pkg")
+    expect_equal (lst$issue_ref, "ropensci/software-review/issues/123")
     expect_equal (lst$total, 2L)
     expect_equal (lst$clicked, 0L)
     expect_equal (lst$active, 1L)
@@ -100,8 +117,11 @@ test_that ("handle_click state machine: not found / valid / already used / expir
     postmark_mock ()
 
     send_search (
-        repourl = "https://github.com/org/pkg",
-        fetcher = email_fetcher
+        repourl       = "https://github.com/org/pkg",
+        repo          = "ropensci/software-review",
+        issue_id      = 123L,
+        fetcher       = email_fetcher,
+        stats_checker = stats_checker_false
     )
 
     con <- email_db_init ()
@@ -141,11 +161,14 @@ test_that ("deactivate_search deletes all associated rows", {
     postmark_mock ()
 
     send_search (
-        repourl = "https://github.com/org/pkg",
-        fetcher = email_fetcher
+        repourl       = "https://github.com/org/pkg",
+        repo          = "ropensci/software-review",
+        issue_id      = 123L,
+        fetcher       = email_fetcher,
+        stats_checker = stats_checker_false
     )
 
-    deactivate_search ("https://github.com/org/pkg")
+    deactivate_search ("ropensci/software-review", 123L)
 
     con <- email_db_init ()
     on.exit (DBI::dbDisconnect (con))
@@ -154,9 +177,9 @@ test_that ("deactivate_search deletes all associated rows", {
     expect_equal (nrow (DBI::dbReadTable (con, "recipients")), 0L)
 })
 
-test_that ("deactivate_search errors on unknown repourl", {
+test_that ("deactivate_search errors on unknown issue", {
     local_search_db ()
-    expect_error (deactivate_search ("https://github.com/org/unknown"), regexp = "No search found")
+    expect_error (deactivate_search ("ropensci/software-review", 999L), regexp = "No search found")
 })
 
 test_that ("notify_email_read returns address from cache", {

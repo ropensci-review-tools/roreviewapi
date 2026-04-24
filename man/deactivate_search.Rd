@@ -4,13 +4,15 @@
 \alias{deactivate_search}
 \title{Deactivate a volunteer search and delete all associated data}
 \usage{
-deactivate_search(repourl)
+deactivate_search(repo, issue_id)
 }
 \arguments{
-\item{repourl}{Repository URL used when the search was created.}
+\item{repo}{GitHub review repository in \code{org/repo} format.}
+
+\item{issue_id}{Integer issue number in the review repository.}
 }
 \value{
-Named list with \code{deactivated} (logical) and \code{repourl}.
+Named list with \code{deactivated} (logical) and \code{issue_ref}.
 }
 \description{
 Sets \code{active = 0} first as a guard against concurrent clicks, then

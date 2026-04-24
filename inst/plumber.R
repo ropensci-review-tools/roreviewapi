@@ -245,12 +245,10 @@ function (repourl = "", repo, issue_id, secret = NULL) {
         return ("Error: 'repourl' is required")
     }
 
-    issue_id <- as.integer (issue_id) [1]
-    stats <- roreviewapi::issue_is_stats (repo, issue_id)
-
     roreviewapi::send_search (
-        repourl = repourl,
-        stats   = stats
+        repourl  = repourl,
+        repo     = repo,
+        issue_id = issue_id
     )
 }
 
@@ -284,18 +282,21 @@ function (secret = NULL) {
 #* @name deactivate_search
 #* @description Deactivate a volunteer search and delete all associated data
 #* @param repourl The URL of the package repository used when creating the search
+#* @param repo The 'context.repo' parameter defining the repository from which
+#* the command was invoked, passed in `org/repo` format.
+#* @param issue_id The id of the issue from which the command was invoked
 #* @param secret Secret token for authorization
 #* @post /deactivate_search
-function (repourl = "", secret = NULL) {
+function (repourl = "", repo, issue_id, secret = NULL) {
 
     if (!roreviewapi::is_user_authorized (secret)) {
         return ("Only authorized users may call this endpoint")
     }
-    if (!nzchar (repourl)) {
-        return ("Error: 'repourl' is required")
-    }
 
-    roreviewapi::deactivate_search (repourl)
+    roreviewapi::deactivate_search (
+        repo     = repo,
+        issue_id = issue_id
+    )
 }
 
 
