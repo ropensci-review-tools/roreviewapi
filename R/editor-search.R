@@ -256,7 +256,7 @@ postmark_send_batch <- function (emails, links, subject, repo, issue_id) {
         httr2::req_body_json (messages) |>
         httr2::req_perform ()
 
-    invisible (resp)
+    resp
 }
 
 #' Send a batch of editor search emails
@@ -361,9 +361,17 @@ send_search <- function (repourl, repo, issue_id,
     message ("[send_search] inserted ", length (emails), " recipient row(s)")
 
     links <- paste0 (base_url, "/click/", tokens)
+    message (
+        "[send_search] POSTMARK_FROM=", Sys.getenv ("POSTMARK_FROM"),
+        " token_nchar=", nchar (Sys.getenv ("POSTMARK_API_TOKEN"))
+    )
     message ("[send_search] calling postmark_send_batch")
-    postmark_send_batch (emails, links, subject, repo, issue_id)
-    message ("[send_search] postmark_send_batch returned OK")
+    resp <- postmark_send_batch (emails, links, subject, repo, issue_id)
+    message ("[send_search] postmark response status: ", httr2::resp_status (resp))
+    message (
+        "[send_search] postmark response body: ",
+        httr2::resp_body_string (resp)
+    )
 
     list (search_id = search_id, sent = length (emails))
 }
