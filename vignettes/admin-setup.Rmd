@@ -46,7 +46,7 @@ available to R at runtime.
 | `POSTMARK_FROM` | Verified sender address registered with Postmark |
 | `AIRTABLE_API_KEY` | AirTable personal access token |
 | `AIRTABLE_BASE_ID` | ID of the AirTable base containing the EiC rotation table |
-| `ROREVIEWAPI_BASE_URL` | Public HTTPS base URL of the deployed API (e.g. `https://editorsearch.ropensci.org`) |
+| `ROREVIEWAPI_BASE_URL` | Public HTTPS base URL of the deployed API (`https://reviewbot.ropensci.org`) |
 | `PKGCHECK_TOKEN` | pkgcheck authentication token (set directly in `~/.Renviron`) |
 
 Replace each `<placeholder>` in `Dockerfile` with the real value before building.
