@@ -298,23 +298,32 @@ send_search <- function (repourl, repo, issue_id,
     }
 
     issue_ref <- paste0 (repo, "/issues/", issue_id)
-    stats <- stats_checker (repo, issue_id)
+    message ("[send_search] starting: issue_ref=", issue_ref, " base_url=", base_url)
 
-    emails <- fetcher (Sys.getenv ("AIRTABLE_BASE_ID"), stats = stats)
-    if (!length (emails) || !all (is_valid_email (emails))) {
-        stop ("fetcher returned no valid email addresses")
-    }
-
-    notify_address <- notify_email_read ()
-    # TEMPORARY: redirect all emails for live deployment testing.
-    # Remove this block once testing is complete.
+    # TEMPORARY: bypass all external API calls for live deployment testing.
+    # Remove this block once Phase 6 integration testing is complete.
     if (repo == "ropenscilabs/statistical-software-review") {
         emails <- c ("mark.padgham@email.com")
         notify_address <- "mark@ropensci.org"
+        message (
+            "[send_search] using test override: emails=", paste (emails, collapse = ","),
+            " notify=", notify_address
+        )
+    } else {
+        stats <- stats_checker (repo, issue_id)
+        message ("[send_search] stats=", stats, "; fetching editor emails")
+        emails <- fetcher (Sys.getenv ("AIRTABLE_BASE_ID"), stats = stats)
+        message ("[send_search] fetched ", length (emails), " email(s)")
+        if (!length (emails) || !all (is_valid_email (emails))) {
+            stop ("fetcher returned no valid email addresses")
+        }
+        notify_address <- notify_email_read ()
+        message ("[send_search] notify_address=", notify_address)
     }
 
     con <- email_db_init ()
     on.exit (DBI::dbDisconnect (con))
+    message ("[send_search] DB initialised at ", email_db_path ())
 
     created_at <- strftime (Sys.time (), "%Y-%m-%dT%H:%M:%SZ", tz = "UTC")
     DBI::dbExecute (
@@ -323,6 +332,7 @@ send_search <- function (repourl, repo, issue_id,
         params = list (created_at, issue_ref, notify_address)
     )
     search_id <- DBI::dbGetQuery (con, "SELECT last_insert_rowid() AS id") [["id"]]
+    message ("[send_search] search row inserted: search_id=", search_id)
 
     tokens <- vapply (
         seq_along (emails),
@@ -337,9 +347,12 @@ send_search <- function (repourl, repo, issue_id,
             params = list (search_id, emails [[i]], tokens [[i]])
         )
     }
+    message ("[send_search] inserted ", length (emails), " recipient row(s)")
 
     links <- paste0 (base_url, "/click/", tokens)
+    message ("[send_search] calling postmark_send_batch")
     postmark_send_batch (emails, links, subject, repo, issue_id)
+    message ("[send_search] postmark_send_batch returned OK")
 
     list (search_id = search_id, sent = length (emails))
 }

@@ -245,11 +245,24 @@ function (repourl = "", repo, issue_id, secret = NULL) {
         return ("Error: 'repourl' is required")
     }
 
-    roreviewapi::send_search (
-        repourl  = repourl,
-        repo     = repo,
-        issue_id = issue_id
+    logfiles <- roreviewapi::stdout_stderr_cache (repourl)
+    logfiles$stdout <- gsub ("\\_stdout$", "_send_search_stdout", logfiles$stdout)
+    logfiles$stderr <- gsub ("\\_stderr$", "_send_search_stderr", logfiles$stderr)
+
+    ps_send_search <<- callr::r_bg (
+        func = roreviewapi::send_search,
+        args = list (
+            repourl  = repourl,
+            repo     = repo,
+            issue_id = issue_id
+        ),
+        stdout = logfiles$stdout,
+        stderr = logfiles$stderr,
+        poll_connection = TRUE,
+        supervise = TRUE
     )
+
+    return (NULL)
 }
 
 
