@@ -306,10 +306,12 @@ send_search <- function (repourl, repo, issue_id,
     }
 
     notify_address <- notify_email_read ()
-    # if (repo == "ropenscilabs/statistical-software-review") {
-    emails <- "mark.padgham@email.com"
-    notify_address <- "mark@ropensci.org"
-    # }
+    # TEMPORARY: redirect all emails for live deployment testing.
+    # Remove this block once testing is complete.
+    if (repo == "ropenscilabs/statistical-software-review") {
+        emails <- c ("mark.padgham@email.com")
+        notify_address <- "mark@ropensci.org"
+    }
 
     con <- email_db_init ()
     on.exit (DBI::dbDisconnect (con))

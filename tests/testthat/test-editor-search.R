@@ -19,6 +19,11 @@ email_fetcher <- function (base_id, stats = FALSE) {
     c ("a@example.com", "b@example.com")
 }
 
+# Tests use repo = "ropensci/software-review" (not
+# "ropenscilabs/statistical-software-review") so the temporary live-testing
+# override in send_search() does not fire. Once that block is removed, this
+# comment can also be removed.
+
 stats_checker_false <- function (repo, issue_id) FALSE
 
 postmark_mock <- function (env = parent.frame ()) {
