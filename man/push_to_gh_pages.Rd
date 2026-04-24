@@ -21,6 +21,7 @@ GitHub pages.
 Other ropensci: 
 \code{\link{check_issue_template}()},
 \code{\link{is_user_authorized}()},
+\code{\link{issue_is_stats}()},
 \code{\link{readme_has_peer_review_badge}()},
 \code{\link{srr_counts}()},
 \code{\link{srr_counts_from_report}()},

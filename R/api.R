@@ -76,6 +76,16 @@ serve_api <- function (port = 8000L,
         fs::dir_create (static_dir, recurse = TRUE)
     }
 
+    # ----------notify email cache set up----------
+    notify_email_refresh ()
+    schedule_notify_refresh <- function () {
+        later::later (function () {
+            notify_email_refresh ()
+            schedule_notify_refresh ()
+        }, delay = 86400)
+    }
+    schedule_notify_refresh ()
+
     # ----------plumber process set up----------
     pr <- plumber::pr (f)
 

@@ -20,6 +20,7 @@ prevent them being called by unauthorized users.
 \seealso{
 Other ropensci: 
 \code{\link{check_issue_template}()},
+\code{\link{issue_is_stats}()},
 \code{\link{push_to_gh_pages}()},
 \code{\link{readme_has_peer_review_badge}()},
 \code{\link{srr_counts}()},

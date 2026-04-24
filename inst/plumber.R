@@ -225,6 +225,82 @@ function (repourl = "", repo, issue_id, secret = NULL) {
 
 
 # --------------------------------------------------
+# ---------------   editor search   ----------------
+# --------------------------------------------------
+
+#* @name send_search
+#* @description Send volunteer editor search emails for a submission
+#* @param repourl The URL of the package repository
+#* @param repo The 'context.repo' parameter defining the repository from which
+#* the command was invoked, passed in `org/repo` format.
+#* @param issue_id The id of the issue from which the command was invoked
+#* @param secret Secret token for authorization
+#* @get /send_search
+function (repourl = "", repo, issue_id, secret = NULL) {
+
+    if (!roreviewapi::is_user_authorized (secret)) {
+        return ("Only authorized users may call this endpoint")
+    }
+    if (!nzchar (repourl)) {
+        return ("Error: 'repourl' is required")
+    }
+
+    roreviewapi::send_search (
+        repourl  = repourl,
+        repo     = repo,
+        issue_id = issue_id
+    )
+}
+
+
+#* @name click
+#* @description Record a volunteer click and notify the editor-in-chief
+#* @param token The unique token from the recipient's personalised link
+#* @get /click/<token>
+function (token, res) {
+
+    result <- roreviewapi::handle_click (token)
+    res$status <- result$status
+    return (result$body)
+}
+
+
+#* @name list_searches
+#* @description List all volunteer searches with recipient and click counts
+#* @param secret Secret token for authorization
+#* @get /list_searches
+function (secret = NULL) {
+
+    if (!roreviewapi::is_user_authorized (secret)) {
+        return ("Only authorized users may call this endpoint")
+    }
+
+    roreviewapi::list_searches ()
+}
+
+
+#* @name deactivate_search
+#* @description Deactivate a volunteer search and delete all associated data
+#* @param repourl The URL of the package repository used when creating the search
+#* @param repo The 'context.repo' parameter defining the repository from which
+#* the command was invoked, passed in `org/repo` format.
+#* @param issue_id The id of the issue from which the command was invoked
+#* @param secret Secret token for authorization
+#* @get /deactivate_search
+function (repourl = "", repo, issue_id, secret = NULL) {
+
+    if (!roreviewapi::is_user_authorized (secret)) {
+        return ("Only authorized users may call this endpoint")
+    }
+
+    roreviewapi::deactivate_search (
+        repo     = repo,
+        issue_id = issue_id
+    )
+}
+
+
+# --------------------------------------------------
 # --------------   other endpoints   ---------------
 # --------------------------------------------------
 

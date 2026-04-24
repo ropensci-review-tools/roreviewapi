@@ -1,6 +1,6 @@
 Package: roreviewapi
 Title: Plumber API to report package structure and function
-Version: 0.2.0.007
+Version: 0.2.0.029
 Authors@R: 
     person("Mark", "Padgham", , "mark.padgham@email.com", role = c("aut", "cre"),
            comment = c(ORCID = "0000-0003-2172-5265"))
@@ -12,29 +12,34 @@ BugReports: https://github.com/ropensci-review-tools/roreviewapi/issues
 Depends: 
     R (>= 4.1.0)
 Imports:
+    airtabler,
     BiocManager,
     callr,
     commonmark,
+    DBI,
     fs,
     gert,
+    gh,
     ghql,
     gitcreds,
     here,
     httr2,
     jsonlite,
+    later,
     logger,
     magrittr,
     methods,
+    openssl,
     pkgcheck,
     plumber,
     rappdirs,
     remotes,
+    RSQLite,
     srr,
     tictoc,
     xml2
-Suggests: 
+Suggests:
     bspm,
-    gh,
     knitr,
     pkgmatch,
     rmarkdown,
@@ -45,6 +50,7 @@ Suggests:
 VignetteBuilder: 
     knitr
 Remotes:
+    bergant/airtabler,
     ropensci-review-tools/pkgcheck,
     ropensci-review-tools/pkgmatch,
     ropensci-review-tools/srr

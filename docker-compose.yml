@@ -4,15 +4,20 @@ services:
     image: nginx
     volumes:
       - $PWD/nginx.conf:/tmp/nginx.conf
-    environment: 
+      - /etc/letsencrypt:/etc/letsencrypt:ro
+    environment:
       - PLUMBER_SERVER_ADDR=plumber:8000
-    command: /bin/bash -c "envsubst < /tmp/nginx.conf > /etc/nginx/conf.d/default.conf && nginx -g 'daemon off;'"
+      - NGINX_SERVER_NAME=reviewbot.ropensci.org
+    command: /bin/bash -c "envsubst '$${PLUMBER_SERVER_ADDR} $${NGINX_SERVER_NAME}' < /tmp/nginx.conf > /etc/nginx/conf.d/default.conf && nginx -g 'daemon off;'"
     ports:
       - 80:80
+      - 443:443
     depends_on:
       - plumber
   plumber:
     build: .
-    ports:
-      - "8000:8000"
     restart: always
+    volumes:
+      - /srv/roreviewapi/data:/data/email
+    environment:
+      - ROREVIEWAPI_EMAIL_DB=/data/email/searches.sqlite

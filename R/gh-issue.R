@@ -265,6 +265,22 @@ check_html_variable <- function (x, variable) {
     return (out)
 }
 
+#' Determine whether a GitHub issue is a Stats submission
+#'
+#' @param orgrepo GitHub organization and repo as single string separated by
+#' forward slash (`org/repo`).
+#' @param issue_num Number of issue from which to extract submission type.
+#' @return `TRUE` if the submission type is "Stats", otherwise `FALSE`.
+#' @family ropensci
+#' @export
+issue_is_stats <- function (orgrepo, issue_num) {
+
+    body <- get_issue_body (orgrepo, issue_num)
+    type <- get_html_variable (body, "submission-type")
+    length (type) > 0L && type == "Stats"
+}
+
+
 #' identify whether an issue already has a 'pkgmatch' suggestions.
 #'
 #' @param orgrepo GitHub 'org/repo', generally 'ropensci/software-review'.
