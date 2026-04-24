@@ -177,7 +177,7 @@ The compose file:
 Four endpoints support the volunteer editor search workflow.  All require the
 shared `secret` token.
 
-### `POST /send_search`
+### `GET /send_search`
 
 Fetches current editor email addresses from AirTable and GitHub, inserts a
 search record into the database, and dispatches personalised click-link emails
@@ -203,7 +203,7 @@ search.
 
 Parameters: `secret`.
 
-### `POST /deactivate_search`
+### `GET /deactivate_search`
 
 Marks the search inactive (preventing further click responses) and permanently
 deletes all recipient rows and the search record from the database.
