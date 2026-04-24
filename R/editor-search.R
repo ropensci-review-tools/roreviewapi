@@ -174,8 +174,9 @@ notify_email_refresh <- function (fetcher = eic_email_address) {
         }
     )
     if (!is.null (email) && nzchar (email)) {
-        dir.create (dirname (notify_email_cache_path ()), recursive = TRUE, showWarnings = FALSE)
-        writeLines (email, notify_email_cache_path ())
+        cache_path <- notify_email_cache_path ()
+        dir.create (dirname (cache_path), recursive = TRUE, showWarnings = FALSE)
+        writeLines (email, cache_path)
     }
     invisible (email)
 }
@@ -281,8 +282,18 @@ postmark_send_batch <- function (emails, links, subject, repo, issue_id) {
 #' @export
 send_search <- function (repourl, repo, issue_id,
                          subject = "Seeking editors for rOpenSci software submission",
-                         fetcher = get_editor_emails,
-                         stats_checker = issue_is_stats) {
+                         fetcher = NULL,
+                         stats_checker = roreviewapi::issue_is_stats) {
+
+    get_editor_emails <- utils::getFromNamespace ("get_editor_emails", "roreviewapi")
+    is_valid_base_url <- utils::getFromNamespace ("is_valid_base_url", "roreviewapi")
+    is_valid_email <- utils::getFromNamespace ("is_valid_email", "roreviewapi")
+    notify_email_read <- utils::getFromNamespace ("notify_email_read", "roreviewapi")
+    email_db_init <- utils::getFromNamespace ("email_db_init", "roreviewapi")
+    email_db_path <- utils::getFromNamespace ("email_db_path", "roreviewapi")
+    generate_email_token <- utils::getFromNamespace ("generate_email_token", "roreviewapi")
+    postmark_send_batch <- utils::getFromNamespace ("postmark_send_batch", "roreviewapi")
+    if (is.null (fetcher)) fetcher <- get_editor_emails
 
     if (length (repourl) != 1L || !nzchar (repourl)) {
         stop ("'repourl' must be a single non-empty string")
@@ -449,6 +460,8 @@ handle_click <- function (token) {
 #' @return Named list with \code{deactivated} (logical) and \code{issue_ref}.
 #' @export
 deactivate_search <- function (repo, issue_id) {
+
+    email_db_init <- utils::getFromNamespace ("email_db_init", "roreviewapi")
 
     issue_ref <- paste0 (repo, "/issues/", as.integer (issue_id) [[1L]])
 
