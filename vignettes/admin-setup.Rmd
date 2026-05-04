@@ -101,7 +101,7 @@ first if necessary):
 
 ```bash
 sudo apt install certbot
-sudo certbot certonly --standalone -d review.example.org
+sudo certbot certonly --standalone -d reviewbot.ropensci.org
 ```
 
 The certificate and key are written to
