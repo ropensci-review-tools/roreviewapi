@@ -9,8 +9,8 @@ send_search(
   repo,
   issue_id,
   subject = "Seeking editors for rOpenSci software submission",
-  fetcher = get_editor_emails,
-  stats_checker = issue_is_stats
+  fetcher = NULL,
+  stats_checker = roreviewapi::issue_is_stats
 )
 }
 \arguments{
