@@ -4,6 +4,12 @@ reference:
 - title: Main functions
   contents:
   - has_concept("main")
+- title: pkgmatch functions
+  contents:
+  - has_concept("pkgmatch")
+- title: Editor email functions
+  contents:
+  - has_concept("email")
 - title: GitHub-related functions
   contents:
   - has_concept("github")

@@ -29,9 +29,8 @@ URL of the issue comment to which response body has been posted.
 Body of main 'pkgmatch' response
 }
 \seealso{
-Other main: 
-\code{\link{collate_editor_check}()},
-\code{\link{editor_check}()},
-\code{\link{serve_api}()}
+Other pkgmatch: 
+\code{\link{cran_to_list}()},
+\code{\link{ros_to_list}()}
 }
-\concept{main}
+\concept{pkgmatch}

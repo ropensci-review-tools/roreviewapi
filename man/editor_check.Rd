@@ -30,7 +30,6 @@ Body of main 'editorcheck' response
 \seealso{
 Other main: 
 \code{\link{collate_editor_check}()},
-\code{\link{pkgmatch_repo}()},
 \code{\link{serve_api}()}
 }
 \concept{main}

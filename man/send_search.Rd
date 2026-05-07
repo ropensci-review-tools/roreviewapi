@@ -41,3 +41,10 @@ environment variable.  The stats/standard distinction is determined by
 calling \code{issue_is_stats()} on the supplied \code{repo} and
 \code{issue_id}.
 }
+\seealso{
+Other email: 
+\code{\link{deactivate_search}()},
+\code{\link{handle_click}()},
+\code{\link{list_searches}()}
+}
+\concept{email}

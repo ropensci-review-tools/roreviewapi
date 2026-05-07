@@ -16,3 +16,9 @@ cran_to_list(matches, n = 5L)
 This function is exported because it needs to be called in the main plumber
 endpoint function.
 }
+\seealso{
+Other pkgmatch: 
+\code{\link{pkgmatch_repo}()},
+\code{\link{ros_to_list}()}
+}
+\concept{pkgmatch}

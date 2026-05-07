@@ -18,3 +18,10 @@ Named list with \code{deactivated} (logical) and \code{issue_ref}.
 Sets \code{active = 0} first as a guard against concurrent clicks, then
 deletes all recipient rows followed by the search row itself.
 }
+\seealso{
+Other email: 
+\code{\link{handle_click}()},
+\code{\link{list_searches}()},
+\code{\link{send_search}()}
+}
+\concept{email}

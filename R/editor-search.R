@@ -279,6 +279,7 @@ postmark_send_batch <- function (emails, links, subject, repo, issue_id) {
 #' @param stats_checker Function used to determine submission type; injectable
 #'   for testing.  Must accept \code{(repo, issue_id)} and return a logical.
 #' @return Named list with \code{search_id} (integer) and \code{sent} (integer).
+#' @family email
 #' @export
 send_search <- function (repourl, repo, issue_id,
                          subject = "Seeking editors for rOpenSci software submission",
@@ -381,6 +382,7 @@ send_search <- function (repourl, repo, issue_id,
 #'
 #' @return Data frame with columns \code{search_id}, \code{created_at},
 #'   \code{notify_email}, \code{active}, \code{total}, \code{clicked}.
+#' @family email
 #' @export
 list_searches <- function () {
 
@@ -412,6 +414,7 @@ list_searches <- function () {
 #' @param token 64-character hex token from the recipient's unique link.
 #' @return Named list with \code{status} (integer HTTP status code) and
 #'   \code{body} (character HTML string).
+#' @family email
 #' @export
 handle_click <- function (token) {
 
@@ -467,6 +470,7 @@ handle_click <- function (token) {
 #' @param repo GitHub review repository in \code{org/repo} format.
 #' @param issue_id Integer issue number in the review repository.
 #' @return Named list with \code{deactivated} (logical) and \code{issue_ref}.
+#' @family email
 #' @export
 deactivate_search <- function (repo, issue_id) {
 

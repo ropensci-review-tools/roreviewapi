@@ -29,7 +29,6 @@ functionality.
 \seealso{
 Other main: 
 \code{\link{collate_editor_check}()},
-\code{\link{editor_check}()},
-\code{\link{pkgmatch_repo}()}
+\code{\link{editor_check}()}
 }
 \concept{main}

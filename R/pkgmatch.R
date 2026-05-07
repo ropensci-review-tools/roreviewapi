@@ -11,7 +11,7 @@
 #' 'gh' cli); otherwise just return character string with result.
 #' @return If `!post_to_issue`, a markdown-formatted response body, otherwise
 #' URL of the issue comment to which response body has been posted.
-#' @family main
+#' @family pkgmatch
 #' @export
 pkgmatch_repo <- function (repourl, repo, issue_id, n_top = 5L, post_to_issue = TRUE) {
 
@@ -115,6 +115,7 @@ pkgmatch_repo <- function (repourl, repo, issue_id, n_top = 5L, post_to_issue = 
 #' @param matches A \pkg{pkgmatch} `data.frame` object with columns of
 #' ("package", "version", "rank").
 #' @param n Number of matches to return in list.
+#' @family pkgmatch
 #' @export
 cran_to_list <- function (matches, n = 5L) {
 
@@ -147,6 +148,7 @@ cran_to_list <- function (matches, n = 5L) {
 #' @param matches A \pkg{pkgmatch} `data.frame` object with columns of
 #' ("package", "version", "rank").
 #' @param n Number of matches to return in list.
+#' @family pkgmatch
 #' @export
 ros_to_list <- function (matches, n = 5L) {
 
