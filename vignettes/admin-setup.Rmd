@@ -25,6 +25,28 @@ This vignette describes the one-time infrastructure steps required to deploy
 `roreviewapi` on a Digital Ocean droplet, including the editor volunteer search
 feature introduced in v0.2.
 
+<div class="alert alert-info">
+The Software Peer Review Lead should set up a regular alert system to
+automatically check the deployment status. This bash script issues an
+alert if anything is wrong:
+
+``` bash
+#!/usr/bin/env bash
+
+URL="https://reviewbot.ropensci.org"
+status=$(curl -s -o /dev/null -w "%{http_code}" "$URL")
+
+if [[ "$status" != "404" ]]; then
+    echo -e "reviewbot is down"
+    exit 1
+fi
+```
+
+That should then be regularly called, for example by calling it within a
+`~/.bashrc` file, or via a local cron job.
+
+</div>
+
 ## Prerequisites
 
 - SSH access to the Digital Ocean droplet
