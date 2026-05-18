@@ -247,7 +247,9 @@ postmark_send_batch <- function (emails, links, subject, repo, issue_id) {
                 "<p>You have been invited to volunteer as an editor for an ",
                 "rOpenSci software submission: ",
                 "<a href=\"", issue_url, "\">", issue_url, "</a></p>",
-                "<p>Please click the link below to express your interest:</p>",
+                "<p>Please click the link below to express your interest. ",
+                "Clicking only expresses your potential interest; you won't ",
+                "be assigned until the Editor-in-Chief has confirmed with you.</p>",
                 "<p><a href=\"", links [[i]], "\">Click here to respond</a></p>"
             ),
             MessageStream = "outbound"
