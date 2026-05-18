@@ -10,10 +10,10 @@ symbol_tck()
 Tick symbol, exported for direct use in plumber API
 }
 \seealso{
-Other utils: 
-\code{\link{check_cache}()},
-\code{\link{pkgrep_install_deps}()},
-\code{\link{stdout_stderr_cache}()},
-\code{\link{symbol_crs}()}
+Other utils:
+\code{\link[=check_cache]{check_cache()}},
+\code{\link[=pkgrep_install_deps]{pkgrep_install_deps()}},
+\code{\link[=stdout_stderr_cache]{stdout_stderr_cache()}},
+\code{\link[=symbol_crs]{symbol_crs()}}
 }
 \concept{utils}

@@ -17,8 +17,8 @@ This function is exported because it needs to be called in the main plumber
 endpoint function.
 }
 \seealso{
-Other pkgmatch: 
-\code{\link{cran_to_list}()},
-\code{\link{pkgmatch_repo}()}
+Other pkgmatch:
+\code{\link[=cran_to_list]{cran_to_list()}},
+\code{\link[=pkgmatch_repo]{pkgmatch_repo()}}
 }
 \concept{pkgmatch}

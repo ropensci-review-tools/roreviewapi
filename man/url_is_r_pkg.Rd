@@ -16,10 +16,10 @@ url_is_r_pkg(repourl)
 Check whether a given GitHub URL contains an R package.
 }
 \seealso{
-Other github: 
-\code{\link{dl_gh_repo}()},
-\code{\link{get_branch_from_url}()},
-\code{\link{get_subdir_from_url}()},
-\code{\link{post_to_issue}()}
+Other github:
+\code{\link[=dl_gh_repo]{dl_gh_repo()}},
+\code{\link[=get_branch_from_url]{get_branch_from_url()}},
+\code{\link[=get_subdir_from_url]{get_subdir_from_url()}},
+\code{\link[=post_to_issue]{post_to_issue()}}
 }
 \concept{github}

@@ -18,10 +18,10 @@ Path to locally cached '.zip' version of repository
 Download a GitHub repo to local cache
 }
 \seealso{
-Other github: 
-\code{\link{get_branch_from_url}()},
-\code{\link{get_subdir_from_url}()},
-\code{\link{post_to_issue}()},
-\code{\link{url_is_r_pkg}()}
+Other github:
+\code{\link[=get_branch_from_url]{get_branch_from_url()}},
+\code{\link[=get_subdir_from_url]{get_subdir_from_url()}},
+\code{\link[=post_to_issue]{post_to_issue()}},
+\code{\link[=url_is_r_pkg]{url_is_r_pkg()}}
 }
 \concept{github}

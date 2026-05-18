@@ -27,8 +27,8 @@ the given URL and return a textual analysis of its structure and
 functionality.
 }
 \seealso{
-Other main: 
-\code{\link{collate_editor_check}()},
-\code{\link{editor_check}()}
+Other main:
+\code{\link[=collate_editor_check]{collate_editor_check()}},
+\code{\link[=editor_check]{editor_check()}}
 }
 \concept{main}

@@ -25,10 +25,10 @@ pipes from the process are stored in the cache directory so they can be
 inspected via their own distinct endpoint calls.
 }
 \seealso{
-Other utils: 
-\code{\link{check_cache}()},
-\code{\link{pkgrep_install_deps}()},
-\code{\link{symbol_crs}()},
-\code{\link{symbol_tck}()}
+Other utils:
+\code{\link[=check_cache]{check_cache()}},
+\code{\link[=pkgrep_install_deps]{pkgrep_install_deps()}},
+\code{\link[=symbol_crs]{symbol_crs()}},
+\code{\link[=symbol_tck]{symbol_tck()}}
 }
 \concept{utils}

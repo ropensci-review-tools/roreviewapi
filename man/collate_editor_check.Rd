@@ -20,8 +20,8 @@ Exported only for access by plumber; not intended for general external
 usage.
 }
 \seealso{
-Other main: 
-\code{\link{editor_check}()},
-\code{\link{serve_api}()}
+Other main:
+\code{\link[=editor_check]{editor_check()}},
+\code{\link[=serve_api]{serve_api()}}
 }
 \concept{main}

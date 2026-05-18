@@ -18,14 +18,14 @@ Push static \code{html} files to \code{gh-pages} branch of this repo to serve vi
 GitHub pages.
 }
 \seealso{
-Other ropensci: 
-\code{\link{check_issue_template}()},
-\code{\link{is_user_authorized}()},
-\code{\link{issue_is_stats}()},
-\code{\link{readme_has_peer_review_badge}()},
-\code{\link{srr_counts}()},
-\code{\link{srr_counts_from_report}()},
-\code{\link{srr_counts_summary}()},
-\code{\link{stats_badge}()}
+Other ropensci:
+\code{\link[=check_issue_template]{check_issue_template()}},
+\code{\link[=is_user_authorized]{is_user_authorized()}},
+\code{\link[=issue_is_stats]{issue_is_stats()}},
+\code{\link[=readme_has_peer_review_badge]{readme_has_peer_review_badge()}},
+\code{\link[=srr_counts]{srr_counts()}},
+\code{\link[=srr_counts_from_report]{srr_counts_from_report()}},
+\code{\link[=srr_counts_summary]{srr_counts_summary()}},
+\code{\link[=stats_badge]{stats_badge()}}
 }
 \concept{ropensci}

@@ -19,9 +19,9 @@ against double-clicks, records the click timestamp, and triggers a Postmark
 notification (Phase 2).
 }
 \seealso{
-Other email: 
-\code{\link{deactivate_search}()},
-\code{\link{list_searches}()},
-\code{\link{send_search}()}
+Other email:
+\code{\link[=deactivate_search]{deactivate_search()}},
+\code{\link[=list_searches]{list_searches()}},
+\code{\link[=send_search]{send_search()}}
 }
 \concept{email}

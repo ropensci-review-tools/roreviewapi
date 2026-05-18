@@ -28,8 +28,8 @@ been posted.
 Body of main 'editorcheck' response
 }
 \seealso{
-Other main: 
-\code{\link{collate_editor_check}()},
-\code{\link{serve_api}()}
+Other main:
+\code{\link[=collate_editor_check]{collate_editor_check()}},
+\code{\link[=serve_api]{serve_api()}}
 }
 \concept{main}
