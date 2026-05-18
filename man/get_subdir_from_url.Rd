@@ -15,10 +15,10 @@ Return sub-directory from URL if present. This function is also intended to
 test whether packages are in sub-directories (issue #64)
 }
 \seealso{
-Other github: 
-\code{\link{dl_gh_repo}()},
-\code{\link{get_branch_from_url}()},
-\code{\link{post_to_issue}()},
-\code{\link{url_is_r_pkg}()}
+Other github:
+\code{\link[=dl_gh_repo]{dl_gh_repo()}},
+\code{\link[=get_branch_from_url]{get_branch_from_url()}},
+\code{\link[=post_to_issue]{post_to_issue()}},
+\code{\link[=url_is_r_pkg]{url_is_r_pkg()}}
 }
 \concept{github}

@@ -19,14 +19,14 @@ badge
 Get stats badge grade and standards version for a submission
 }
 \seealso{
-Other ropensci: 
-\code{\link{check_issue_template}()},
-\code{\link{is_user_authorized}()},
-\code{\link{issue_is_stats}()},
-\code{\link{push_to_gh_pages}()},
-\code{\link{readme_has_peer_review_badge}()},
-\code{\link{srr_counts}()},
-\code{\link{srr_counts_from_report}()},
-\code{\link{srr_counts_summary}()}
+Other ropensci:
+\code{\link[=check_issue_template]{check_issue_template()}},
+\code{\link[=is_user_authorized]{is_user_authorized()}},
+\code{\link[=issue_is_stats]{issue_is_stats()}},
+\code{\link[=push_to_gh_pages]{push_to_gh_pages()}},
+\code{\link[=readme_has_peer_review_badge]{readme_has_peer_review_badge()}},
+\code{\link[=srr_counts]{srr_counts()}},
+\code{\link[=srr_counts_from_report]{srr_counts_from_report()}},
+\code{\link[=srr_counts_summary]{srr_counts_summary()}}
 }
 \concept{ropensci}

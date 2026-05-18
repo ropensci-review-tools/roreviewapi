@@ -29,8 +29,8 @@ URL of the issue comment to which response body has been posted.
 Body of main 'pkgmatch' response
 }
 \seealso{
-Other pkgmatch: 
-\code{\link{cran_to_list}()},
-\code{\link{ros_to_list}()}
+Other pkgmatch:
+\code{\link[=cran_to_list]{cran_to_list()}},
+\code{\link[=ros_to_list]{ros_to_list()}}
 }
 \concept{pkgmatch}

@@ -23,10 +23,10 @@ detailing any R packages unable to be installed.
 Install all system and package dependencies of an R package
 }
 \seealso{
-Other utils: 
-\code{\link{check_cache}()},
-\code{\link{stdout_stderr_cache}()},
-\code{\link{symbol_crs}()},
-\code{\link{symbol_tck}()}
+Other utils:
+\code{\link[=check_cache]{check_cache()}},
+\code{\link[=stdout_stderr_cache]{stdout_stderr_cache()}},
+\code{\link[=symbol_crs]{symbol_crs()}},
+\code{\link[=symbol_tck]{symbol_tck()}}
 }
 \concept{utils}

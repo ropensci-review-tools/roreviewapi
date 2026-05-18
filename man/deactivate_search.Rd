@@ -19,9 +19,9 @@ Sets \code{active = 0} first as a guard against concurrent clicks, then
 deletes all recipient rows followed by the search row itself.
 }
 \seealso{
-Other email: 
-\code{\link{handle_click}()},
-\code{\link{list_searches}()},
-\code{\link{send_search}()}
+Other email:
+\code{\link[=handle_click]{handle_click()}},
+\code{\link[=list_searches]{list_searches()}},
+\code{\link[=send_search]{send_search()}}
 }
 \concept{email}

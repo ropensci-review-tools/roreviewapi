@@ -14,9 +14,9 @@ Data frame with columns \code{search_id}, \code{created_at},
 List all volunteer searches with recipient and click counts
 }
 \seealso{
-Other email: 
-\code{\link{deactivate_search}()},
-\code{\link{handle_click}()},
-\code{\link{send_search}()}
+Other email:
+\code{\link[=deactivate_search]{deactivate_search()}},
+\code{\link[=handle_click]{handle_click()}},
+\code{\link[=send_search]{send_search()}}
 }
 \concept{email}

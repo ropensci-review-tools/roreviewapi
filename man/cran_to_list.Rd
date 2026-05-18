@@ -17,8 +17,8 @@ This function is exported because it needs to be called in the main plumber
 endpoint function.
 }
 \seealso{
-Other pkgmatch: 
-\code{\link{pkgmatch_repo}()},
-\code{\link{ros_to_list}()}
+Other pkgmatch:
+\code{\link[=pkgmatch_repo]{pkgmatch_repo()}},
+\code{\link[=ros_to_list]{ros_to_list()}}
 }
 \concept{pkgmatch}

@@ -14,7 +14,8 @@ send_search(
 )
 }
 \arguments{
-\item{repourl}{URL of the package repository; included in the outgoing emails.}
+\item{repourl}{URL of the package repository; included in the outgoing
+emails.}
 
 \item{repo}{GitHub review repository in \code{org/repo} format.}
 
@@ -32,19 +33,19 @@ for testing.  Must accept \code{(repo, issue_id)} and return a logical.}
 Named list with \code{search_id} (integer) and \code{sent} (integer).
 }
 \description{
-Fetches current editor email addresses via \code{get_editor_emails()}, inserts
-a new search record and one recipient row per address into the database, then
-dispatches emails via Postmark.  The notify address is read from the
-AirTable cache written by the internal 'notify_email_refresh' function.  The
-base URL for click links is read from the \code{ROREVIEWAPI_BASE_URL}
-environment variable.  The stats/standard distinction is determined by
-calling \code{issue_is_stats()} on the supplied \code{repo} and
-\code{issue_id}.
+Fetches current editor email addresses via \code{get_editor_emails()},
+inserts a new search record and one recipient row per address into the
+database, then dispatches emails via Postmark.  The notify address is read
+from the AirTable cache written by the internal 'notify_email_refresh'
+function.  The base URL for click links is read from the
+\code{ROREVIEWAPI_BASE_URL} environment variable.  The stats/standard
+distinction is determined by calling \code{issue_is_stats()} on the supplied
+\code{repo} and \code{issue_id}.
 }
 \seealso{
-Other email: 
-\code{\link{deactivate_search}()},
-\code{\link{handle_click}()},
-\code{\link{list_searches}()}
+Other email:
+\code{\link[=deactivate_search]{deactivate_search()}},
+\code{\link[=handle_click]{handle_click()}},
+\code{\link[=list_searches]{list_searches()}}
 }
 \concept{email}
