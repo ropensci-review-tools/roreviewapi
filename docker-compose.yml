@@ -2,6 +2,7 @@ version: "3.7"
 services:
   nginx:
     image: nginx
+    restart: on-failure
     volumes:
       - $PWD/nginx.conf:/tmp/nginx.conf
       - /etc/letsencrypt:/etc/letsencrypt:ro
