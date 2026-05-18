@@ -68,8 +68,10 @@ generate_email_token <- function () {
 #' Queries the AirTable reviewers-prod table and filters to members of the
 #' GitHub \code{ropensci/editors} (or \code{ropensci/stats-editors}) team.
 #'
-#' @param airtable_base_id AirTable base ID (from \code{AIRTABLE_BASE_ID} env var).
-#' @param stats If \code{TRUE}, fetch stats editors; otherwise fetch regular editors.
+#' @param airtable_base_id AirTable base ID (from \code{AIRTABLE_BASE_ID} env
+#' var).
+#' @param stats If \code{TRUE}, fetch stats editors; otherwise fetch regular
+#' editors.
 #' @return Character vector of email addresses.
 #' @noRd
 get_editor_emails <- function (airtable_base_id, stats = FALSE) {
@@ -114,7 +116,8 @@ is_valid_base_url <- function (x) {
 
 #' Fetch the current editor-in-chief email address from AirTable
 #'
-#' @param airtable_base_id AirTable base ID (from \code{AIRTABLE_BASE_ID} env var).
+#' @param airtable_base_id AirTable base ID (from \code{AIRTABLE_BASE_ID} env
+#' var).
 #' @return Single email address as a character string.
 #' @noRd
 eic_email_address <- function (airtable_base_id) {
@@ -175,7 +178,11 @@ notify_email_refresh <- function (fetcher = eic_email_address) {
     )
     if (!is.null (email) && nzchar (email)) {
         cache_path <- notify_email_cache_path ()
-        dir.create (dirname (cache_path), recursive = TRUE, showWarnings = FALSE)
+        dir.create (
+            dirname (cache_path),
+            recursive = TRUE,
+            showWarnings = FALSE
+        )
         writeLines (email, cache_path)
     }
     invisible (email)
@@ -218,7 +225,8 @@ postmark_send <- function (to, subject, html_body) {
 #' messages per call.
 #'
 #' @param emails Character vector of recipient addresses.
-#' @param links Character vector of personalised click links, parallel to \code{emails}.
+#' @param links Character vector of personalised click links, parallel to
+#' \code{emails}.
 #' @param subject Email subject line.
 #' @param repo GitHub review repository in \code{org/repo} format.
 #' @param issue_id Integer issue number in the review repository.
@@ -261,16 +269,17 @@ postmark_send_batch <- function (emails, links, subject, repo, issue_id) {
 
 #' Send a batch of editor search emails
 #'
-#' Fetches current editor email addresses via \code{get_editor_emails()}, inserts
-#' a new search record and one recipient row per address into the database, then
-#' dispatches emails via Postmark.  The notify address is read from the
-#' AirTable cache written by the internal 'notify_email_refresh' function.  The
-#' base URL for click links is read from the \code{ROREVIEWAPI_BASE_URL}
-#' environment variable.  The stats/standard distinction is determined by
-#' calling \code{issue_is_stats()} on the supplied \code{repo} and
-#' \code{issue_id}.
+#' Fetches current editor email addresses via \code{get_editor_emails()},
+#' inserts a new search record and one recipient row per address into the
+#' database, then dispatches emails via Postmark.  The notify address is read
+#' from the AirTable cache written by the internal 'notify_email_refresh'
+#' function.  The base URL for click links is read from the
+#' \code{ROREVIEWAPI_BASE_URL} environment variable.  The stats/standard
+#' distinction is determined by calling \code{issue_is_stats()} on the supplied
+#' \code{repo} and \code{issue_id}.
 #'
-#' @param repourl URL of the package repository; included in the outgoing emails.
+#' @param repourl URL of the package repository; included in the outgoing
+#' emails.
 #' @param repo GitHub review repository in \code{org/repo} format.
 #' @param issue_id Integer issue number in the review repository.
 #' @param subject Subject line for the outgoing emails.
@@ -286,14 +295,20 @@ send_search <- function (repourl, repo, issue_id,
                          fetcher = NULL,
                          stats_checker = roreviewapi::issue_is_stats) {
 
-    get_editor_emails <- utils::getFromNamespace ("get_editor_emails", "roreviewapi")
-    is_valid_base_url <- utils::getFromNamespace ("is_valid_base_url", "roreviewapi")
+    get_editor_emails <-
+        utils::getFromNamespace ("get_editor_emails", "roreviewapi")
+    is_valid_base_url <-
+        utils::getFromNamespace ("is_valid_base_url", "roreviewapi")
     is_valid_email <- utils::getFromNamespace ("is_valid_email", "roreviewapi")
-    notify_email_read <- utils::getFromNamespace ("notify_email_read", "roreviewapi")
+    notify_email_read <-
+        utils::getFromNamespace ("notify_email_read", "roreviewapi")
     email_db_init <- utils::getFromNamespace ("email_db_init", "roreviewapi")
     email_db_path <- utils::getFromNamespace ("email_db_path", "roreviewapi")
-    generate_email_token <- utils::getFromNamespace ("generate_email_token", "roreviewapi")
-    postmark_send_batch <- utils::getFromNamespace ("postmark_send_batch", "roreviewapi")
+    generate_email_token <-
+        utils::getFromNamespace ("generate_email_token", "roreviewapi")
+    postmark_send_batch <-
+        utils::getFromNamespace ("postmark_send_batch", "roreviewapi")
+
     if (is.null (fetcher)) fetcher <- get_editor_emails
 
     if (length (repourl) != 1L || !nzchar (repourl)) {
@@ -306,11 +321,19 @@ send_search <- function (repourl, repo, issue_id,
 
     base_url <- Sys.getenv ("ROREVIEWAPI_BASE_URL")
     if (!is_valid_base_url (base_url)) {
-        stop ("ROREVIEWAPI_BASE_URL must be set and start with https:// or http://localhost")
+        stop (
+            "ROREVIEWAPI_BASE_URL must be set and start",
+            " with https:// or http://localhost"
+        )
     }
 
     issue_ref <- paste0 (repo, "/issues/", issue_id)
-    message ("[send_search] starting: issue_ref=", issue_ref, " base_url=", base_url)
+    message (
+        "[send_search] starting: issue_ref=",
+        issue_ref,
+        " base_url=",
+        base_url
+    )
 
     # TEMPORARY: bypass all external API calls for live deployment testing.
     # Remove this block once Phase 6 integration testing is complete.
@@ -319,8 +342,10 @@ send_search <- function (repourl, repo, issue_id,
         emails <- c ("mark.padgham@email.com")
         notify_address <- Sys.getenv ("POSTMARK_FROM")
         message (
-            "[send_search] using test override: emails=", paste (emails, collapse = ","),
-            " notify=", notify_address
+            "[send_search] using test override: emails=",
+            paste (emails, collapse = ","),
+            " notify=",
+            notify_address
         )
     } else {
         stats <- stats_checker (repo, issue_id)
@@ -341,10 +366,16 @@ send_search <- function (repourl, repo, issue_id,
     created_at <- strftime (Sys.time (), "%Y-%m-%dT%H:%M:%SZ", tz = "UTC")
     DBI::dbExecute (
         con,
-        "INSERT INTO searches (created_at, issue_ref, notify_email) VALUES (?, ?, ?)",
+        paste0 (
+            "INSERT INTO searches (created_at, issue_ref, notify_email) ",
+            "VALUES (?, ?, ?)"
+        ),
         params = list (created_at, issue_ref, notify_address)
     )
-    search_id <- DBI::dbGetQuery (con, "SELECT last_insert_rowid() AS id") [["id"]]
+    search_id <- DBI::dbGetQuery (
+        con,
+        "SELECT last_insert_rowid() AS id"
+    ) [["id"]]
     message ("[send_search] search row inserted: search_id=", search_id)
 
     tokens <- vapply (
@@ -369,7 +400,10 @@ send_search <- function (repourl, repo, issue_id,
     )
     message ("[send_search] calling postmark_send_batch")
     resp <- postmark_send_batch (emails, links, subject, repo, issue_id)
-    message ("[send_search] postmark response status: ", httr2::resp_status (resp))
+    message (
+        "[send_search] postmark response status: ",
+        httr2::resp_status (resp)
+    )
     message (
         "[send_search] postmark response body: ",
         httr2::resp_body_string (resp)
@@ -459,7 +493,10 @@ handle_click <- function (token) {
         )
     )
 
-    list (status = 200L, body = "Thank you for your interest. We will be in touch.")
+    list (
+        status = 200L,
+        body = "Thank you for your interest. We will be in touch."
+    )
 }
 
 #' Deactivate a volunteer search and delete all associated data
