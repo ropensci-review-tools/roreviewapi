@@ -2,7 +2,6 @@ version: "3.7"
 services:
   nginx:
     image: nginx
-    restart: on-failure
     volumes:
       - $PWD/nginx.conf:/tmp/nginx.conf
       - /etc/letsencrypt:/etc/letsencrypt:ro
@@ -14,7 +13,8 @@ services:
       - 80:80
       - 443:443
     depends_on:
-      - plumber
+      plumber:
+        condition: service_healthy
   plumber:
     build: .
     restart: always
@@ -22,3 +22,9 @@ services:
       - /srv/roreviewapi/data:/data/email
     environment:
       - ROREVIEWAPI_EMAIL_DB=/data/email/searches.sqlite
+    healthcheck:
+      test: ["CMD-SHELL", "curl -sf http://localhost:8000/ > /dev/null 2>&1 || exit 1"]
+      interval: 15s
+      timeout: 10s
+      retries: 10
+      start_period: 120s
