@@ -4,6 +4,8 @@ PROJDIR=/<path>/<to>/<this>/<project>
 DOCKERFILE=$PROJDIR/Dockerfile
 COMPOSE_FILE=$PROJDIR/docker-compose.yml
 
+cd $PROJDIR
+
 docker-compose -f $COMPOSE_FILE down
 docker system prune --all --volumes --force
 docker-compose -f $COMPOSE_FILE build --force-rm --no-cache
