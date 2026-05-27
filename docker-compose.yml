@@ -23,7 +23,7 @@ services:
     environment:
       - ROREVIEWAPI_EMAIL_DB=/data/email/searches.sqlite
     healthcheck:
-      test: ["CMD-SHELL", "curl -sf http://localhost:8000/ > /dev/null 2>&1 || exit 1"]
+      test: ["CMD-SHELL", "bash -c 'echo > /dev/tcp/localhost/8000' 2>/dev/null || exit 1"]
       interval: 15s
       timeout: 10s
       retries: 10
