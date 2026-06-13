@@ -106,7 +106,7 @@ get_editor_emails <- function (airtable_base_id, stats = FALSE) {
 
 #' @noRd
 is_valid_email <- function (x) {
-    grepl ("^[^@\\s]+@[^@\\s]+\\.[^@\\s]+$", trimws (x))
+    grepl ("^[^@[:space:]]+@[^@[:space:]]+\\.[^@[:space:]]+$", trimws (x))
 }
 
 #' @noRd
@@ -304,6 +304,8 @@ send_search <- function (repourl, repo, issue_id,
     is_valid_email <- utils::getFromNamespace ("is_valid_email", "roreviewapi")
     notify_email_read <-
         utils::getFromNamespace ("notify_email_read", "roreviewapi")
+    get_editor_emails <-
+        utils::getFromNamespace ("get_editor_emails", "roreviewapi")
     email_db_init <- utils::getFromNamespace ("email_db_init", "roreviewapi")
     email_db_path <- utils::getFromNamespace ("email_db_path", "roreviewapi")
     generate_email_token <-
@@ -354,7 +356,8 @@ send_search <- function (repourl, repo, issue_id,
         message ("[send_search] stats=", stats, "; fetching editor emails")
         emails <- fetcher (Sys.getenv ("AIRTABLE_BASE_ID"), stats = stats)
         message ("[send_search] fetched ", length (emails), " email(s)")
-        if (!length (emails) || !all (is_valid_email (emails))) {
+        emails <- emails [which (is_valid_email (emails))]
+        if (length (emails) == 0L) {
             stop ("fetcher returned no valid email addresses")
         }
         notify_address <- notify_email_read ()
