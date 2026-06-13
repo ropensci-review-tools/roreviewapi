@@ -337,31 +337,18 @@ send_search <- function (repourl, repo, issue_id,
         " base_url=", base_url
     )
 
-    # TEMPORARY: bypass all external API calls for live deployment testing.
-    # Remove this block once Phase 6 integration testing is complete.
-    if (repo == "ropenscilabs/statistical-software-review") {
-        # emails <- c (Sys.getenv ("POSTMARK_FROM"))
-        emails <- c ("mark.padgham@email.com")
-        notify_address <- Sys.getenv ("POSTMARK_FROM")
-        message (
-            "[send_search] using test override: emails=",
-            paste (emails, collapse = ","),
-            " notify=", notify_address
-        )
-    } else {
-        stats <- stats_checker (repo, issue_id)
-        message ("[send_search] stats=", stats, "; fetching editor emails")
+    stats <- stats_checker (repo, issue_id)
+    message ("[send_search] stats=", stats, "; fetching editor emails")
 
-        emails <- fetcher (Sys.getenv ("AIRTABLE_BASE_ID"), stats = stats)
-        message ("[send_search] fetched ", length (emails), " email(s)")
+    emails <- fetcher (Sys.getenv ("AIRTABLE_BASE_ID"), stats = stats)
+    message ("[send_search] fetched ", length (emails), " email(s)")
 
-        emails <- emails [which (is_valid_email (emails))]
-        if (length (emails) == 0L) {
-            stop ("fetcher returned no valid email addresses")
-        }
-        notify_address <- notify_email_read ()
-        message ("[send_search] notify_address=", notify_address)
+    emails <- emails [which (is_valid_email (emails))]
+    if (length (emails) == 0L) {
+        stop ("fetcher returned no valid email addresses")
     }
+    notify_address <- notify_email_read ()
+    message ("[send_search] notify_address=", notify_address)
 
     con <- email_db_init ()
     on.exit (DBI::dbDisconnect (con))
