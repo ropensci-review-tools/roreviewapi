@@ -365,6 +365,19 @@ send_search <- function (repourl, repo, issue_id,
     on.exit (DBI::dbDisconnect (con))
     cat ("[send_search] DB initialised at ", email_db_path (), "\n", sep = "")
 
+    existing <- DBI::dbGetQuery (
+        con,
+        "SELECT id FROM searches WHERE issue_ref = ?",
+        params = list (issue_ref)
+    )
+    if (nrow (existing) > 0L) {
+        stop (
+            "A search for '", issue_ref, "' already exists ",
+            "(search_id=", existing [["id"]], "). ",
+            "Call deactivate_search() first."
+        )
+    }
+
     created_at <- strftime (Sys.time (), "%Y-%m-%dT%H:%M:%SZ", tz = "UTC")
     DBI::dbExecute (
         con,
