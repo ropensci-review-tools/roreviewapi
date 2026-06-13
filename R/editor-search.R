@@ -313,11 +313,6 @@ send_search <- function (repourl, repo, issue_id,
     postmark_send_batch <-
         utils::getFromNamespace ("postmark_send_batch", "roreviewapi")
 
-    log_cat <- function (...) {
-        cat (...)
-        flush (stdout ())
-    }
-
     if (is.null (fetcher)) fetcher <- get_editor_emails
 
     if (length (repourl) != 1L || !nzchar (repourl)) {
@@ -337,9 +332,9 @@ send_search <- function (repourl, repo, issue_id,
     }
 
     issue_ref <- paste0 (repo, "/issues/", issue_id)
-    log_cat ("[send_search] starting: issue_ref=", issue_ref,
-        " base_url=", base_url, "\n",
-        sep = ""
+    message (
+        "[send_search] starting: issue_ref=", issue_ref,
+        " base_url=", base_url
     )
 
     # TEMPORARY: bypass all external API calls for live deployment testing.
@@ -348,27 +343,29 @@ send_search <- function (repourl, repo, issue_id,
         # emails <- c (Sys.getenv ("POSTMARK_FROM"))
         emails <- c ("mark.padgham@email.com")
         notify_address <- Sys.getenv ("POSTMARK_FROM")
-        log_cat ("[send_search] using test override: emails=",
+        message (
+            "[send_search] using test override: emails=",
             paste (emails, collapse = ","),
-            " notify=", notify_address, "\n",
-            sep = ""
+            " notify=", notify_address
         )
     } else {
         stats <- stats_checker (repo, issue_id)
-        log_cat ("[send_search] stats=", stats, "; fetching editor emails\n", sep = "")
+        message ("[send_search] stats=", stats, "; fetching editor emails")
+
         emails <- fetcher (Sys.getenv ("AIRTABLE_BASE_ID"), stats = stats)
-        log_cat ("[send_search] fetched ", length (emails), " email(s)\n", sep = "")
+        message ("[send_search] fetched ", length (emails), " email(s)")
+
         emails <- emails [which (is_valid_email (emails))]
         if (length (emails) == 0L) {
             stop ("fetcher returned no valid email addresses")
         }
         notify_address <- notify_email_read ()
-        log_cat ("[send_search] notify_address=", notify_address, "\n", sep = "")
+        message ("[send_search] notify_address=", notify_address)
     }
 
     con <- email_db_init ()
     on.exit (DBI::dbDisconnect (con))
-    log_cat ("[send_search] DB initialised at ", email_db_path (), "\n", sep = "")
+    message ("[send_search] DB initialised at ", email_db_path ())
 
     existing <- DBI::dbGetQuery (
         con,
@@ -396,7 +393,7 @@ send_search <- function (repourl, repo, issue_id,
         con,
         "SELECT last_insert_rowid() AS id"
     ) [["id"]]
-    log_cat ("[send_search] search row inserted: search_id=", search_id, "\n", sep = "")
+    message ("[send_search] search row inserted: search_id=", search_id)
 
     tokens <- vapply (
         seq_along (emails),
@@ -411,22 +408,24 @@ send_search <- function (repourl, repo, issue_id,
             params = list (search_id, emails [[i]], tokens [[i]])
         )
     }
-    log_cat ("[send_search] inserted ", length (emails), " recipient row(s)\n", sep = "")
+    message ("[send_search] inserted ", length (emails), " recipient row(s)")
 
     links <- paste0 (base_url, "/click/", tokens)
-    log_cat ("[send_search] POSTMARK_FROM=", Sys.getenv ("POSTMARK_FROM"),
-        " token_nchar=", nchar (Sys.getenv ("POSTMARK_API_TOKEN")), "\n",
-        sep = ""
+    message (
+        "[send_search] POSTMARK_FROM=",
+        Sys.getenv ("POSTMARK_FROM"),
+        " token_nchar=",
+        nchar (Sys.getenv ("POSTMARK_API_TOKEN"))
     )
-    log_cat ("[send_search] calling postmark_send_batch\n")
+    message ("[send_search] calling postmark_send_batch")
     resp <- postmark_send_batch (emails, links, subject, repo, issue_id)
-    log_cat ("[send_search] postmark response status: ",
-        httr2::resp_status (resp), "\n",
-        sep = ""
+    message (
+        "[send_search] postmark response status: ",
+        httr2::resp_status (resp)
     )
-    log_cat ("[send_search] postmark response body: ",
-        httr2::resp_body_string (resp), "\n",
-        sep = ""
+    message (
+        "[send_search] postmark response body: ",
+        httr2::resp_body_string (resp)
     )
 
     list (search_id = search_id, sent = length (emails))
