@@ -332,11 +332,9 @@ send_search <- function (repourl, repo, issue_id,
     }
 
     issue_ref <- paste0 (repo, "/issues/", issue_id)
-    message (
-        "[send_search] starting: issue_ref=",
-        issue_ref,
-        " base_url=",
-        base_url
+    cat ("[send_search] starting: issue_ref=", issue_ref,
+        " base_url=", base_url, "\n",
+        sep = ""
     )
 
     # TEMPORARY: bypass all external API calls for live deployment testing.
@@ -345,28 +343,27 @@ send_search <- function (repourl, repo, issue_id,
         # emails <- c (Sys.getenv ("POSTMARK_FROM"))
         emails <- c ("mark.padgham@email.com")
         notify_address <- Sys.getenv ("POSTMARK_FROM")
-        message (
-            "[send_search] using test override: emails=",
+        cat ("[send_search] using test override: emails=",
             paste (emails, collapse = ","),
-            " notify=",
-            notify_address
+            " notify=", notify_address, "\n",
+            sep = ""
         )
     } else {
         stats <- stats_checker (repo, issue_id)
-        message ("[send_search] stats=", stats, "; fetching editor emails")
+        cat ("[send_search] stats=", stats, "; fetching editor emails\n", sep = "")
         emails <- fetcher (Sys.getenv ("AIRTABLE_BASE_ID"), stats = stats)
-        message ("[send_search] fetched ", length (emails), " email(s)")
+        cat ("[send_search] fetched ", length (emails), " email(s)\n", sep = "")
         emails <- emails [which (is_valid_email (emails))]
         if (length (emails) == 0L) {
             stop ("fetcher returned no valid email addresses")
         }
         notify_address <- notify_email_read ()
-        message ("[send_search] notify_address=", notify_address)
+        cat ("[send_search] notify_address=", notify_address, "\n", sep = "")
     }
 
     con <- email_db_init ()
     on.exit (DBI::dbDisconnect (con))
-    message ("[send_search] DB initialised at ", email_db_path ())
+    cat ("[send_search] DB initialised at ", email_db_path (), "\n", sep = "")
 
     created_at <- strftime (Sys.time (), "%Y-%m-%dT%H:%M:%SZ", tz = "UTC")
     DBI::dbExecute (
@@ -381,7 +378,7 @@ send_search <- function (repourl, repo, issue_id,
         con,
         "SELECT last_insert_rowid() AS id"
     ) [["id"]]
-    message ("[send_search] search row inserted: search_id=", search_id)
+    cat ("[send_search] search row inserted: search_id=", search_id, "\n", sep = "")
 
     tokens <- vapply (
         seq_along (emails),
@@ -396,22 +393,22 @@ send_search <- function (repourl, repo, issue_id,
             params = list (search_id, emails [[i]], tokens [[i]])
         )
     }
-    message ("[send_search] inserted ", length (emails), " recipient row(s)")
+    cat ("[send_search] inserted ", length (emails), " recipient row(s)\n", sep = "")
 
     links <- paste0 (base_url, "/click/", tokens)
-    message (
-        "[send_search] POSTMARK_FROM=", Sys.getenv ("POSTMARK_FROM"),
-        " token_nchar=", nchar (Sys.getenv ("POSTMARK_API_TOKEN"))
+    cat ("[send_search] POSTMARK_FROM=", Sys.getenv ("POSTMARK_FROM"),
+        " token_nchar=", nchar (Sys.getenv ("POSTMARK_API_TOKEN")), "\n",
+        sep = ""
     )
-    message ("[send_search] calling postmark_send_batch")
+    cat ("[send_search] calling postmark_send_batch\n")
     resp <- postmark_send_batch (emails, links, subject, repo, issue_id)
-    message (
-        "[send_search] postmark response status: ",
-        httr2::resp_status (resp)
+    cat ("[send_search] postmark response status: ",
+        httr2::resp_status (resp), "\n",
+        sep = ""
     )
-    message (
-        "[send_search] postmark response body: ",
-        httr2::resp_body_string (resp)
+    cat ("[send_search] postmark response body: ",
+        httr2::resp_body_string (resp), "\n",
+        sep = ""
     )
 
     list (search_id = search_id, sent = length (emails))
