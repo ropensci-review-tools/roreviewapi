@@ -495,7 +495,9 @@ handle_click <- function (token) {
         subject = "rOpenSci editor search: new response",
         html_body = paste0 (
             "<p><strong>", recipient [["email"]], "</strong>",
-            " responded at ", clicked_at, ".</p>"
+            " responded at ", clicked_at, " for issue ",
+            "<a href=\"https://github.com/", search [["issue_ref"]], "\">",
+            search [["issue_ref"]], "</a>.</p>"
         )
     )
 
