@@ -8,7 +8,7 @@
   "codeRepository": "https://github.com/ropensci-review-tools/roreviewapi",
   "issueTracker": "https://github.com/ropensci-review-tools/roreviewapi/issues",
   "license": "https://spdx.org/licenses/GPL-3.0",
-  "version": "0.2.1.11",
+  "version": "0.2.1.012",
   "programmingLanguage": {
     "@type": "ComputerLanguage",
     "name": "R",
@@ -406,7 +406,7 @@
         "name": "Comprehensive R Archive Network (CRAN)",
         "url": "https://cran.r-project.org"
       },
-      "sameAs": "https://github.com/ropensci-review-tools/srr"
+      "sameAs": "https://CRAN.R-project.org/package=srr"
     },
     "26": {
       "@type": "SoftwareApplication",
@@ -434,8 +434,11 @@
     },
     "SystemRequirements": "gh, dos2unix"
   },
-  "fileSize": "198.996KB",
+  "fileSize": "198.965KB",
   "readme": "https://github.com/ropensci-review-tools/roreviewapi/blob/main/README.md",
-  "contIntegration": ["https://github.com/ropensci-review-tools/roreviewapi/actions/workflows/R-CMD-check.yaml", "https://app.codecov.io/gh/ropensci-review-tools/roreviewapi"],
+  "contIntegration": [
+    "https://github.com/ropensci-review-tools/roreviewapi/actions/workflows/R-CMD-check.yaml",
+    "https://app.codecov.io/gh/ropensci-review-tools/roreviewapi"
+  ],
   "developmentStatus": "https://www.repostatus.org/#active"
 }
