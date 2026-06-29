@@ -129,7 +129,7 @@ function](https://github.com/ropensci-review-tools/roreviewapi/blob/main/R/edito
 4. Run `p <- roreviewapi::pkgrep_install_deps (path, os, os_release)`. The
    value, `p`, will list any packages which were unable to be installed.
    These will then need to be manually installed, generally through finding the
-   remote/dev URLs for the packages, and running `remotes::install_github()` or
+   remote/dev URLs for the packages, and running `pak::pkg_install()` or
    similar. Note that successful installation may only be possible in a
    particular order, and in the worst cases may be a process of trial and
    error.

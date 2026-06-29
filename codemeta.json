@@ -8,7 +8,7 @@
   "codeRepository": "https://github.com/ropensci-review-tools/roreviewapi",
   "issueTracker": "https://github.com/ropensci-review-tools/roreviewapi/issues",
   "license": "https://spdx.org/licenses/GPL-3.0",
-  "version": "0.2.1.011",
+  "version": "0.2.1.11",
   "programmingLanguage": {
     "@type": "ComputerLanguage",
     "name": "R",
@@ -62,6 +62,12 @@
       "@type": "SoftwareApplication",
       "identifier": "pkgmatch",
       "name": "pkgmatch",
+      "provider": {
+        "@id": "https://cran.r-project.org",
+        "@type": "Organization",
+        "name": "Comprehensive R Archive Network (CRAN)",
+        "url": "https://cran.r-project.org"
+      },
       "sameAs": "https://github.com/ropensci-review-tools/pkgmatch"
     },
     {
@@ -338,11 +344,23 @@
     },
     "20": {
       "@type": "SoftwareApplication",
+      "identifier": "pak",
+      "name": "pak",
+      "provider": {
+        "@id": "https://cran.r-project.org",
+        "@type": "Organization",
+        "name": "Comprehensive R Archive Network (CRAN)",
+        "url": "https://cran.r-project.org"
+      },
+      "sameAs": "https://CRAN.R-project.org/package=pak"
+    },
+    "21": {
+      "@type": "SoftwareApplication",
       "identifier": "pkgcheck",
       "name": "pkgcheck",
       "sameAs": "https://github.com/ropensci-review-tools/pkgcheck"
     },
-    "21": {
+    "22": {
       "@type": "SoftwareApplication",
       "identifier": "plumber",
       "name": "plumber",
@@ -354,7 +372,7 @@
       },
       "sameAs": "https://CRAN.R-project.org/package=plumber"
     },
-    "22": {
+    "23": {
       "@type": "SoftwareApplication",
       "identifier": "rappdirs",
       "name": "rappdirs",
@@ -365,18 +383,6 @@
         "url": "https://cran.r-project.org"
       },
       "sameAs": "https://CRAN.R-project.org/package=rappdirs"
-    },
-    "23": {
-      "@type": "SoftwareApplication",
-      "identifier": "remotes",
-      "name": "remotes",
-      "provider": {
-        "@id": "https://cran.r-project.org",
-        "@type": "Organization",
-        "name": "Comprehensive R Archive Network (CRAN)",
-        "url": "https://cran.r-project.org"
-      },
-      "sameAs": "https://CRAN.R-project.org/package=remotes"
     },
     "24": {
       "@type": "SoftwareApplication",
@@ -394,6 +400,12 @@
       "@type": "SoftwareApplication",
       "identifier": "srr",
       "name": "srr",
+      "provider": {
+        "@id": "https://cran.r-project.org",
+        "@type": "Organization",
+        "name": "Comprehensive R Archive Network (CRAN)",
+        "url": "https://cran.r-project.org"
+      },
       "sameAs": "https://github.com/ropensci-review-tools/srr"
     },
     "26": {
@@ -422,8 +434,8 @@
     },
     "SystemRequirements": "gh, dos2unix"
   },
-  "fileSize": "201.451KB",
+  "fileSize": "198.996KB",
   "readme": "https://github.com/ropensci-review-tools/roreviewapi/blob/main/README.md",
-  "contIntegration": "https://github.com/ropensci-review-tools/roreviewapi/actions?query=workflow%3AR-CMD-check",
+  "contIntegration": ["https://github.com/ropensci-review-tools/roreviewapi/actions/workflows/R-CMD-check.yaml", "https://app.codecov.io/gh/ropensci-review-tools/roreviewapi"],
   "developmentStatus": "https://www.repostatus.org/#active"
 }

@@ -21,37 +21,25 @@ pkgrep_install_deps <- function (path, repo, issue_id) {
 
     utils::update.packages (ask = FALSE)
 
-    remotes::install_deps (
-        pkgdir = path,
-        dependencies = TRUE,
-        repos = repos,
-        upgrade = "always"
+    out <- tryCatch (
+        pak::pkg_install (
+            pkgdir = path,
+            dependencies = TRUE
+        ),
+        error = function (e) e
     )
 
-    deps <- upgradeable_pkgs (path, repos)
-    if (nrow (deps) > 0L) {
-        deps <- install_dev_deps (path, deps, repos)
-    }
-
-    out <- NULL
-
-    if (methods::is (deps, "simpleError")) {
+    if (methods::is (out, "simpleError")) {
 
         out <- paste0 (
-            "Initial examimnation of package 'DESCRIPTION'",
+            "Initial installation of package 'DESCRIPTION'",
             " file failed with error\n:",
             out$message
         )
 
-    } else if (nrow (deps) > 0L) {
+    } else {
 
-        out <- paste0 (
-            "Note: The following R packages were unable to be ",
-            "installed/upgraded  on our system: [",
-            paste0 (deps$package, collapse = ", "),
-            "]; some checks may be unreliable."
-        )
-        out <- roreviewapi::post_to_issue (out, repo, issue_id)
+        out <- NULL
     }
 
     return (out)
@@ -110,72 +98,4 @@ sysreqs_rspm <- function (desc_file, os, os_release) {
     install_scripts <- unique (unlist (body$dependencies$install_scripts))
 
     return (install_scripts)
-}
-
-upgradeable_pkgs <- function (path, repos) {
-
-    deps <- remotes::dev_package_deps (
-        pkgdir = path,
-        dependencies = TRUE,
-        repos = repos
-    )
-    deps [which (deps$diff != 0L), ]
-}
-
-#' Install required development versions of any packages.
-#'
-#' This uses the two standard ways to install remotes dependencies provided by
-#' the \pkg{remotes} package:
-#' 1. Direct installation from listed remote package repository sources;
-#' 2. Installation through additional repository servers other than CRAN.
-#'
-#' @param deps List of 'dev' packages unable to be installed from CRAN
-#' @return A zero-row data.frame if everything works, otherwise an error. The
-#' zero-row data.frame is important because the output must be comparable with
-#' that of 'upgradeable_pkgs()', which returns an empty 'data.frame' directly
-#' from 'remotes::dev_package_deps()`, so must be an empty 'data.frame' here
-#' too.
-#' @noRd
-install_dev_deps <- function (path, deps, repos) {
-
-    ret <- data.frame (x = integer (0)) # dummy value; only checked with nrow
-
-    # Install from standard remote locations:
-    for (p in deps$package) {
-        tryCatch (
-            remotes::install_dev (p),
-            error = function (e) NULL
-        )
-    }
-
-    # Then refresh package upgrade list:
-    deps <- upgradeable_pkgs (path, repos)
-    if (nrow (deps) == 0L) {
-        return (ret)
-    }
-
-    # Installation from remote repository servers:
-    remote_repos <- lapply (deps$remote, function (i) i$repos)
-    remote_repos <- unique (unlist (remote_repos))
-    remote_repos <- remote_repos [which (!remote_repos %in% getOption ("repos"))]
-    repos <- c (remote_repos, getOption ("repos"))
-
-    # Install packages from any remote repository servers:
-    if (length (repos) > 1L) { # other repos added to standard "CRAN" option
-
-        # See #33
-        is_docker <- Sys.getenv ("ROREV_CONTAINER") == "true" &&
-            Sys.info () ["sysname"] == "Linux"
-
-        if (is_docker) {
-            requireNamespace ("bspm")
-            bspm::disable ()
-        }
-        utils::install.packages (deps$package, repos = repos)
-        if (is_docker) {
-            bspm::enable ()
-        }
-    }
-
-    return (upgradeable_pkgs (path, repos))
 }
