@@ -219,6 +219,70 @@ postmark_send <- function (to, subject, html_body) {
     invisible (resp)
 }
 
+#' Fetch package DESCRIPTION data from a submission issue body
+#'
+#' Parses the GitHub issue body for the fenced DESCRIPTION file block and
+#' extracts the package name, authors, and description text.
+#'
+#' @param repo GitHub review repository in \code{org/repo} format.
+#' @param issue_num Integer issue number in the review repository.
+#' @return Named list with \code{package}, \code{auts}, and \code{desc_text},
+#' or \code{NULL} if the DESCRIPTION block could not be found or parsed.
+#' @noRd
+get_desc_data <- function (repo, issue_num) {
+
+    org <- dirname (repo)
+    repo <- basename (repo)
+
+    q <- paste0 ("{
+        repository(owner:\"", org, "\", name:\"", repo, "\") {
+            issue(number:", issue_num, ") {
+                body
+            }
+        }
+    }")
+    dat <- gh::gh_gql (query = q)
+    dat <- tryCatch (
+        strsplit (dat$data$repository$issue$body, "\\n") [[1]],
+        error = function (e) NULL
+    )
+    if (is.null (dat)) {
+        return (dat)
+    }
+    desc_start <- grep ("Paste the full DESCRIPTION file", dat, fixed = TRUE)
+    if (length (desc_start) < 1) {
+        return (NULL)
+    }
+    delims <- grep ("^```", dat)
+    if (length (delims) < 2) {
+        return (NULL)
+    }
+    delims <- delims [which (delims > desc_start)] [1:2]
+    if (length (delims) < 2 || diff (delims) < 2) {
+        return (NULL)
+    }
+
+    desc_text <- dat [seq (delims [1] + 1L, delims [2] - 1L)]
+    f <- tempfile ()
+    writeLines (desc_text, f)
+    desc <- tryCatch (
+        data.frame (read.dcf (f)),
+        error = function (e) NULL
+    )
+    if (is.null (desc)) {
+        return (NULL)
+    }
+
+    list (
+        package = desc$Package,
+        auts = tryCatch (
+            eval (parse (text = desc$Authors.R)),
+            error = function (e) NULL
+        ),
+        desc_text = desc$Description
+    )
+}
+
 #' Send a batch of emails via the Postmark API
 #'
 #' Note: Postmark's \code{/email/batch} endpoint accepts a maximum of 500
@@ -238,6 +302,23 @@ postmark_send_batch <- function (emails, links, subject, repo, issue_id) {
     from <- Sys.getenv ("POSTMARK_FROM")
     issue_url <- paste0 ("https://github.com/", repo, "/issues/", issue_id)
 
+    desc_dat <- tryCatch (
+        get_desc_data (repo, issue_id),
+        error = function (e) NULL
+    )
+    pkg_info <- ""
+    if (!is.null (desc_dat)) {
+        auts_txt <- tryCatch (
+            paste (format (desc_dat$auts), collapse = ", "),
+            error = function (e) ""
+        )
+        pkg_info <- paste0 (
+            "<p><strong>Package:</strong> ", desc_dat$package, "<br>",
+            "<strong>Authors:</strong> ", auts_txt, "<br>",
+            "<strong>Description:</strong> ", desc_dat$desc_text, "</p>"
+        )
+    }
+
     messages <- lapply (seq_along (emails), function (i) {
         list (
             From = from,
@@ -247,6 +328,7 @@ postmark_send_batch <- function (emails, links, subject, repo, issue_id) {
                 "<p>You have been invited to volunteer as an editor for an ",
                 "rOpenSci software submission: ",
                 "<a href=\"", issue_url, "\">", issue_url, "</a></p>",
+                pkg_info,
                 "<p>Please click the link below to express your interest. ",
                 "Clicking only expresses your potential interest; you won't ",
                 "be assigned until the Editor-in-Chief has confirmed with you.</p>",
