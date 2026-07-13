@@ -18,6 +18,8 @@
 #* @get /editorcheck
 function (repourl = "", repo, issue_id, secret = NULL) {
 
+    job_cache_dir <- utils::getFromNamespace ("job_cache_dir", "roreviewapi")
+
     if (nchar (repourl) == 0L) {
         return ("Error: Issue template has no 'repourl'")
     }
@@ -35,6 +37,7 @@ function (repourl = "", repo, issue_id, secret = NULL) {
     }
 
     logfiles <- roreviewapi::stdout_stderr_cache (repourl)
+    job_cache <- job_cache_dir ()
 
     ps <<- callr::r_bg (
         func = roreviewapi::editor_check,
@@ -46,7 +49,9 @@ function (repourl = "", repo, issue_id, secret = NULL) {
         stdout = logfiles$stdout,
         stderr = logfiles$stderr,
         poll_connection = TRUE,
-        supervise = TRUE
+        supervise = TRUE,
+        wd = job_cache,
+        env = c (callr::rcmd_safe_env (), PKGCHECK_CACHE_DIR = job_cache)
     )
 
     out <- ifelse (nchar (template_chk) == 0L,
@@ -108,9 +113,12 @@ function (repourl = "", repo, issue_id, secret = NULL) {
     }
 
     requireNamespace ("pkgcheck", quietly = TRUE) # to load ennvar for templogs path
+    job_cache_dir <- utils::getFromNamespace ("job_cache_dir", "roreviewapi")
+
     logfiles <- roreviewapi::stdout_stderr_cache (repourl)
     logfiles$stdout <- gsub ("\\_stdout$", "_pkgmatch_stdout", logfiles$stdout)
     logfiles$stderr <- gsub ("\\_stderr$", "_pkgmatch_stderr", logfiles$stderr)
+    job_cache <- job_cache_dir ()
 
     ps_pkgmatch <<- callr::r_bg (
         func = roreviewapi::pkgmatch_repo,
@@ -124,7 +132,9 @@ function (repourl = "", repo, issue_id, secret = NULL) {
         stdout = logfiles$stdout,
         stderr = logfiles$stderr,
         poll_connection = TRUE,
-        supervise = TRUE
+        supervise = TRUE,
+        wd = job_cache,
+        env = c (callr::rcmd_safe_env (), PKGCHECK_CACHE_DIR = job_cache)
     )
 
     return (NULL)
@@ -148,6 +158,8 @@ function (repourl = "", repo, issue_id, secret = NULL) {
 #* @get /srrcheck
 function (repourl = "", repo, issue_id, secret = NULL) {
 
+    job_cache_dir <- utils::getFromNamespace ("job_cache_dir", "roreviewapi")
+
     if (nchar (repourl) == 0L) {
         return ("Error: Issue template has no 'repourl'")
     }
@@ -160,6 +172,7 @@ function (repourl = "", repo, issue_id, secret = NULL) {
     issue_id <- as.integer (issue_id) [1]
 
     logfiles <- roreviewapi::stdout_stderr_cache (repourl)
+    job_cache <- job_cache_dir ()
 
     ps <<- callr::r_bg (
         func = roreviewapi::srr_counts,
@@ -171,7 +184,9 @@ function (repourl = "", repo, issue_id, secret = NULL) {
         stdout = logfiles$stdout,
         stderr = logfiles$stderr,
         poll_connection = TRUE,
-        supervise = TRUE
+        supervise = TRUE,
+        wd = job_cache,
+        env = c (callr::rcmd_safe_env (), PKGCHECK_CACHE_DIR = job_cache)
     )
 
     return (NULL)
@@ -194,6 +209,8 @@ function (repourl = "", repo, issue_id, secret = NULL) {
 #* @get /badge
 function (repourl = "", repo, issue_id, secret = NULL) {
 
+    job_cache_dir <- utils::getFromNamespace ("job_cache_dir", "roreviewapi")
+
     if (nchar (repourl) == 0L) {
         return ("Error: Issue template has no 'repourl'")
     }
@@ -206,6 +223,7 @@ function (repourl = "", repo, issue_id, secret = NULL) {
     issue_id <- as.integer (issue_id) [1]
 
     logfiles <- roreviewapi::stdout_stderr_cache (repourl)
+    job_cache <- job_cache_dir ()
 
     ps <<- callr::r_bg (
         func = roreviewapi::readme_badge,
@@ -217,7 +235,9 @@ function (repourl = "", repo, issue_id, secret = NULL) {
         stdout = logfiles$stdout,
         stderr = logfiles$stderr,
         poll_connection = TRUE,
-        supervise = TRUE
+        supervise = TRUE,
+        wd = job_cache,
+        env = c (callr::rcmd_safe_env (), PKGCHECK_CACHE_DIR = job_cache)
     )
 
     return (NULL)

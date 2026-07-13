@@ -63,6 +63,28 @@ check_cache <- function (org, repo, cache_dir = fs::path_temp ()) {
     return (updated)
 }
 
+#' Create a fresh, isolated cache directory for one background check job
+#'
+#' Each \pkg{plumber} endpoint that clones a repo does so inside a
+#' \link[callr]{r_bg} background process. Without this, all such processes
+#' default to the single, shared `PKGCHECK_CACHE_DIR` (set by \pkg{pkgcheck}'s
+#' `.onLoad`), so two concurrent jobs checking the same repo can delete and
+#' re-clone the very directory another job is still running subprocesses in
+#' (`pkgstats` chdirs into the checkout while running 'ctags' etc.), which
+#' surfaces as `getcwd()`-related shell failures. Giving every job its own
+#' cache directory removes the shared mutable state entirely.
+#'
+#' @return Path to a newly created, unique directory to be passed as both the
+#' `wd` and `PKGCHECK_CACHE_DIR` (`env`) of one `callr::r_bg()` job.
+#' @noRd
+job_cache_dir <- function () {
+
+    dir <- fs::file_temp (pattern = "roreviewapi-job-")
+    fs::dir_create (dir, recurse = TRUE)
+
+    return (dir)
+}
+
 #' Set up stdout & stderr cache files for `r_bg` process
 #'
 #' @param repourl The URL of the repo being checked
