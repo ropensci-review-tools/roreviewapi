@@ -85,6 +85,48 @@ job_cache_dir <- function () {
     return (dir)
 }
 
+#' Verify the process's current working directory still exists, and recover
+#' if not
+#'
+#' Subprocesses spawned without an explicit working directory (notably
+#' \pkg{credentials}'s `.onLoad` credential-helper probing, and any `git`
+#' invocation via \pkg{sys}/\pkg{gert}) inherit this R process's own cwd. If
+#' that cwd has been invalidated -- e.g. under heavy concurrent load, or a
+#' transient filesystem hiccup in the deployment environment -- every such
+#' subprocess then fails with cryptic `getcwd()`-related shell errors, and
+#' the underlying cause is otherwise invisible in the logs. Logging
+#' PID/timing here makes any recurrence traceable to a specific job, and the
+#' `setwd()` recovery keeps one bad cwd from cascading through the rest of
+#' that job.
+#'
+#' @param fallback Directory to `setwd()` into if the current one is invalid.
+#' Must already exist.
+#' @return Invisibly, `TRUE` if the working directory was already valid,
+#' `FALSE` if it had to be reset to `fallback`.
+#' @noRd
+ensure_valid_wd <- function (fallback) {
+
+    wd <- tryCatch (getwd (), error = function (e) NA_character_)
+    wd_ok <- !is.na (wd) && fs::dir_exists (wd)
+
+    message (sprintf (
+        "[pid %s] wd check: %s (%s)",
+        Sys.getpid (),
+        ifelse (is.na (wd), "<unreadable>", wd),
+        ifelse (wd_ok, "ok", "INVALID")
+    ))
+
+    if (!wd_ok) {
+        message (sprintf (
+            "[pid %s] cwd is invalid; resetting to '%s'",
+            Sys.getpid (), fallback
+        ))
+        setwd (fallback)
+    }
+
+    invisible (wd_ok)
+}
+
 #' Set up stdout & stderr cache files for `r_bg` process
 #'
 #' @param repourl The URL of the repo being checked

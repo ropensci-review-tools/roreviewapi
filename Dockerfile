@@ -33,7 +33,8 @@ RUN echo "GITHUB_TOKEN='${GITHUB_PAT}'" > ~/.Renviron \
     && echo "ROREVIEWAPI_BASE_URL='${ROREVIEWAPI_BASE_URL}'" >> ~/.Renviron \
     && echo "ROREV_CONTAINER='true'" >> ~/.Renviron \
     && git config --global user.name "username" \
-    && git config --global user.email "my.address@mail.com"
+    && git config --global user.email "my.address@mail.com" \
+    && git config --global credential.helper cache
 
 EXPOSE 8000
 

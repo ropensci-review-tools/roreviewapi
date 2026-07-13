@@ -16,6 +16,8 @@ dl_gh_repo <- function (u, branch = NULL) {
     if (!fs::dir_exists (cache_dir)) {
         fs::dir_create (cache_dir, recurse = TRUE)
     }
+    ensure_valid_wd (cache_dir)
+
     repo_updated <- roreviewapi::check_cache (org, repo, cache_dir)
     if (is.null (branch)) {
         branch <- pkgcheck::get_default_github_branch (org, repo)
@@ -31,6 +33,7 @@ dl_gh_repo <- function (u, branch = NULL) {
         if (fs::dir_exists (f)) {
             fs::dir_delete (f)
         }
+        ensure_valid_wd (cache_dir)
         gert::git_clone (url = u, path = f, branch = branch)
         return (f)
     }
