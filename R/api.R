@@ -41,11 +41,7 @@ serve_api <- function (port = 8000L,
 
         cache_dir <- Sys.getenv ("PKGCHECK_CACHE_DIR")
         if (!nzchar (cache_dir)) {
-            cache_dir <- fs::path (rappdirs::user_cache_dir (), "R", "pkgcheck")
-            # normalizePath resolves `~` to /root instead of /home:
-            if (grepl ("^\\/root", cache_dir)) {
-                cache_dir <- gsub ("^\\/root", "/home", cache_dir)
-            }
+            cache_dir <- default_cache_dir ()
         }
 
         if (!fs::file_exists (cache_dir)) {
@@ -112,4 +108,27 @@ serve_api <- function (port = 8000L,
         host = "0.0.0.0",
         port = as.integer (port)
     )
+}
+
+#' Deployment-stable cache directory, independent of the per-job
+#' `PKGCHECK_CACHE_DIR` override used to isolate each `callr::r_bg()` check
+#' (see \link{job_cache_dir}).
+#'
+#' Background jobs run with their own ephemeral `PKGCHECK_CACHE_DIR`, so they
+#' can't rely on that env var to find the stable, deployment-wide directory
+#' set up here at server start. This function recomputes the same path
+#' directly, so callers such as \link{editor_check} can write persistent
+#' results to the same place regardless of which job's environment they run
+#' in.
+#'
+#' @noRd
+default_cache_dir <- function () {
+
+    cache_dir <- fs::path (rappdirs::user_cache_dir (), "R", "pkgcheck")
+    # normalizePath resolves `~` to /root instead of /home:
+    if (grepl ("^\\/root", cache_dir)) {
+        cache_dir <- gsub ("^\\/root", "/home", cache_dir)
+    }
+
+    return (cache_dir)
 }

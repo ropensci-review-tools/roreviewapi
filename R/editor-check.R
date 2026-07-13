@@ -21,6 +21,8 @@ editor_check <- function (repourl, repo, issue_id, post_to_issue = TRUE) {
     }
     convert_path <- utils::getFromNamespace ("convert_path", "pkgcheck")
     url_exists <- utils::getFromNamespace ("url_exists", "pkgcheck")
+    write_check_result <-
+        utils::getFromNamespace ("write_check_result", "roreviewapi")
 
     is_r_pkg <- TRUE
     if (grepl ("github", repourl)) {
@@ -99,6 +101,9 @@ editor_check <- function (repourl, repo, issue_id, post_to_issue = TRUE) {
         }
     }
 
+    write_check_result (out, checks)
+
+
     if (post_to_issue) {
 
         cat ("Posting collated checkst to {", repo, "}; issue#", issue_id, "\n")
@@ -106,6 +111,39 @@ editor_check <- function (repourl, repo, issue_id, post_to_issue = TRUE) {
     }
 
     return (out)
+}
+
+#' Write the final markdown result of one editor check to the deployment's
+#' stable cache directory
+#'
+#' The previous caching scheme kept a full clone of every checked repo under
+#' `rappdirs::user_cache_dir()`; each `callr::r_bg()` job now clones into its
+#' own isolated, ephemeral directory (see \link{job_cache_dir}) instead, so
+#' that record no longer accumulates anywhere. This writes just the check
+#' result text -- the useful, lightweight part -- to a file named
+#' `<package_name>-<git-hash>` (hash shortened to 8 characters) in the same
+#' stable directory \link{serve_api} uses, so a persistent record of past
+#' checks is kept regardless of which job produced it.
+#'
+#' @param out Character string of the collated check result, as returned by
+#' \link{collate_editor_check}.
+#' @param checks A 'pkgcheck' object, used only for its package name and git
+#' hash.
+#' @noRd
+write_check_result <- function (out, checks) {
+
+    cache_dir <- default_cache_dir ()
+    if (!fs::dir_exists (cache_dir)) {
+        fs::dir_create (cache_dir, recurse = TRUE)
+    }
+
+    pkg_name <- checks$pkg$name
+    git_hash <- substring (checks$info$git$HEAD, 1, 8)
+
+    result_file <- fs::path (cache_dir, paste0 (pkg_name, "-", git_hash))
+    writeLines (out, result_file)
+
+    invisible (result_file)
 }
 
 #' Collate list of checks to single concatenated character string
