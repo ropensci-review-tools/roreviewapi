@@ -66,14 +66,17 @@ editor_check <- function (repourl, repo, issue_id, post_to_issue = TRUE) {
 
         # Need to pass original path here to ensure any sub-dir info
         # is added in final check reports:
+        cat ("calling 'pkgcheck' ...\n")
         checks <- tryCatch (
             pkgcheck::pkgcheck (path_dl),
             error = function (e) e
         )
+        cat ("'pkgcheck' finished\n")
     }
 
     if (!methods::is (checks, "error")) {
 
+        cat ("'pkgcheck' returned as expected; collating checks ...\n")
         attr (checks, "branch_is_default") <- branch_is_default
         attr (checks, "repo") <- repo
         attr (checks, "issue_num") <- issue_id
@@ -98,6 +101,7 @@ editor_check <- function (repourl, repo, issue_id, post_to_issue = TRUE) {
 
     if (post_to_issue) {
 
+        cat ("Posting collated checkst to {", repo, "}; issue#", issue_id, "\n")
         out <- roreviewapi::post_to_issue (out, repo, issue_id)
     }
 
