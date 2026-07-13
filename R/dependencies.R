@@ -23,7 +23,7 @@ pkgrep_install_deps <- function (path, repo, issue_id) {
 
     out <- tryCatch (
         pak::pkg_install (
-            pkgdir = path,
+            pkg = path,
             dependencies = TRUE
         ),
         error = function (e) e
