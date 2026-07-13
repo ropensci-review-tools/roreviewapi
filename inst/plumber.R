@@ -38,6 +38,8 @@ function (repourl = "", repo, issue_id, secret = NULL) {
 
     logfiles <- roreviewapi::stdout_stderr_cache (repourl)
     job_cache <- job_cache_dir ()
+    r_os <- Sys.getenv ("ROREVIEWAPI_OS")
+    r_os_release <- Sys.getenv ("ROREVIEWAPI_OS_RELEASE")
 
     ps <<- callr::r_bg (
         func = roreviewapi::editor_check,
@@ -51,7 +53,12 @@ function (repourl = "", repo, issue_id, secret = NULL) {
         poll_connection = TRUE,
         supervise = TRUE,
         wd = job_cache,
-        env = c (callr::rcmd_safe_env (), PKGCHECK_CACHE_DIR = job_cache)
+        env = c (
+            callr::rcmd_safe_env (),
+            PKGCHECK_CACHE_DIR = job_cache,
+            ROREVIEWAPI_OS = r_os,
+            ROREVIEWAPI_OS_RELEASE = r_os_release
+        )
     )
 
     out <- ifelse (nchar (template_chk) == 0L,
