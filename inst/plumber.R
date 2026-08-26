@@ -321,13 +321,12 @@ function (secret = NULL) {
 
 #* @name deactivate_search
 #* @description Deactivate a volunteer search and delete all associated data
-#* @param repourl The URL of the package repository used when creating the search
 #* @param repo The 'context.repo' parameter defining the repository from which
 #* the command was invoked, passed in `org/repo` format.
 #* @param issue_id The id of the issue from which the command was invoked
 #* @param secret Secret token for authorization
 #* @get /deactivate_search
-function (repourl = "", repo, issue_id, secret = NULL) {
+function (repo, issue_id, secret = NULL) {
 
     if (!roreviewapi::is_user_authorized (secret)) {
         return ("Only authorized users may call this endpoint")
