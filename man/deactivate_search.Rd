@@ -15,11 +15,11 @@ deactivate_search(repo, issue_id)
 Named list with \code{deactivated} (logical) and \code{issue_ref}.
 }
 \description{
-Sets \code{active = 0} first as a guard against concurrent clicks, then
-deletes all recipient rows followed by the search row itself.
+Deactivate a volunteer search and delete all associated data
 }
 \seealso{
 Other email:
+\code{\link[=deactivate_stale_searches]{deactivate_stale_searches()}},
 \code{\link[=handle_click]{handle_click()}},
 \code{\link[=list_searches]{list_searches()}},
 \code{\link[=send_search]{send_search()}}

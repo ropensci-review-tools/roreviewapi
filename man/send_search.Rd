@@ -51,6 +51,7 @@ distinction is determined by calling \code{issue_is_stats()} on the supplied
 \seealso{
 Other email:
 \code{\link[=deactivate_search]{deactivate_search()}},
+\code{\link[=deactivate_stale_searches]{deactivate_stale_searches()}},
 \code{\link[=handle_click]{handle_click()}},
 \code{\link[=list_searches]{list_searches()}}
 }
