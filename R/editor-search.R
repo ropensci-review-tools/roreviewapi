@@ -424,13 +424,17 @@ send_search <- function (repourl, repo, issue_id,
     stats <- stats_checker (repo, issue_id)
     message ("[send_search] stats=", stats, "; fetching editor emails")
 
-    emails <- fetcher (Sys.getenv ("AIRTABLE_BASE_ID"), stats = stats)
-    message ("[send_search] fetched ", length (emails), " email(s)")
+    if (gsub ("\\/.*$", "", repo) == "ropenscilabs") {
+        emails <- "mark.padgham@email.com"
+    } else {
+        emails <- fetcher (Sys.getenv ("AIRTABLE_BASE_ID"), stats = stats)
+        message ("[send_search] fetched ", length (emails), " email(s)")
 
-    emails <- emails [which (is_valid_email (emails))]
-}
-if (length (emails) == 0L) {
-    stop ("fetcher returned no valid email addresses")
+        emails <- emails [which (is_valid_email (emails))]
+    }
+    if (length (emails) == 0L) {
+        stop ("fetcher returned no valid email addresses")
+    }
     notify_address <- notify_email_read ()
     message ("[send_search] notify_address=", notify_address)
 
