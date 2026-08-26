@@ -10,7 +10,8 @@ send_search(
   issue_id,
   subject = "Seeking editors for rOpenSci software submission",
   fetcher = NULL,
-  stats_checker = roreviewapi::issue_is_stats
+  stats_checker = roreviewapi::issue_is_stats,
+  sender = NULL
 )
 }
 \arguments{
@@ -28,6 +29,11 @@ Must accept \code{(airtable_base_id, stats)} and return a character vector.}
 
 \item{stats_checker}{Function used to determine submission type; injectable
 for testing.  Must accept \code{(repo, issue_id)} and return a logical.}
+
+\item{sender}{Function used to send the batch of emails; injectable for
+testing.  Must accept \code{(emails, links, subject, repo, issue_id)} and
+return a list of per-recipient responses.  Defaults to
+\code{gmail_send_batch}.}
 }
 \value{
 Named list with \code{search_id} (integer) and \code{sent} (integer).
@@ -35,7 +41,7 @@ Named list with \code{search_id} (integer) and \code{sent} (integer).
 \description{
 Fetches current editor email addresses via \code{get_editor_emails()},
 inserts a new search record and one recipient row per address into the
-database, then dispatches emails via Postmark.  The notify address is read
+database, then dispatches emails via the Gmail API.  The notify address is read
 from the AirTable cache written by the internal 'notify_email_refresh'
 function.  The base URL for click links is read from the
 \code{ROREVIEWAPI_BASE_URL} environment variable.  The stats/standard

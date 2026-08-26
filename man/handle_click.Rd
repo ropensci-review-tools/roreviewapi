@@ -4,10 +4,14 @@
 \alias{handle_click}
 \title{Handle a volunteer link click}
 \usage{
-handle_click(token)
+handle_click(token, sender = NULL)
 }
 \arguments{
 \item{token}{64-character hex token from the recipient's unique link.}
+
+\item{sender}{Function used to send the click notification; injectable for
+testing.  Must accept \code{(to, subject, html_body)}.  Defaults to
+\code{gmail_send}.}
 }
 \value{
 Named list with \code{status} (integer HTTP status code) and
@@ -15,8 +19,8 @@ Named list with \code{status} (integer HTTP status code) and
 }
 \description{
 Looks up the token, checks whether the parent search is still active, guards
-against double-clicks, records the click timestamp, and triggers a Postmark
-notification (Phase 2).
+against double-clicks, records the click timestamp, and triggers a Gmail
+API notification (Phase 2).
 }
 \seealso{
 Other email:
