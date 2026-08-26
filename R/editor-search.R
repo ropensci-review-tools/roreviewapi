@@ -428,9 +428,9 @@ send_search <- function (repourl, repo, issue_id,
     message ("[send_search] fetched ", length (emails), " email(s)")
 
     emails <- emails [which (is_valid_email (emails))]
-    if (length (emails) == 0L) {
-        stop ("fetcher returned no valid email addresses")
-    }
+}
+if (length (emails) == 0L) {
+    stop ("fetcher returned no valid email addresses")
     notify_address <- notify_email_read ()
     message ("[send_search] notify_address=", notify_address)
 
@@ -591,35 +591,16 @@ handle_click <- function (token, sender = NULL) {
     )
 }
 
-#' Deactivate a volunteer search and delete all associated data
+#' Delete all rows belonging to a single search
 #'
 #' Sets \code{active = 0} first as a guard against concurrent clicks, then
 #' deletes all recipient rows followed by the search row itself.
 #'
-#' @param repo GitHub review repository in \code{org/repo} format.
-#' @param issue_id Integer issue number in the review repository.
-#' @return Named list with \code{deactivated} (logical) and \code{issue_ref}.
-#' @family email
-#' @export
-deactivate_search <- function (repo, issue_id) {
-
-    email_db_init <- utils::getFromNamespace ("email_db_init", "roreviewapi")
-
-    issue_ref <- paste0 (repo, "/issues/", as.integer (issue_id) [[1L]])
-
-    con <- email_db_init ()
-    on.exit (DBI::dbDisconnect (con))
-
-    existing <- DBI::dbGetQuery (
-        con,
-        "SELECT id FROM searches WHERE issue_ref = ?",
-        params = list (issue_ref)
-    )
-    if (nrow (existing) == 0L) {
-        stop ("No search found for '", issue_ref, "'")
-    }
-    search_id <- existing [["id"]]
-
+#' @param con Open \pkg{DBI} connection.
+#' @param search_id Integer id of the row in \code{searches} to remove.
+#' @return Nothing; called for its side effect.
+#' @noRd
+delete_search_rows <- function (con, search_id) {
     DBI::dbExecute (
         con,
         "UPDATE searches SET active = 0 WHERE id = ?",
@@ -635,6 +616,78 @@ deactivate_search <- function (repo, issue_id) {
         "DELETE FROM searches WHERE id = ?",
         params = list (search_id)
     )
+    invisible ()
+}
+
+#' Deactivate a volunteer search and delete all associated data
+#'
+#' @param repo GitHub review repository in \code{org/repo} format.
+#' @param issue_id Integer issue number in the review repository.
+#' @return Named list with \code{deactivated} (logical) and \code{issue_ref}.
+#' @family email
+#' @export
+deactivate_search <- function (repo, issue_id) {
+
+    email_db_init <- utils::getFromNamespace ("email_db_init", "roreviewapi")
+    delete_search_rows <-
+        utils::getFromNamespace ("delete_search_rows", "roreviewapi")
+
+    issue_ref <- paste0 (repo, "/issues/", as.integer (issue_id) [[1L]])
+
+    con <- email_db_init ()
+    on.exit (DBI::dbDisconnect (con))
+
+    existing <- DBI::dbGetQuery (
+        con,
+        "SELECT id FROM searches WHERE issue_ref = ?",
+        params = list (issue_ref)
+    )
+    if (nrow (existing) == 0L) {
+        stop ("No search found for '", issue_ref, "'")
+    }
+
+    delete_search_rows (con, existing [["id"]])
 
     list (deactivated = TRUE, issue_ref = issue_ref)
+}
+
+#' Auto-deactivate and delete stale volunteer searches
+#'
+#' Searches are never automatically closed otherwise, so this is intended to
+#' be called periodically (see \code{serve_api()}) to stop searches that are
+#' never explicitly deactivated from accumulating in the database forever.
+#' Any search whose \code{created_at} is older than \code{max_age_days} is
+#' deactivated and has all its data removed, exactly as \code{deactivate_search()}
+#' does for a single search.
+#'
+#' @param max_age_days Default: 100. Integer number of days after creation at
+#' which a search is considered stale and is automatically deactivated.
+#' @return Integer count of searches deactivated, invisibly.
+#' @family email
+#' @export
+deactivate_stale_searches <- function (max_age_days = 100L) {
+
+    email_db_init <- utils::getFromNamespace ("email_db_init", "roreviewapi")
+    delete_search_rows <-
+        utils::getFromNamespace ("delete_search_rows", "roreviewapi")
+
+    con <- email_db_init ()
+    on.exit (DBI::dbDisconnect (con))
+
+    cutoff <- strftime (
+        Sys.time () - as.numeric (max_age_days) * 86400,
+        "%Y-%m-%dT%H:%M:%SZ",
+        tz = "UTC"
+    )
+    stale <- DBI::dbGetQuery (
+        con,
+        "SELECT id FROM searches WHERE created_at < ?",
+        params = list (cutoff)
+    )
+
+    for (search_id in stale [["id"]]) {
+        delete_search_rows (con, search_id)
+    }
+
+    invisible (nrow (stale))
 }

@@ -189,6 +189,45 @@ test_that ("deactivate_search errors on unknown issue", {
     expect_error (deactivate_search ("ropensci/software-review", 999L), regexp = "No search found")
 })
 
+test_that ("deactivate_stale_searches removes only searches older than max_age_days", {
+    local_search_db ()
+
+    con <- email_db_init ()
+    old_created_at <- strftime (
+        Sys.time () - 200 * 86400, "%Y-%m-%dT%H:%M:%SZ",
+        tz = "UTC"
+    )
+    recent_created_at <- strftime (Sys.time (), "%Y-%m-%dT%H:%M:%SZ", tz = "UTC")
+    DBI::dbExecute (
+        con,
+        "INSERT INTO searches (created_at, issue_ref, notify_email) VALUES (?, ?, ?)",
+        params = list (old_created_at, "org/repo/issues/1", "editor@example.com")
+    )
+    DBI::dbExecute (
+        con,
+        "INSERT INTO searches (created_at, issue_ref, notify_email) VALUES (?, ?, ?)",
+        params = list (recent_created_at, "org/repo/issues/2", "editor@example.com")
+    )
+    old_id <- DBI::dbGetQuery (
+        con, "SELECT id FROM searches WHERE issue_ref = 'org/repo/issues/1'"
+    )$id
+    DBI::dbExecute (
+        con,
+        "INSERT INTO recipients (search_id, email, token) VALUES (?, ?, ?)",
+        params = list (old_id, "a@example.com", generate_email_token ())
+    )
+    DBI::dbDisconnect (con)
+
+    n <- deactivate_stale_searches (max_age_days = 100L)
+    expect_equal (n, 1L)
+
+    con <- email_db_init ()
+    on.exit (DBI::dbDisconnect (con))
+    remaining <- DBI::dbReadTable (con, "searches")
+    expect_equal (remaining$issue_ref, "org/repo/issues/2")
+    expect_equal (nrow (DBI::dbReadTable (con, "recipients")), 0L)
+})
+
 test_that ("notify_email_read returns address from cache", {
     local_notify_cache ("eic@example.com")
     expect_equal (notify_email_read (), "eic@example.com")
