@@ -367,13 +367,18 @@ gmail_send_batch <- function (emails, links, subject, repo, issue_id) {
 #'   Must accept \code{(airtable_base_id, stats)} and return a character vector.
 #' @param stats_checker Function used to determine submission type; injectable
 #'   for testing.  Must accept \code{(repo, issue_id)} and return a logical.
+#' @param sender Function used to send the batch of emails; injectable for
+#'   testing.  Must accept \code{(emails, links, subject, repo, issue_id)} and
+#'   return a list of per-recipient responses.  Defaults to
+#'   \code{gmail_send_batch}.
 #' @return Named list with \code{search_id} (integer) and \code{sent} (integer).
 #' @family email
 #' @export
 send_search <- function (repourl, repo, issue_id,
                          subject = "Seeking editors for rOpenSci software submission",
                          fetcher = NULL,
-                         stats_checker = roreviewapi::issue_is_stats) {
+                         stats_checker = roreviewapi::issue_is_stats,
+                         sender = NULL) {
 
     get_editor_emails <-
         utils::getFromNamespace ("get_editor_emails", "roreviewapi")
@@ -392,6 +397,7 @@ send_search <- function (repourl, repo, issue_id,
         utils::getFromNamespace ("gmail_send_batch", "roreviewapi")
 
     if (is.null (fetcher)) fetcher <- get_editor_emails
+    if (is.null (sender)) sender <- gmail_send_batch
 
     if (length (repourl) != 1L || !nzchar (repourl)) {
         stop ("'repourl' must be a single non-empty string")
@@ -480,10 +486,10 @@ send_search <- function (repourl, repo, issue_id,
         "[send_search] GMAIL_SENDER=",
         Sys.getenv ("GMAIL_SENDER")
     )
-    message ("[send_search] calling gmail_send_batch")
-    resp <- gmail_send_batch (emails, links, subject, repo, issue_id)
+    message ("[send_search] calling sender")
+    resp <- sender (emails, links, subject, repo, issue_id)
     message (
-        "[send_search] gmail_send_batch: sent ", length (resp), " message(s)"
+        "[send_search] sender: sent ", length (resp), " message(s)"
     )
 
     list (search_id = search_id, sent = length (emails))
@@ -523,11 +529,18 @@ list_searches <- function () {
 #' API notification (Phase 2).
 #'
 #' @param token 64-character hex token from the recipient's unique link.
+#' @param sender Function used to send the click notification; injectable for
+#'   testing.  Must accept \code{(to, subject, html_body)}.  Defaults to
+#'   \code{gmail_send}.
 #' @return Named list with \code{status} (integer HTTP status code) and
 #'   \code{body} (character HTML string).
 #' @family email
 #' @export
-handle_click <- function (token) {
+handle_click <- function (token, sender = NULL) {
+
+    if (is.null (sender)) {
+        sender <- utils::getFromNamespace ("gmail_send", "roreviewapi")
+    }
 
     con <- email_db_init ()
     on.exit (DBI::dbDisconnect (con))
@@ -561,7 +574,7 @@ handle_click <- function (token) {
         params = list (clicked_at, token)
     )
 
-    gmail_send (
+    sender (
         to = search [["notify_email"]],
         subject = "rOpenSci editor search: new response",
         html_body = paste0 (

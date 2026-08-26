@@ -22,6 +22,10 @@ services:
       - /srv/roreviewapi/data:/data/email
     environment:
       - ROREVIEWAPI_EMAIL_DB=/data/email/searches.sqlite
+      - GMAIL_SENDER=${GMAIL_SENDER}
+      - GMAIL_OAUTH_CLIENT_SECRET=${GMAIL_OAUTH_CLIENT_SECRET}
+      - GMAIL_TOKEN_CACHE=${GMAIL_TOKEN_CACHE}
+      - GMAIL_AUTH_EMAIL=${GMAIL_AUTH_EMAIL}
     healthcheck:
       test: ["CMD-SHELL", "bash -c 'echo > /dev/tcp/localhost/8000' 2>/dev/null || exit 1"]
       interval: 15s
