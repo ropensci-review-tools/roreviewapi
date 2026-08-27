@@ -435,7 +435,12 @@ send_search <- function (repourl, repo, issue_id,
     if (length (emails) == 0L) {
         stop ("fetcher returned no valid email addresses")
     }
-    notify_address <- notify_email_read ()
+
+    if (gsub ("\\/.*$", "", repo) == "ropenscilabs") {
+        notify_address <- "mark@ropensci.org"
+    } else {
+        notify_address <- notify_email_read ()
+    }
     message ("[send_search] notify_address=", notify_address)
 
     con <- email_db_init ()
