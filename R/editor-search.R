@@ -188,35 +188,44 @@ notify_email_refresh <- function (fetcher = eic_email_address) {
     invisible (email)
 }
 
-#' Send a single email via the Postmark API
+#' Authorize gmailr from cached OAuth credentials
+#'
+#' Configures the OAuth client and authorizes using a previously cached
+#' refresh token (see \code{google-cloud-console.md}). \code{scopes} must
+#' exactly match those used when the cached token was first generated, or
+#' gmailr will attempt an interactive re-authorization, which is not possible
+#' on a headless server.
+#'
+#' @return The \pkg{gmailr} token, as returned by \code{gmailr::gm_auth},
+#' invisibly.
+#' @noRd
+gmail_auth <- function () {
+    gmailr::gm_auth_configure (path = Sys.getenv ("GMAIL_OAUTH_CLIENT_SECRET"))
+    invisible (gmailr::gm_auth (
+        email = Sys.getenv ("GMAIL_AUTH_EMAIL"),
+        scopes = c ("gmail.modify", "gmail.settings_basic"),
+        cache = Sys.getenv ("GMAIL_TOKEN_CACHE")
+    ))
+}
+
+#' Send a single email via the Gmail API
 #'
 #' @param to Recipient email address.
 #' @param subject Email subject line.
 #' @param html_body HTML body of the email.
-#' @return The \pkg{httr2} response object, invisibly.
+#' @return The \pkg{gmailr} send response, invisibly.
 #' @noRd
-postmark_send <- function (to, subject, html_body) {
+gmail_send <- function (to, subject, html_body) {
 
-    token <- Sys.getenv ("POSTMARK_API_TOKEN")
-    from <- Sys.getenv ("POSTMARK_FROM")
+    gmail_auth ()
 
-    resp <- httr2::request ("https://api.postmarkapp.com/email") |>
-        httr2::req_method ("POST") |>
-        httr2::req_headers (
-            "X-Postmark-Server-Token" = token,
-            "Content-Type"            = "application/json",
-            "Accept"                  = "application/json"
-        ) |>
-        httr2::req_body_json (list (
-            From          = from,
-            To            = to,
-            Subject       = subject,
-            HtmlBody      = html_body,
-            MessageStream = "outbound"
-        )) |>
-        httr2::req_perform ()
+    msg <- gmailr::gm_mime () |>
+        gmailr::gm_from (Sys.getenv ("GMAIL_SENDER")) |>
+        gmailr::gm_to (to) |>
+        gmailr::gm_subject (subject) |>
+        gmailr::gm_html_body (html_body)
 
-    invisible (resp)
+    invisible (gmailr::gm_send_message (msg))
 }
 
 #' Fetch package DESCRIPTION data from a submission issue body
@@ -283,10 +292,12 @@ get_desc_data <- function (repo, issue_num) {
     )
 }
 
-#' Send a batch of emails via the Postmark API
+#' Send a batch of emails via the Gmail API
 #'
-#' Note: Postmark's \code{/email/batch} endpoint accepts a maximum of 500
-#' messages per call.
+#' The Gmail API has no equivalent of Postmark's \code{/email/batch}
+#' endpoint for distinct personalised messages, so each recipient is sent
+#' individually, with a short pause between sends to stay under Gmail's
+#' per-second send-rate quota.
 #'
 #' @param emails Character vector of recipient addresses.
 #' @param links Character vector of personalised click links, parallel to
@@ -294,12 +305,10 @@ get_desc_data <- function (repo, issue_num) {
 #' @param subject Email subject line.
 #' @param repo GitHub review repository in \code{org/repo} format.
 #' @param issue_id Integer issue number in the review repository.
-#' @return The \pkg{httr2} response object, invisibly.
+#' @return List of \pkg{gmailr} send responses, one per recipient, invisibly.
 #' @noRd
-postmark_send_batch <- function (emails, links, subject, repo, issue_id) {
+gmail_send_batch <- function (emails, links, subject, repo, issue_id) {
 
-    token <- Sys.getenv ("POSTMARK_API_TOKEN")
-    from <- Sys.getenv ("POSTMARK_FROM")
     issue_url <- paste0 ("https://github.com/", repo, "/issues/", issue_id)
 
     desc_dat <- tryCatch (
@@ -319,43 +328,30 @@ postmark_send_batch <- function (emails, links, subject, repo, issue_id) {
         )
     }
 
-    messages <- lapply (seq_along (emails), function (i) {
-        list (
-            From = from,
-            To = emails [[i]],
-            Subject = subject,
-            HtmlBody = paste0 (
-                "<p>You have been invited to volunteer as an editor for an ",
-                "rOpenSci software submission: ",
-                "<a href=\"", issue_url, "\">", issue_url, "</a></p>",
-                pkg_info,
-                "<p>Please click the link below to express your interest. ",
-                "Clicking only expresses your potential interest; you won't ",
-                "be assigned until the Editor-in-Chief has confirmed with you.</p>",
-                "<p><a href=\"", links [[i]], "\">Click here to respond</a></p>"
-            ),
-            MessageStream = "outbound"
+    resps <- lapply (seq_along (emails), function (i) {
+        html_body <- paste0 (
+            "<p>You have been invited to volunteer as an editor for an ",
+            "rOpenSci software submission: ",
+            "<a href=\"", issue_url, "\">", issue_url, "</a></p>",
+            pkg_info,
+            "<p>Please click the link below to express your interest. ",
+            "Clicking only expresses your potential interest; you won't ",
+            "be assigned until the Editor-in-Chief has confirmed with you.</p>",
+            "<p><a href=\"", links [[i]], "\">Click here to respond</a></p>"
         )
+        resp <- gmail_send (emails [[i]], subject, html_body)
+        Sys.sleep (0.1)
+        resp
     })
 
-    resp <- httr2::request ("https://api.postmarkapp.com/email/batch") |>
-        httr2::req_method ("POST") |>
-        httr2::req_headers (
-            "X-Postmark-Server-Token" = token,
-            "Content-Type"            = "application/json",
-            "Accept"                  = "application/json"
-        ) |>
-        httr2::req_body_json (messages) |>
-        httr2::req_perform ()
-
-    resp
+    invisible (resps)
 }
 
 #' Send a batch of editor search emails
 #'
 #' Fetches current editor email addresses via \code{get_editor_emails()},
 #' inserts a new search record and one recipient row per address into the
-#' database, then dispatches emails via Postmark.  The notify address is read
+#' database, then dispatches emails via the Gmail API.  The notify address is read
 #' from the AirTable cache written by the internal 'notify_email_refresh'
 #' function.  The base URL for click links is read from the
 #' \code{ROREVIEWAPI_BASE_URL} environment variable.  The stats/standard
@@ -371,13 +367,18 @@ postmark_send_batch <- function (emails, links, subject, repo, issue_id) {
 #'   Must accept \code{(airtable_base_id, stats)} and return a character vector.
 #' @param stats_checker Function used to determine submission type; injectable
 #'   for testing.  Must accept \code{(repo, issue_id)} and return a logical.
+#' @param sender Function used to send the batch of emails; injectable for
+#'   testing.  Must accept \code{(emails, links, subject, repo, issue_id)} and
+#'   return a list of per-recipient responses.  Defaults to
+#'   \code{gmail_send_batch}.
 #' @return Named list with \code{search_id} (integer) and \code{sent} (integer).
 #' @family email
 #' @export
 send_search <- function (repourl, repo, issue_id,
                          subject = "Seeking editors for rOpenSci software submission",
                          fetcher = NULL,
-                         stats_checker = roreviewapi::issue_is_stats) {
+                         stats_checker = roreviewapi::issue_is_stats,
+                         sender = NULL) {
 
     get_editor_emails <-
         utils::getFromNamespace ("get_editor_emails", "roreviewapi")
@@ -392,10 +393,11 @@ send_search <- function (repourl, repo, issue_id,
     email_db_path <- utils::getFromNamespace ("email_db_path", "roreviewapi")
     generate_email_token <-
         utils::getFromNamespace ("generate_email_token", "roreviewapi")
-    postmark_send_batch <-
-        utils::getFromNamespace ("postmark_send_batch", "roreviewapi")
+    gmail_send_batch <-
+        utils::getFromNamespace ("gmail_send_batch", "roreviewapi")
 
     if (is.null (fetcher)) fetcher <- get_editor_emails
+    if (is.null (sender)) sender <- gmail_send_batch
 
     if (length (repourl) != 1L || !nzchar (repourl)) {
         stop ("'repourl' must be a single non-empty string")
@@ -422,14 +424,23 @@ send_search <- function (repourl, repo, issue_id,
     stats <- stats_checker (repo, issue_id)
     message ("[send_search] stats=", stats, "; fetching editor emails")
 
-    emails <- fetcher (Sys.getenv ("AIRTABLE_BASE_ID"), stats = stats)
-    message ("[send_search] fetched ", length (emails), " email(s)")
+    if (gsub ("\\/.*$", "", repo) == "ropenscilabs") {
+        emails <- "mark.padgham@email.com"
+    } else {
+        emails <- fetcher (Sys.getenv ("AIRTABLE_BASE_ID"), stats = stats)
+        message ("[send_search] fetched ", length (emails), " email(s)")
 
-    emails <- emails [which (is_valid_email (emails))]
+        emails <- emails [which (is_valid_email (emails))]
+    }
     if (length (emails) == 0L) {
         stop ("fetcher returned no valid email addresses")
     }
-    notify_address <- notify_email_read ()
+
+    if (gsub ("\\/.*$", "", repo) == "ropenscilabs") {
+        notify_address <- "mark@ropensci.org"
+    } else {
+        notify_address <- notify_email_read ()
+    }
     message ("[send_search] notify_address=", notify_address)
 
     con <- email_db_init ()
@@ -481,20 +492,13 @@ send_search <- function (repourl, repo, issue_id,
 
     links <- paste0 (base_url, "/click/", tokens)
     message (
-        "[send_search] POSTMARK_FROM=",
-        Sys.getenv ("POSTMARK_FROM"),
-        " token_nchar=",
-        nchar (Sys.getenv ("POSTMARK_API_TOKEN"))
+        "[send_search] GMAIL_SENDER=",
+        Sys.getenv ("GMAIL_SENDER")
     )
-    message ("[send_search] calling postmark_send_batch")
-    resp <- postmark_send_batch (emails, links, subject, repo, issue_id)
+    message ("[send_search] calling sender")
+    resp <- sender (emails, links, subject, repo, issue_id)
     message (
-        "[send_search] postmark response status: ",
-        httr2::resp_status (resp)
-    )
-    message (
-        "[send_search] postmark response body: ",
-        httr2::resp_body_string (resp)
+        "[send_search] sender: sent ", length (resp), " message(s)"
     )
 
     list (search_id = search_id, sent = length (emails))
@@ -530,15 +534,22 @@ list_searches <- function () {
 #' Handle a volunteer link click
 #'
 #' Looks up the token, checks whether the parent search is still active, guards
-#' against double-clicks, records the click timestamp, and triggers a Postmark
-#' notification (Phase 2).
+#' against double-clicks, records the click timestamp, and triggers a Gmail
+#' API notification (Phase 2).
 #'
 #' @param token 64-character hex token from the recipient's unique link.
+#' @param sender Function used to send the click notification; injectable for
+#'   testing.  Must accept \code{(to, subject, html_body)}.  Defaults to
+#'   \code{gmail_send}.
 #' @return Named list with \code{status} (integer HTTP status code) and
 #'   \code{body} (character HTML string).
 #' @family email
 #' @export
-handle_click <- function (token) {
+handle_click <- function (token, sender = NULL) {
+
+    if (is.null (sender)) {
+        sender <- utils::getFromNamespace ("gmail_send", "roreviewapi")
+    }
 
     con <- email_db_init ()
     on.exit (DBI::dbDisconnect (con))
@@ -572,7 +583,7 @@ handle_click <- function (token) {
         params = list (clicked_at, token)
     )
 
-    postmark_send (
+    sender (
         to = search [["notify_email"]],
         subject = "rOpenSci editor search: new response",
         html_body = paste0 (
@@ -589,35 +600,16 @@ handle_click <- function (token) {
     )
 }
 
-#' Deactivate a volunteer search and delete all associated data
+#' Delete all rows belonging to a single search
 #'
 #' Sets \code{active = 0} first as a guard against concurrent clicks, then
 #' deletes all recipient rows followed by the search row itself.
 #'
-#' @param repo GitHub review repository in \code{org/repo} format.
-#' @param issue_id Integer issue number in the review repository.
-#' @return Named list with \code{deactivated} (logical) and \code{issue_ref}.
-#' @family email
-#' @export
-deactivate_search <- function (repo, issue_id) {
-
-    email_db_init <- utils::getFromNamespace ("email_db_init", "roreviewapi")
-
-    issue_ref <- paste0 (repo, "/issues/", as.integer (issue_id) [[1L]])
-
-    con <- email_db_init ()
-    on.exit (DBI::dbDisconnect (con))
-
-    existing <- DBI::dbGetQuery (
-        con,
-        "SELECT id FROM searches WHERE issue_ref = ?",
-        params = list (issue_ref)
-    )
-    if (nrow (existing) == 0L) {
-        stop ("No search found for '", issue_ref, "'")
-    }
-    search_id <- existing [["id"]]
-
+#' @param con Open \pkg{DBI} connection.
+#' @param search_id Integer id of the row in \code{searches} to remove.
+#' @return Nothing; called for its side effect.
+#' @noRd
+delete_search_rows <- function (con, search_id) {
     DBI::dbExecute (
         con,
         "UPDATE searches SET active = 0 WHERE id = ?",
@@ -633,6 +625,78 @@ deactivate_search <- function (repo, issue_id) {
         "DELETE FROM searches WHERE id = ?",
         params = list (search_id)
     )
+    invisible ()
+}
+
+#' Deactivate a volunteer search and delete all associated data
+#'
+#' @param repo GitHub review repository in \code{org/repo} format.
+#' @param issue_id Integer issue number in the review repository.
+#' @return Named list with \code{deactivated} (logical) and \code{issue_ref}.
+#' @family email
+#' @export
+deactivate_search <- function (repo, issue_id) {
+
+    email_db_init <- utils::getFromNamespace ("email_db_init", "roreviewapi")
+    delete_search_rows <-
+        utils::getFromNamespace ("delete_search_rows", "roreviewapi")
+
+    issue_ref <- paste0 (repo, "/issues/", as.integer (issue_id) [[1L]])
+
+    con <- email_db_init ()
+    on.exit (DBI::dbDisconnect (con))
+
+    existing <- DBI::dbGetQuery (
+        con,
+        "SELECT id FROM searches WHERE issue_ref = ?",
+        params = list (issue_ref)
+    )
+    if (nrow (existing) == 0L) {
+        stop ("No search found for '", issue_ref, "'")
+    }
+
+    delete_search_rows (con, existing [["id"]])
 
     list (deactivated = TRUE, issue_ref = issue_ref)
+}
+
+#' Auto-deactivate and delete stale volunteer searches
+#'
+#' Searches are never automatically closed otherwise, so this is intended to
+#' be called periodically (see \code{serve_api()}) to stop searches that are
+#' never explicitly deactivated from accumulating in the database forever.
+#' Any search whose \code{created_at} is older than \code{max_age_days} is
+#' deactivated and has all its data removed, exactly as \code{deactivate_search()}
+#' does for a single search.
+#'
+#' @param max_age_days Default: 100. Integer number of days after creation at
+#' which a search is considered stale and is automatically deactivated.
+#' @return Integer count of searches deactivated, invisibly.
+#' @family email
+#' @export
+deactivate_stale_searches <- function (max_age_days = 100L) {
+
+    email_db_init <- utils::getFromNamespace ("email_db_init", "roreviewapi")
+    delete_search_rows <-
+        utils::getFromNamespace ("delete_search_rows", "roreviewapi")
+
+    con <- email_db_init ()
+    on.exit (DBI::dbDisconnect (con))
+
+    cutoff <- strftime (
+        Sys.time () - as.numeric (max_age_days) * 86400,
+        "%Y-%m-%dT%H:%M:%SZ",
+        tz = "UTC"
+    )
+    stale <- DBI::dbGetQuery (
+        con,
+        "SELECT id FROM searches WHERE created_at < ?",
+        params = list (cutoff)
+    )
+
+    for (search_id in stale [["id"]]) {
+        delete_search_rows (con, search_id)
+    }
+
+    invisible (nrow (stale))
 }

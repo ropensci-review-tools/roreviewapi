@@ -13,6 +13,7 @@
 ^codemeta\.json$
 ^docker-compose\.yml$
 ^docs$
+^gmailr_token$
 ^inst/WORDLIST$
 ^inst/precommit$
 ^makefile$

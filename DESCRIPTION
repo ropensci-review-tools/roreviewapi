@@ -1,6 +1,6 @@
 Package: roreviewapi
 Title: Plumber API to report package structure and function
-Version: 0.2.1.021
+Version: 0.2.1.030
 Authors@R: 
     person("Mark", "Padgham", , "mark.padgham@email.com", role = c("aut", "cre"),
            comment = c(ORCID = "0000-0003-2172-5265"))
@@ -22,6 +22,7 @@ Imports:
     gh,
     ghql,
     gitcreds,
+    gmailr,
     here,
     httr2,
     jsonlite,
@@ -61,4 +62,4 @@ Roxygen: list(markdown = TRUE)
 SystemRequirements: gh, dos2unix
 Config/testthat/edition: 3
 Config/ropensci/maintainer: staff
-Config/roxygen2/version: 8.0.0
+Config/roxygen2/version: 8.1.0

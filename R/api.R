@@ -82,6 +82,16 @@ serve_api <- function (port = 8000L,
     }
     schedule_notify_refresh ()
 
+    # ----------stale search cleanup set up----------
+    deactivate_stale_searches ()
+    schedule_stale_search_cleanup <- function () {
+        later::later (function () {
+            deactivate_stale_searches ()
+            schedule_stale_search_cleanup ()
+        }, delay = 86400)
+    }
+    schedule_stale_search_cleanup ()
+
     # ----------plumber process set up----------
     pr <- plumber::pr (f)
 
