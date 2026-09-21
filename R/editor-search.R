@@ -395,6 +395,8 @@ send_search <- function (repourl, repo, issue_id,
         utils::getFromNamespace ("generate_email_token", "roreviewapi")
     gmail_send_batch <-
         utils::getFromNamespace ("gmail_send_batch", "roreviewapi")
+    delete_search_rows <-
+        utils::getFromNamespace ("delete_search_rows", "roreviewapi")
 
     if (is.null (fetcher)) fetcher <- get_editor_emails
     if (is.null (sender)) sender <- gmail_send_batch
@@ -453,11 +455,11 @@ send_search <- function (repourl, repo, issue_id,
         params = list (issue_ref)
     )
     if (nrow (existing) > 0L) {
-        stop (
-            "A search for '", issue_ref, "' already exists ",
-            "(search_id=", existing [["id"]], "). ",
-            "Call deactivate_search() first."
+        message (
+            "[send_search] existing search for '", issue_ref,
+            "' (search_id=", existing [["id"]], "); deleting and starting new"
         )
+        delete_search_rows (con, existing [["id"]])
     }
 
     created_at <- strftime (Sys.time (), "%Y-%m-%dT%H:%M:%SZ", tz = "UTC")

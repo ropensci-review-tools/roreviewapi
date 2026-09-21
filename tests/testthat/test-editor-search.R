@@ -78,6 +78,41 @@ test_that ("send_search inserts correct rows", {
     expect_true (all (is.na (recipients$clicked_at)))
 })
 
+test_that ("send_search replaces an existing search for the same issue", {
+    local_notify_cache ()
+
+    result1 <- send_search (
+        repourl       = "https://github.com/org/pkg",
+        repo          = "ropensci/software-review",
+        issue_id      = 123L,
+        fetcher       = email_fetcher,
+        stats_checker = stats_checker_false,
+        sender        = gmail_send_batch_mock
+    )
+
+    result2 <- send_search (
+        repourl       = "https://github.com/org/pkg",
+        repo          = "ropensci/software-review",
+        issue_id      = 123L,
+        fetcher       = email_fetcher,
+        stats_checker = stats_checker_false,
+        sender        = gmail_send_batch_mock
+    )
+
+    expect_false (identical (result1$search_id, result2$search_id))
+
+    con <- email_db_init ()
+    on.exit (DBI::dbDisconnect (con))
+
+    searches <- DBI::dbReadTable (con, "searches")
+    recipients <- DBI::dbReadTable (con, "recipients")
+
+    expect_equal (nrow (searches), 1L)
+    expect_equal (searches$id, result2$search_id)
+    expect_equal (nrow (recipients), 2L)
+    expect_true (all (recipients$search_id == result2$search_id))
+})
+
 test_that ("send_search rejects invalid inputs", {
     local_notify_cache ()
     expect_error (send_search ("", "ropensci/software-review", 123L,
