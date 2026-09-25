@@ -316,11 +316,36 @@ gmail_send_batch <- function (emails, links, subject, repo, issue_id) {
         error = function (e) NULL
     )
     pkg_info <- ""
+
     if (!is.null (desc_dat)) {
-        auts_txt <- tryCatch (
-            paste (format (desc_dat$auts), collapse = ", "),
-            error = function (e) ""
+        pkg_info <- paste0 (
+            "<p><strong>Package:</strong> ", desc_dat$package, "<br>"
         )
+
+        auts <- desc_dat$auts
+        desc_index <- function (auts, what = "aut") {
+            which (vapply (auts, function (i) {
+                what %in% i$role
+            }, logical (1L)))
+        }
+        auts <- auts [desc_index (auts, "aut")]
+        cre_index <- desc_index (auts, "cre")
+        index <- c (cre_index, seq_along (auts) [-cre_index])
+        if (length (index) > 0L) {
+
+            auts_txt <- vapply (auts [index], function (i) {
+                paste (i$given, i$family)
+            }, character (1L))
+            pkg_info <- paste0 (
+                pkg_info,
+                "<strong>Author",
+                ifelse (length (auts_txt) == 1L, "", "s"),
+                ":</strong> ",
+                paste0 (auts_txt, collapse = ", "),
+                "<br>"
+            )
+        }
+
         pkg_info <- paste0 (
             "<p><strong>Package:</strong> ", desc_dat$package, "<br>",
             "<strong>Authors:</strong> ", auts_txt, "<br>",
@@ -345,6 +370,56 @@ gmail_send_batch <- function (emails, links, subject, repo, issue_id) {
     })
 
     invisible (resps)
+}
+
+get_desc_aut_data <- function (repo, issue_id) {
+
+    desc_dat <- tryCatch (
+        get_desc_data (repo, issue_id),
+        error = function (e) NULL
+    )
+    if (is.null (desc_dat)) {
+        return ("")
+    }
+
+    pkg_info <- paste0 (
+        "<p><strong>Package:</strong> ", desc_dat$package, "<br>"
+    )
+
+    auts <- desc_dat$auts
+    desc_index <- function (auts, what = "aut") {
+        which (vapply (auts, function (i) {
+            what %in% i$role
+        }, logical (1L)))
+    }
+    auts <- auts [desc_index (auts, "aut")]
+    cre_index <- desc_index (auts, "cre")
+    index <- c (cre_index, seq_along (auts) [-cre_index])
+    if (length (index) > 0L) {
+
+        auts_txt <- vapply (auts [index], function (i) {
+            paste (i$given, i$family)
+        }, character (1L))
+        pkg_info <- paste0 (
+            pkg_info,
+            "<strong>Author",
+            ifelse (length (auts_txt) == 1L, "", "s"),
+            ":</strong> ",
+            paste0 (auts_txt, collapse = ", "),
+            "<br>"
+        )
+    }
+
+    if ("desc_text" %in% names (desc_dat)) {
+
+        pkg_info <- paste0 (
+            pkg_info,
+            "<strong>Description:</strong> ",
+            desc_dat$desc_text
+        )
+    }
+
+    paste0 (pkg_info, "</p>")
 }
 
 #' Send a batch of editor search emails
