@@ -311,7 +311,7 @@ gmail_send_batch <- function (emails, links, subject, repo, issue_id) {
 
     issue_url <- paste0 ("https://github.com/", repo, "/issues/", issue_id)
 
-    pkg_info <- get_desc_info (repo, issue_id)
+    pkg_info <- get_desc_info_from_issue (repo, issue_id)
 
     resps <- lapply (seq_along (emails), function (i) {
         html_body <- paste0 (
@@ -340,7 +340,7 @@ gmail_send_batch <- function (emails, links, subject, repo, issue_id) {
 #' @return A formatted text string containing information on (package name,
 #' authors, description).
 #' @noRd
-get_desc_info <- function (repo, issue_id) {
+get_desc_info_from_issue <- function (repo, issue_id) {
 
     desc_dat <- tryCatch (
         get_desc_data (repo, issue_id),
