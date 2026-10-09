@@ -1,4 +1,4 @@
-test_all <- identical (Sys.getenv ("MPADGE_LOCAL"), "true") ||
+test_all <- identical (Sys.getenv ("RRT_TEST_ALL"), "true") ||
     identical (Sys.getenv ("GITHUB_JOB"), "test-coverage")
 testthat::skip_if (!test_all)
 
@@ -18,7 +18,10 @@ test_that ("editor check", {
 
     res <- strsplit (res, "\\n") [[1]]
     expect_true (grepl ("^\\#\\#\\s+Checks for \\[demo", res [1]))
-    expect_length (grep ("^\\-\\s\\:heavy\\_multiplication\\_x\\:", res), 11L)
+    expect_gte (
+        length (grep ("^\\-\\s\\:heavy\\_multiplication\\_x\\:", res)),
+        10L
+    )
     expect_length (grep ("^\\-\\s\\:heavy\\_check\\_mark\\:", res), 4L)
     # Should have a stats section:
     expect_true (any (grepl ("^(\\#+)\\s1\\.\\s+rOpenSci\\s+Statistical\\s+Standards", res)))

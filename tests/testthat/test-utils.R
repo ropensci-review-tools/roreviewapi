@@ -1,4 +1,4 @@
-test_all <- identical (Sys.getenv ("MPADGE_LOCAL"), "true")
+test_all <- identical (Sys.getenv ("RRT_TEST_ALL"), "true")
 # identical (Sys.getenv ("GITHUB_JOB"), "test-coverage")
 testthat::skip_if (!test_all)
 
@@ -14,7 +14,7 @@ test_that ("utils gh user", {
     expect_type (g, "character")
     expect_length (g, 1L)
 
-    is_local <- identical (Sys.getenv ("MPADGE_LOCAL"), "true")
+    is_local <- identical (Sys.getenv ("RRT_TEST_ALL"), "true")
     is_auth <- is_user_authorized ()
     expect_equal (is_user_authorized (), is_auth)
 })
