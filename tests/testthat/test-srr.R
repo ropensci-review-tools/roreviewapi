@@ -1,4 +1,4 @@
-test_all <- identical (Sys.getenv ("MPADGE_LOCAL"), "true") ||
+test_all <- identical (Sys.getenv ("RRT_TEST_ALL"), "true") ||
     identical (Sys.getenv ("GITHUB_JOB"), "test-coverage")
 testthat::skip_if (!test_all)
 
@@ -26,8 +26,11 @@ test_that ("srr", {
     s_todo <- regmatches (s_todo, regexpr ("\\{.*\\}", s_todo))
     s_todo <- gsub ("\\{|\\}", "", s_todo)
 
-    x_g <- srr:::get_standards_checklists ("general")
-    x_r <- srr:::get_standards_checklists ("regression")
+    get_standards_checklists <- utils::getFromNamespace (
+        "get_standards_checklists", "srr"
+    )
+    x_g <- get_standards_checklists ("general")
+    x_r <- get_standards_checklists ("regression")
     x_r <- x_r [-(grep (s_todo, x_r, fixed = TRUE))]
 
     x_s <- c (x_g, x_r)
