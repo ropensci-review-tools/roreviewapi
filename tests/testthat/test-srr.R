@@ -36,10 +36,9 @@ test_that ("srr", {
     x_s <- c (x_g, x_r)
     ptn <- "- [ ] **"
     x_s <- x_s [grep (ptn, x_s, fixed = TRUE)]
-    x_s <- gsub (ptn, "#' @srrstats {", x_s [grep (ptn, x_s, fixed = TRUE)], fixed = TRUE)
-    x_s <- gsub ("\\*\\*G", "{G", x_s)
-    x_s <- gsub ("\\*\\*R", "{R", x_s)
-    x_s <- gsub ("\\*\\*", "}", x_s)
+    x_s <- gsub ("- [ ]", "#' @srrstats", x_s, fixed = TRUE)
+    ptn <- "\\*\\*((RE|G)[0-9]+\\.[0-9]+[a-z]?)\\*\\*"
+    x_s <- gsub (ptn, "{\\1}", x_s)
     x_s <- gsub ("^\\s+\\#", "#", x_s)
 
     writeLines (c (x, x_s, "NULL"), f)
