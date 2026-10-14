@@ -93,22 +93,16 @@ get_issue_body <- function (orgrepo, issue_num) {
     org <- strsplit (orgrepo, "/|%2F") [[1]] [1]
     repo <- strsplit (orgrepo, "/|%2F") [[1]] [2]
 
-    token <- get_gh_token ()
-
-    gh_cli <- ghql::GraphqlClient$new (
-        url = "https://api.github.com/graphql",
-        headers = list (Authorization = paste0 ("Bearer ", token))
-    )
-
-    qry <- issue_body_qry (gh_cli,
+    qry <- issue_body_qry (
         org = org,
         repo = repo,
         issue_num = issue_num
     )
 
-    x <- gh_cli$exec (qry$queries$get_template)
-    x <- jsonlite::fromJSON (x)
-    strsplit (x$data$repository$issue$body, "\\n") [[1]]
+    x <- gh::gh_gql (qry)
+    body <- x$data$repository$issue$body
+    if (is.null (body)) body <- ""
+    strsplit (body, "\\n") [[1]]
 
 }
 
@@ -293,27 +287,33 @@ issue_has_pkgmatch <- function (orgrepo, issue_num) {
     org <- strsplit (orgrepo, "/|%2F") [[1]] [1]
     repo <- strsplit (orgrepo, "/|%2F") [[1]] [2]
 
-    token <- get_gh_token ()
-
-    gh_cli <- ghql::GraphqlClient$new (
-        url = "https://api.github.com/graphql",
-        headers = list (Authorization = paste0 ("Bearer ", token))
-    )
-
-    qry <- issue_cmt_qry (gh_cli,
+    qry <- issue_cmt_qry (
         org = org,
         repo = repo,
         issue_num = issue_num
     )
 
-    x <- gh_cli$exec (qry$queries$get_template)
-    x <- jsonlite::fromJSON (x)
+    x <- gh::gh_gql (qry)
     cmts <- x$data$repository$issue$comments$nodes
-    if (length (cmts) == 0L || nrow (cmts) < 1L) {
+    if (length (cmts) == 0L) {
         return (FALSE)
     }
-    cmts_bot <- cmts [which (cmts$author$login == "ropensci-review-bot"), ]
-    cmts_bot_body <- strsplit (cmts_bot$body, "\\n")
+    is_bot <- vapply (
+        cmts,
+        function (i) identical (i$author$login, "ropensci-review-bot"),
+        logical (1L)
+    )
+    cmts_bot <- cmts [is_bot]
+    cmts_bot_body <- strsplit (vapply (
+        cmts_bot,
+        function (i) if (is.null (i$body)) "" else i$body,
+        character (1L)
+    ), "\\n")
+    cmts_bot_created <- vapply (
+        cmts_bot,
+        function (i) i$createdAt,
+        character (1L)
+    )
     ptn <- "^\\s*\\#\\#\\sFive\\smost\\ssimilar"
     pkgmatch_cmt <- vapply (cmts_bot_body, function (b) {
         any (grepl (ptn, b))
@@ -321,42 +321,26 @@ issue_has_pkgmatch <- function (orgrepo, issue_num) {
     ret <- NULL
     if (any (pkgmatch_cmt)) {
         cmt_index <- which (pkgmatch_cmt)
-        ret <- max (cmts_bot$createdAt [cmt_index])
+        ret <- max (cmts_bot_created [cmt_index])
     }
 
     return (ret)
 }
 
-#' Get GitHub token
-#'
-#' (Same as in `pkgcheck`)
-#' @return The value of the GitHub access token
-#' @family github
-#' @noRd
-get_gh_token <- function () {
+issue_body_qry <- function (org, repo, issue_num) {
 
-    gitcreds::gitcreds_get ()$password
-}
-
-issue_body_qry <- function (gh_cli, org, repo, issue_num) {
-
-    q <- paste0 ("{
+    paste0 ("{
         repository(owner:\"", org, "\", name:\"", repo, "\") {
             issue(number:", issue_num, ") {
                   body
             }
         }
     }")
-
-    qry <- ghql::Query$new ()
-    qry$query ("get_template", q)
-
-    return (qry)
 }
 
-issue_cmt_qry <- function (gh_cli, org, repo, issue_num) {
+issue_cmt_qry <- function (org, repo, issue_num) {
 
-    q <- paste0 ("{
+    paste0 ("{
         repository(owner:\"", org, "\", name:\"", repo, "\") {
             issue(number:", issue_num, ") {
                 comments (first: 30) {
@@ -371,11 +355,6 @@ issue_cmt_qry <- function (gh_cli, org, repo, issue_num) {
             }
         }
     }")
-
-    qry <- ghql::Query$new ()
-    qry$query ("get_template", q)
-
-    return (qry)
 }
 
 #' Check whether issue template has sub-directory
