@@ -8,7 +8,7 @@
   "codeRepository": "https://github.com/ropensci-review-tools/roreviewapi",
   "issueTracker": "https://github.com/ropensci-review-tools/roreviewapi/issues",
   "license": "https://spdx.org/licenses/GPL-3.0",
-  "version": "0.2.1.041",
+  "version": "0.2.1.042",
   "programmingLanguage": {
     "@type": "ComputerLanguage",
     "name": "R",
@@ -231,18 +231,6 @@
     },
     "10": {
       "@type": "SoftwareApplication",
-      "identifier": "ghql",
-      "name": "ghql",
-      "provider": {
-        "@id": "https://cran.r-project.org",
-        "@type": "Organization",
-        "name": "Comprehensive R Archive Network (CRAN)",
-        "url": "https://cran.r-project.org"
-      },
-      "sameAs": "https://CRAN.R-project.org/package=ghql"
-    },
-    "11": {
-      "@type": "SoftwareApplication",
       "identifier": "gitcreds",
       "name": "gitcreds",
       "provider": {
@@ -253,7 +241,7 @@
       },
       "sameAs": "https://CRAN.R-project.org/package=gitcreds"
     },
-    "12": {
+    "11": {
       "@type": "SoftwareApplication",
       "identifier": "gmailr",
       "name": "gmailr",
@@ -265,7 +253,7 @@
       },
       "sameAs": "https://CRAN.R-project.org/package=gmailr"
     },
-    "13": {
+    "12": {
       "@type": "SoftwareApplication",
       "identifier": "here",
       "name": "here",
@@ -277,7 +265,7 @@
       },
       "sameAs": "https://CRAN.R-project.org/package=here"
     },
-    "14": {
+    "13": {
       "@type": "SoftwareApplication",
       "identifier": "httr2",
       "name": "httr2",
@@ -289,7 +277,7 @@
       },
       "sameAs": "https://CRAN.R-project.org/package=httr2"
     },
-    "15": {
+    "14": {
       "@type": "SoftwareApplication",
       "identifier": "jsonlite",
       "name": "jsonlite",
@@ -301,7 +289,7 @@
       },
       "sameAs": "https://CRAN.R-project.org/package=jsonlite"
     },
-    "16": {
+    "15": {
       "@type": "SoftwareApplication",
       "identifier": "later",
       "name": "later",
@@ -313,7 +301,7 @@
       },
       "sameAs": "https://CRAN.R-project.org/package=later"
     },
-    "17": {
+    "16": {
       "@type": "SoftwareApplication",
       "identifier": "logger",
       "name": "logger",
@@ -325,7 +313,7 @@
       },
       "sameAs": "https://CRAN.R-project.org/package=logger"
     },
-    "18": {
+    "17": {
       "@type": "SoftwareApplication",
       "identifier": "magrittr",
       "name": "magrittr",
@@ -337,12 +325,12 @@
       },
       "sameAs": "https://CRAN.R-project.org/package=magrittr"
     },
-    "19": {
+    "18": {
       "@type": "SoftwareApplication",
       "identifier": "methods",
       "name": "methods"
     },
-    "20": {
+    "19": {
       "@type": "SoftwareApplication",
       "identifier": "openssl",
       "name": "openssl",
@@ -354,7 +342,7 @@
       },
       "sameAs": "https://CRAN.R-project.org/package=openssl"
     },
-    "21": {
+    "20": {
       "@type": "SoftwareApplication",
       "identifier": "pak",
       "name": "pak",
@@ -366,13 +354,19 @@
       },
       "sameAs": "https://CRAN.R-project.org/package=pak"
     },
-    "22": {
+    "21": {
       "@type": "SoftwareApplication",
       "identifier": "pkgcheck",
       "name": "pkgcheck",
+      "provider": {
+        "@id": "https://cran.r-project.org",
+        "@type": "Organization",
+        "name": "Comprehensive R Archive Network (CRAN)",
+        "url": "https://cran.r-project.org"
+      },
       "sameAs": "https://github.com/ropensci-review-tools/pkgcheck"
     },
-    "23": {
+    "22": {
       "@type": "SoftwareApplication",
       "identifier": "plumber",
       "name": "plumber",
@@ -384,7 +378,7 @@
       },
       "sameAs": "https://CRAN.R-project.org/package=plumber"
     },
-    "24": {
+    "23": {
       "@type": "SoftwareApplication",
       "identifier": "rappdirs",
       "name": "rappdirs",
@@ -396,7 +390,7 @@
       },
       "sameAs": "https://CRAN.R-project.org/package=rappdirs"
     },
-    "25": {
+    "24": {
       "@type": "SoftwareApplication",
       "identifier": "RSQLite",
       "name": "RSQLite",
@@ -408,7 +402,7 @@
       },
       "sameAs": "https://CRAN.R-project.org/package=RSQLite"
     },
-    "26": {
+    "25": {
       "@type": "SoftwareApplication",
       "identifier": "srr",
       "name": "srr",
@@ -420,7 +414,7 @@
       },
       "sameAs": "https://CRAN.R-project.org/package=srr"
     },
-    "27": {
+    "26": {
       "@type": "SoftwareApplication",
       "identifier": "tictoc",
       "name": "tictoc",
@@ -432,7 +426,7 @@
       },
       "sameAs": "https://CRAN.R-project.org/package=tictoc"
     },
-    "28": {
+    "27": {
       "@type": "SoftwareApplication",
       "identifier": "xml2",
       "name": "xml2",
@@ -446,7 +440,7 @@
     },
     "SystemRequirements": "gh, dos2unix"
   },
-  "fileSize": "218.217KB",
+  "fileSize": "255.273KB",
   "readme": "https://github.com/ropensci-review-tools/roreviewapi/blob/main/README.md",
   "contIntegration": [
     "https://github.com/ropensci-review-tools/roreviewapi/actions/workflows/R-CMD-check.yaml",
