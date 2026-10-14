@@ -99,7 +99,7 @@ get_issue_body <- function (orgrepo, issue_num) {
         issue_num = issue_num
     )
 
-    x <- gh::gh_gql (qry, .token = get_gh_token ())
+    x <- gh::gh_gql (qry)
     body <- x$data$repository$issue$body
     if (is.null (body)) body <- ""
     strsplit (body, "\\n") [[1]]
@@ -293,7 +293,7 @@ issue_has_pkgmatch <- function (orgrepo, issue_num) {
         issue_num = issue_num
     )
 
-    x <- gh::gh_gql (qry, .token = get_gh_token ())
+    x <- gh::gh_gql (qry)
     cmts <- x$data$repository$issue$comments$nodes
     if (length (cmts) == 0L) {
         return (FALSE)
@@ -325,17 +325,6 @@ issue_has_pkgmatch <- function (orgrepo, issue_num) {
     }
 
     return (ret)
-}
-
-#' Get GitHub token
-#'
-#' (Same as in `pkgcheck`)
-#' @return The value of the GitHub access token
-#' @family github
-#' @noRd
-get_gh_token <- function () {
-
-    gitcreds::gitcreds_get ()$password
 }
 
 issue_body_qry <- function (org, repo, issue_num) {
