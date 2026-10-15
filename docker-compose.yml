@@ -18,6 +18,7 @@ services:
   plumber:
     build: .
     restart: always
+    env_file: .env
     volumes:
       - /srv/roreviewapi/data:/data/email
     environment:

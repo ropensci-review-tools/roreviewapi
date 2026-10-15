@@ -5,6 +5,7 @@ DOCKERFILE=$PROJDIR/Dockerfile
 COMPOSE_FILE=$PROJDIR/docker-compose.yml
 
 cd $PROJDIR
+git pull --ff-only
 
 docker-compose -f $COMPOSE_FILE down
 docker system prune --all --volumes --force

@@ -21,3 +21,4 @@ token
 inst/WORDLIST
 gmailr_token
 client_secret_*.apps.googleusercontent.com.json
+.env
