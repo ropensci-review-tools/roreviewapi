@@ -203,8 +203,8 @@ docker-compose up -d --build
 Routine redeployment is handled by `restart.sh`, which runs `git pull
 --ff-only`, tears down and rebuilds the stack, and brings it back up.  It is
 intended to be called from cron.  It locates the project directory from its own
-path, so it needs no editing, but `.env` must sit alongside it.  Since `.env` is untracked, secrets persist
-across pulls.
+path, so it needs no editing, but `.env` must sit alongside it.  Since `.env`
+is untracked, secrets persist across pulls.
 
 The compose file:
 
@@ -215,3 +215,78 @@ The compose file:
 - Mounts `/etc/letsencrypt` read-only into the nginx container so the
   certificate is available.
 - Exposes ports 80 (HTTP → HTTPS redirect) and 443 (HTTPS).
+
+### Cron job
+
+`restart.sh` is run on a schedule so that the droplet picks up new commits and
+rebuilds fresh images without manual intervention.  One authorized admin of the
+Digital Ocean droplet needs to configure the cron job.
+
+The job must run as a user that can run `docker-compose` (either root or a
+member of the `docker` group).  The following uses root's crontab, so that the
+log file below can be written to `/var/log`.
+
+#### Initial setup
+
+1. Check whether a job already exists (see "Viewing current jobs" below), to
+   avoid creating a duplicate.
+2. Open the crontab for editing; if prompted, choose an editor (`nano` is the
+   easiest):
+
+   ```bash
+   sudo crontab -e
+   ```
+
+3. Add the following line, replacing the path with the absolute path to the
+   project checkout on the droplet:
+
+   ```bash
+   0 0 * * 2 /bin/bash /<path>/<to>/roreviewapi/restart.sh >> /var/log/roreviewapi-restart.log 2>&1
+   ```
+
+   This runs the script at 00:00 every Tuesday.  The five leading fields are
+   minute, hour, day of month, month, and day of week (0--7, where both 0 and 7
+   are Sunday).  [crontab.guru](https://crontab.guru) is useful for checking
+   a schedule.  The trailing redirect appends all output, including errors, to a
+   log file.
+
+4. Save and exit.  Cron picks up the change automatically; no restart of the
+   cron service is needed.
+
+An absolute path is required because cron does not run in the project
+directory.  `restart.sh` finds the project directory (and thus `.env`) from its
+own location, so it needs no other configuration.
+
+#### Viewing current jobs
+
+List the jobs in root's crontab with:
+
+```bash
+sudo crontab -l
+```
+
+Omit `sudo` to list the current user's own crontab instead.  Each user has a
+separate crontab, so if nothing appears, check the other user (or root) that
+may have been used to set the job up.
+
+#### Modifying or removing the job
+
+Re-open the crontab with `sudo crontab -e`, edit the line (for example, change
+the schedule fields), and save.  To disable the job without deleting it,
+comment the line out by prefixing it with `#`; to remove it, delete the line.
+Confirm the result with `sudo crontab -l`.
+
+#### Checking that it ran
+
+Inspect the log file written by the job:
+
+```bash
+tail -n 50 /var/log/roreviewapi-restart.log
+```
+
+and confirm the containers are up with `docker ps`.  To test the job without
+waiting for the schedule, run the same command by hand:
+
+```bash
+sudo /bin/bash /<path>/<to>/roreviewapi/restart.sh
+```
