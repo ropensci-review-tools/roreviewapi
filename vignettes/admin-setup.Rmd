@@ -23,7 +23,9 @@ knitr::opts_chunk$set (
 
 This vignette describes the one-time infrastructure steps required to deploy
 `roreviewapi` on a Digital Ocean droplet, including the editor volunteer search
-feature introduced in v0.2.
+feature introduced in v0.2.  Endpoints for that feature are described in the
+[editor search
+vignette](https://docs.ropensci.org/roreviewapi/articles/editorsearch.html).
 
 <div class="alert alert-info">
 The Software Peer Review Lead should set up a regular alert system to
@@ -92,15 +94,6 @@ container side of the bind-mounted data directory (see
 [Droplet preparation](#droplet-preparation)).  Place the corresponding files in
 `/srv/roreviewapi/data/` on the droplet.  That mount must remain read-write,
 because the Gmail token cache is written back during authentication.
-
-## Postmark
-
-1. Create a Postmark account at <https://postmarkapp.com>.
-2. Add and verify a sender address under **Sender Signatures**.  This address
-   will appear as the `From:` address on all outgoing emails and must be set as
-   `POSTMARK_FROM`.
-3. Navigate to **Servers → Your Server → API Tokens** and copy the server API
-   token.  Set this as `POSTMARK_API_TOKEN` in `.env`.
 
 ## AirTable
 
@@ -222,52 +215,3 @@ The compose file:
 - Mounts `/etc/letsencrypt` read-only into the nginx container so the
   certificate is available.
 - Exposes ports 80 (HTTP → HTTPS redirect) and 443 (HTTPS).
-
-## Editor search endpoints
-
-Four endpoints support the volunteer editor search workflow.  All require the
-shared `secret` token.
-
-### `GET /send_search`
-
-Fetches current editor email addresses from AirTable and GitHub, inserts a
-search record into the database, and dispatches personalised click-link emails
-via Postmark.  The submission type (standard vs. stats) is determined
-automatically from the GitHub issue template.
-
-Parameters: `repourl`, `repo` (org/repo), `issue_id`, `secret`.
-
-### `GET /click/<token>`
-
-Records a volunteer response.  Returns an HTTP 200 confirmation page, an
-"already used" page on duplicate clicks, or an "expired" page if the search
-has been deactivated.  Sends a notification email to the current
-editor-in-chief on the first valid click.
-
-No authentication required — the token itself is the credential.
-
-### `GET /list_searches`
-
-Returns a data frame of all active and inactive searches with recipient totals
-and click counts.  Use this to find the `repourl` value needed to deactivate a
-search.
-
-Parameters: `secret`.
-
-### `GET /deactivate_search`
-
-Marks the search inactive (preventing further click responses) and permanently
-deletes all recipient rows and the search record from the database.
-
-Parameters: `repourl`, `secret`.
-
-## Notify email cache
-
-At startup, `serve_api()` fetches the current editor-in-chief email address
-from AirTable and writes it to
-`/data/email/notify_email.txt` (alongside the SQLite database).  This cache is
-refreshed every 24 hours via a background timer.  If the AirTable call fails,
-the existing cached value is preserved and an error is logged.
-
-The cached address is used as the notification recipient whenever a volunteer
-clicks a search link.

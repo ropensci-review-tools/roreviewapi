@@ -1,0 +1,5 @@
+.env
+.git
+token
+gmailr_token
+client_secret_*.json
