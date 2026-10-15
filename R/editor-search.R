@@ -481,11 +481,14 @@ send_search <- function (repourl, repo, issue_id,
         stop ("fetcher returned no valid email addresses")
     }
 
-    if (gsub ("\\/.*$", "", repo) == "ropenscilabs") {
-        notify_address <- "mark@ropensci.org"
-    } else {
-        notify_address <- notify_email_read ()
-    }
+    # This condition will allow you to test 'ping editors' elsewhere with a
+    # hard-coded email:
+    #
+    # if (gsub ("\\/.*$", "", repo) == "ropenscilabs") { # for example
+    #     notify_address <- "myname@ropensci.org"
+    # } else { ...
+
+    notify_address <- notify_email_read ()
     message ("[send_search] notify_address=", notify_address)
 
     con <- email_db_init ()

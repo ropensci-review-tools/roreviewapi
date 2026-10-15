@@ -23,7 +23,9 @@ knitr::opts_chunk$set (
 
 This vignette describes the one-time infrastructure steps required to deploy
 `roreviewapi` on a Digital Ocean droplet, including the editor volunteer search
-feature introduced in v0.2.
+feature introduced in v0.2.  Endpoints for that feature are described in the
+[editor search
+vignette](https://docs.ropensci.org/roreviewapi/articles/editorsearch.html).
 
 <div class="alert alert-info">
 The Software Peer Review Lead should set up a regular alert system to
@@ -92,15 +94,6 @@ container side of the bind-mounted data directory (see
 [Droplet preparation](#droplet-preparation)).  Place the corresponding files in
 `/srv/roreviewapi/data/` on the droplet.  That mount must remain read-write,
 because the Gmail token cache is written back during authentication.
-
-## Postmark
-
-1. Create a Postmark account at <https://postmarkapp.com>.
-2. Add and verify a sender address under **Sender Signatures**.  This address
-   will appear as the `From:` address on all outgoing emails and must be set as
-   `POSTMARK_FROM`.
-3. Navigate to **Servers → Your Server → API Tokens** and copy the server API
-   token.  Set this as `POSTMARK_API_TOKEN` in `.env`.
 
 ## AirTable
 
@@ -210,8 +203,8 @@ docker-compose up -d --build
 Routine redeployment is handled by `restart.sh`, which runs `git pull
 --ff-only`, tears down and rebuilds the stack, and brings it back up.  It is
 intended to be called from cron.  It locates the project directory from its own
-path, so it needs no editing, but `.env` must sit alongside it.  Since `.env` is untracked, secrets persist
-across pulls.
+path, so it needs no editing, but `.env` must sit alongside it.  Since `.env`
+is untracked, secrets persist across pulls.
 
 The compose file:
 
@@ -223,51 +216,140 @@ The compose file:
   certificate is available.
 - Exposes ports 80 (HTTP → HTTPS redirect) and 443 (HTTPS).
 
-## Editor search endpoints
+### Cron job
 
-Four endpoints support the volunteer editor search workflow.  All require the
-shared `secret` token.
+`restart.sh` is run on a schedule so that the droplet picks up new commits and
+rebuilds fresh images without manual intervention.  One authorized admin of the
+Digital Ocean droplet needs to configure the cron job.
 
-### `GET /send_search`
+The job must run as a user that can run `docker-compose` (either root or a
+member of the `docker` group).  The following uses root's crontab, so that the
+log file below can be written to `/var/log`.
 
-Fetches current editor email addresses from AirTable and GitHub, inserts a
-search record into the database, and dispatches personalised click-link emails
-via Postmark.  The submission type (standard vs. stats) is determined
-automatically from the GitHub issue template.
+#### Initial setup
 
-Parameters: `repourl`, `repo` (org/repo), `issue_id`, `secret`.
+1. Check whether a job already exists (see "Viewing current jobs" below), to
+   avoid creating a duplicate.
+2. Open the crontab for editing; if prompted, choose an editor (`nano` is the
+   easiest):
 
-### `GET /click/<token>`
+   ```bash
+   sudo crontab -e
+   ```
 
-Records a volunteer response.  Returns an HTTP 200 confirmation page, an
-"already used" page on duplicate clicks, or an "expired" page if the search
-has been deactivated.  Sends a notification email to the current
-editor-in-chief on the first valid click.
+3. Add the following line, replacing the path with the absolute path to the
+   project checkout on the droplet:
 
-No authentication required — the token itself is the credential.
+   ```bash
+   0 0 * * 2 /bin/bash /<path>/<to>/roreviewapi/restart.sh >> /var/log/roreviewapi-restart.log 2>&1
+   ```
 
-### `GET /list_searches`
+   This runs the script at 00:00 every Tuesday.  The five leading fields are
+   minute, hour, day of month, month, and day of week (0--7, where both 0 and 7
+   are Sunday).  [crontab.guru](https://crontab.guru) is useful for checking
+   a schedule.  The trailing redirect appends all output, including errors, to a
+   log file.
 
-Returns a data frame of all active and inactive searches with recipient totals
-and click counts.  Use this to find the `repourl` value needed to deactivate a
-search.
+4. Save and exit.  Cron picks up the change automatically; no restart of the
+   cron service is needed.
 
-Parameters: `secret`.
+An absolute path is required because cron does not run in the project
+directory.  `restart.sh` finds the project directory (and thus `.env`) from its
+own location, so it needs no other configuration.
 
-### `GET /deactivate_search`
+#### Viewing current jobs
 
-Marks the search inactive (preventing further click responses) and permanently
-deletes all recipient rows and the search record from the database.
+List the jobs in root's crontab with:
 
-Parameters: `repourl`, `secret`.
+```bash
+sudo crontab -l
+```
 
-## Notify email cache
+Omit `sudo` to list the current user's own crontab instead.  Each user has a
+separate crontab, so if nothing appears, check the other user (or root) that
+may have been used to set the job up.
 
-At startup, `serve_api()` fetches the current editor-in-chief email address
-from AirTable and writes it to
-`/data/email/notify_email.txt` (alongside the SQLite database).  This cache is
-refreshed every 24 hours via a background timer.  If the AirTable call fails,
-the existing cached value is preserved and an error is logged.
+#### Modifying or removing the job
 
-The cached address is used as the notification recipient whenever a volunteer
-clicks a search link.
+Re-open the crontab with `sudo crontab -e`, edit the line (for example, change
+the schedule fields), and save.  To disable the job without deleting it,
+comment the line out by prefixing it with `#`; to remove it, delete the line.
+Confirm the result with `sudo crontab -l`.
+
+#### Checking that it ran
+
+Inspect the log file written by the job:
+
+```bash
+tail -n 50 /var/log/roreviewapi-restart.log
+```
+
+and confirm the containers are up with `docker ps`.  To test the job without
+waiting for the schedule, run the same command by hand:
+
+```bash
+sudo /bin/bash /<path>/<to>/roreviewapi/restart.sh
+```
+
+## Transferring maintenance
+
+Maintenance falls into two parts with very different transfer costs:
+
+- **Operations** (deploying, debugging, restarting): needs access only.
+  Nothing in `.env` changes.
+- **Credentials tied to an individual**: the Gmail authorization, and the
+  GitHub and AirTable tokens, belong to whoever created them.  These must be
+  re-created by the new maintainer if the outgoing person's accounts will be
+  closed.
+
+### Operations only
+
+When the new person only deploys and debugs, and the existing authorizing
+account stays active:
+
+1. Add their SSH key and `sudo` access on the droplet.
+2. Add them to the `roreviewapi` GitHub repository.
+3. Add them to the `ro-auto-email` Google Cloud project's IAM.
+4. Hand over this document and the contents of `.env` (securely, for example
+   via a password manager rather than email or chat).
+
+### Transferring credentials
+
+This is required if the outgoing maintainer's accounts will become unusable,
+for example on leaving the organization.  The values in `.env` that are tied to
+a person are:
+
+| Variable | Tied to | Action on transfer |
+|---|---|---|
+| `GITHUB_PAT` | GitHub account that created it | Replace with a token created by the new maintainer |
+| `AIRTABLE_API_KEY` | AirTable account that created it | Replace with a token created by the new maintainer (see [AirTable](#airtable) for the required scope) |
+| `GMAIL_AUTH_EMAIL`, `GMAIL_TOKEN_CACHE` | Google account that authorized `gmailr` | Replace, following the [Gmail transfer steps](https://docs.ropensci.org/roreviewapi/articles/editorsearch.html#transfer-maintenance) in the editor search vignette |
+| `GMAIL_OAUTH_CLIENT_SECRET`, `GMAIL_SENDER` | Google Cloud project and the `reviewbot@ropensci.org` alias | Unchanged if the same Cloud project and alias are kept |
+| `AIRTABLE_BASE_ID`, `ROREVIEWAPI_BASE_URL`, `PKGCHECK_TOKEN` | Not tied to a person | Unchanged unless the base, URL or pkgcheck service changes |
+
+The steps are then:
+
+1. The new maintainer creates their own GitHub and AirTable personal access
+   tokens, and completes the Gmail steps in the editor search vignette.
+2. Update `.env` on the droplet with the new values.
+3. Run `restart.sh` (or wait for the next scheduled run) so that the container
+   picks up the new `.env` and credentials:
+
+   ```bash
+   sudo /bin/bash /<path>/<to>/roreviewapi/restart.sh
+   ```
+
+4. Verify that the editor search workflow still sends and receives emails (see
+   the editor search vignette).
+5. Once the new setup works, the outgoing maintainer should revoke their old
+   GitHub and AirTable tokens, and the old Google grant.
+
+### Other items to update
+
+- **Cron job.** If the cron job was set up under the outgoing maintainer's
+  account, move it to root's crontab (see [Cron job](#cron-job)), or recreate
+  it under the new account.
+- **Git identity.** The `git config` lines in the `Dockerfile` hold the
+  `user.name` and `user.email` used for commits made inside the container.
+- **Uptime alert.** Whoever receives the deployment-status alert at the top of
+  this document should be updated.

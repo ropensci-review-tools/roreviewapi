@@ -27,7 +27,7 @@ authorized under a single Google account. Set that account once as an
 environment variable, and every later step refers back to it:
 
 ```bash
-export USER_EMAIL=mark@ropensci.org
+export USER_EMAIL=myname@ropensci.org
 ```
 
 This vignette complements the [admin setup
@@ -113,13 +113,12 @@ The `send_search` and `handle_click` endpoints each take an injectable
 | `GMAIL_TOKEN_CACHE` | `/data/email/gmailr_token` |
 | `GMAIL_AUTH_EMAIL` | `$USER_EMAIL` |
 
-Set these in a local `.env` file for local runs. In production they are
-baked into the image via `Dockerfile` `ENV` placeholders plus a `RUN echo ...
->> ~/.Renviron` line — fill in the real values directly in the `Dockerfile`
-on the droplet before building. Do **not** add them to
-`docker-compose.yml`'s `environment:` block: the droplet has no `.env`, so
-`${VAR}` there resolves to an empty string and overrides the Dockerfile's
-baked-in value.
+On the droplet, set these in the untracked `.env` file, as described in the
+[admin setup
+vignette](https://docs.ropensci.org/roreviewapi/articles/admin-setup.html#environment-variables);
+use a local `.env` file for local runs.  The two file paths are inside
+`/data/email/`, the container side of the bind-mounted data directory, so the
+files themselves go in `/srv/roreviewapi/data/` on the droplet (Section 6).
 
 ## 6. Deploy credentials to the droplet
 
@@ -149,25 +148,85 @@ sudo chmod 600 /srv/roreviewapi/data/gmailr_token/*
 
 ## 8. Transfer maintenance
 
+This section covers the Gmail-specific parts of transferring maintenance.
+Access, tokens for other services, the cron job, and the general redeployment
+steps are in the [admin setup
+vignette](https://docs.ropensci.org/roreviewapi/articles/admin-setup.html#transferring-maintenance).
+
 **Operations only** (a new person deploys/debugs, auth stays as
-`$USER_EMAIL`) — nothing about the token changes:
+`$USER_EMAIL`) — nothing about the token changes.  The only Google step is to
+add them to the `ro-auto-email` Google Cloud project's IAM.
 
-1. Add them to the `ro-auto-email` Google Cloud project's IAM.
-2. Add their SSH key / sudo access on the droplet.
-3. Add them to the `roreviewapi` GitHub repo.
-4. Hand over this document.
+**Authorizing identity itself** (needed if `myname@ropensci.org` becomes
+unusable, e.g. leaving the org).  The `.env` values affected are
+`GMAIL_AUTH_EMAIL` (the new maintainer's address) and the contents of the
+`GMAIL_TOKEN_CACHE` directory (a new token).  `GMAIL_SENDER` stays
+`reviewbot@ropensci.org`, and `GMAIL_OAUTH_CLIENT_SECRET` is unchanged as long
+as the same Cloud project and OAuth client are kept.
 
-**Authorizing identity itself** (needed if `mark@ropensci.org` becomes
-unusable, e.g. leaving the org):
-
-1. Add `reviewbot@ropensci.org` as a "Send mail as" alias under the new
-   maintainer's Gmail account.
-2. They run the authorization in Section 2 as themselves, with the same
-   `client_secret_....json`, producing their own `gmailr_token/`.
-3. Update `GMAIL_AUTH_EMAIL` (local `.env` and `Dockerfile` placeholder) to
-   their address; `GMAIL_SENDER` stays `reviewbot@ropensci.org`.
-4. Deploy their `client_secret_....json` and `gmailr_token/` to
-   `/srv/roreviewapi/data/`, replacing the old ones (Section 6).
-5. Rebuild and redeploy (`restart.sh`).
-6. Revoke the old grant from the departing account's Google Account →
+1. Add the new maintainer to the `ro-auto-email` Google Cloud project's IAM, so
+   they can download the `client_secret_....json`.  Because the consent screen
+   audience is **Internal**, their account must belong to the rOpenSci Google
+   Workspace; an account outside it cannot authorize the app.
+2. Add `reviewbot@ropensci.org` as a "Send mail as" alias under the new
+   maintainer's Gmail account (Section 3).
+3. They run the authorization in Section 2 as themselves (with
+   `USER_EMAIL` set to their own address), using the same
+   `client_secret_....json`, producing their own `gmailr_token/`.  The
+   `scopes` must be unchanged from those in `gmail_auth()`.
+4. Deploy their `gmailr_token/` (and `client_secret_....json`, if it changed)
+   to `/srv/roreviewapi/data/`, replacing the old ones (Section 6).  Remove the
+   old `gmailr_token` directory first, so that stale files do not remain.
+5. Update `GMAIL_AUTH_EMAIL` in the droplet's `.env` to their address.
+6. Redeploy by running `restart.sh`, then verify as in Section 7.
+7. Revoke the old grant from the departing account's Google Account →
    Security → "Third-party apps with account access".
+
+## Editor search endpoints
+
+Four endpoints support the volunteer editor search workflow.  All require the
+shared `secret` token.
+
+### `GET /send_search`
+
+Fetches current editor email addresses from AirTable and GitHub, inserts a
+search record into the database, and dispatches personalised click-link emails
+via Gmail.  The submission type (standard vs. stats) is determined
+automatically from the GitHub issue template.
+
+Parameters: `repourl`, `repo` (org/repo), `issue_id`, `secret`.
+
+### `GET /click/<token>`
+
+Records a volunteer response.  Returns an HTTP 200 confirmation page, an
+"already used" page on duplicate clicks, or an "expired" page if the search
+has been deactivated.  Sends a notification email to the current
+editor-in-chief on the first valid click.
+
+No authentication required — the token itself is the credential.
+
+### `GET /list_searches`
+
+Returns a data frame of all active and inactive searches with recipient totals
+and click counts.  Use this to find the `repourl` value needed to deactivate a
+search.
+
+Parameters: `secret`.
+
+### `GET /deactivate_search`
+
+Marks the search inactive (preventing further click responses) and permanently
+deletes all recipient rows and the search record from the database.
+
+Parameters: `repourl`, `secret`.
+
+## Notify email cache
+
+At startup, `serve_api()` fetches the current editor-in-chief email address
+from AirTable and writes it to
+`/data/email/notify_email.txt` (alongside the SQLite database).  This cache is
+refreshed every 24 hours via a background timer.  If the AirTable call fails,
+the existing cached value is preserved and an error is logged.
+
+The cached address is used as the notification recipient whenever a volunteer
+clicks a search link.
