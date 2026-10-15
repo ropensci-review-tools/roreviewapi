@@ -290,3 +290,66 @@ waiting for the schedule, run the same command by hand:
 ```bash
 sudo /bin/bash /<path>/<to>/roreviewapi/restart.sh
 ```
+
+## Transferring maintenance
+
+Maintenance falls into two parts with very different transfer costs:
+
+- **Operations** (deploying, debugging, restarting): needs access only.
+  Nothing in `.env` changes.
+- **Credentials tied to an individual**: the Gmail authorization, and the
+  GitHub and AirTable tokens, belong to whoever created them.  These must be
+  re-created by the new maintainer if the outgoing person's accounts will be
+  closed.
+
+### Operations only
+
+When the new person only deploys and debugs, and the existing authorizing
+account stays active:
+
+1. Add their SSH key and `sudo` access on the droplet.
+2. Add them to the `roreviewapi` GitHub repository.
+3. Add them to the `ro-auto-email` Google Cloud project's IAM.
+4. Hand over this document and the contents of `.env` (securely, for example
+   via a password manager rather than email or chat).
+
+### Transferring credentials
+
+This is required if the outgoing maintainer's accounts will become unusable,
+for example on leaving the organization.  The values in `.env` that are tied to
+a person are:
+
+| Variable | Tied to | Action on transfer |
+|---|---|---|
+| `GITHUB_PAT` | GitHub account that created it | Replace with a token created by the new maintainer |
+| `AIRTABLE_API_KEY` | AirTable account that created it | Replace with a token created by the new maintainer (see [AirTable](#airtable) for the required scope) |
+| `GMAIL_AUTH_EMAIL`, `GMAIL_TOKEN_CACHE` | Google account that authorized `gmailr` | Replace, following the [Gmail transfer steps](https://docs.ropensci.org/roreviewapi/articles/editorsearch.html#transfer-maintenance) in the editor search vignette |
+| `GMAIL_OAUTH_CLIENT_SECRET`, `GMAIL_SENDER` | Google Cloud project and the `reviewbot@ropensci.org` alias | Unchanged if the same Cloud project and alias are kept |
+| `AIRTABLE_BASE_ID`, `ROREVIEWAPI_BASE_URL`, `PKGCHECK_TOKEN` | Not tied to a person | Unchanged unless the base, URL or pkgcheck service changes |
+
+The steps are then:
+
+1. The new maintainer creates their own GitHub and AirTable personal access
+   tokens, and completes the Gmail steps in the editor search vignette.
+2. Update `.env` on the droplet with the new values.
+3. Run `restart.sh` (or wait for the next scheduled run) so that the container
+   picks up the new `.env` and credentials:
+
+   ```bash
+   sudo /bin/bash /<path>/<to>/roreviewapi/restart.sh
+   ```
+
+4. Verify that the editor search workflow still sends and receives emails (see
+   the editor search vignette).
+5. Once the new setup works, the outgoing maintainer should revoke their old
+   GitHub and AirTable tokens, and the old Google grant.
+
+### Other items to update
+
+- **Cron job.** If the cron job was set up under the outgoing maintainer's
+  account, move it to root's crontab (see [Cron job](#cron-job)), or recreate
+  it under the new account.
+- **Git identity.** The `git config` lines in the `Dockerfile` hold the
+  `user.name` and `user.email` used for commits made inside the container.
+- **Uptime alert.** Whoever receives the deployment-status alert at the top of
+  this document should be updated.
