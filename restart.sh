@@ -1,10 +1,11 @@
 #!/bin/bash
 
-PROJDIR=/<path>/<to>/<this>/<project>
+# Project directory is wherever this script lives (works from cron)
+PROJDIR="$(dirname "$(readlink -f "${BASH_SOURCE[0]}")")"
 DOCKERFILE=$PROJDIR/Dockerfile
 COMPOSE_FILE=$PROJDIR/docker-compose.yml
 
-cd $PROJDIR
+cd "$PROJDIR" || exit 1
 git pull --ff-only
 
 docker-compose -f $COMPOSE_FILE down

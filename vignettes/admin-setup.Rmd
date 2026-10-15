@@ -209,7 +209,8 @@ docker-compose up -d --build
 
 Routine redeployment is handled by `restart.sh`, which runs `git pull
 --ff-only`, tears down and rebuilds the stack, and brings it back up.  It is
-intended to be called from cron.  Since `.env` is untracked, secrets persist
+intended to be called from cron.  It locates the project directory from its own
+path, so it needs no editing, but `.env` must sit alongside it.  Since `.env` is untracked, secrets persist
 across pulls.
 
 The compose file:
