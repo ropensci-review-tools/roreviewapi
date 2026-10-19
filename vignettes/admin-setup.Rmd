@@ -52,7 +52,6 @@ That should then be regularly called, for example by calling it within a
 ## Prerequisites
 
 - SSH access to the Digital Ocean droplet
-- A [Postmark](https://postmarkapp.com) account with a verified sender address
 - Access to the AirTable base containing the editor-in-chief rotation table
 - Ability to request DNS records for your institution's domain
 
