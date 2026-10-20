@@ -84,9 +84,9 @@ is_user_authorized <- function (secret = NULL) {
 #' @noRd
 authorized_users <- c (
     "ropensci-review-bot",
-    "mpadge",
     "noamross",
-    "maelle"
+    "maelle",
+    "maurolepore"
 )
 
 #' Get branch from a GitHub URL if non-default branch specified there
