@@ -1,3 +1,4 @@
+# syntax=docker/dockerfile:1
 FROM ghcr.io/ropensci-review-tools/pkgcheck
 LABEL org.opencontainers.image.authors="mark.padgham@email.com"
 
@@ -8,7 +9,11 @@ ENV ROPENSCI="true"
 ENV ROPENSCI_REVIEW_BOT="true"
 
 # seasonal -> roreviewapi#13
-RUN install2.r \
+# GITHUB_PAT is passed as a BuildKit secret (see docker-compose.yml), so it is
+# available to this step without being stored in any image layer.
+RUN --mount=type=secret,id=github_pat,required=true \
+  export GITHUB_PAT="$(cat /run/secrets/github_pat)" \
+  && install2.r \
   BiocManager \
   plumber \
   toml \

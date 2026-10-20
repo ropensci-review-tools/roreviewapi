@@ -16,7 +16,10 @@ services:
       plumber:
         condition: service_healthy
   plumber:
-    build: .
+    build:
+      context: .
+      secrets:
+        - github_pat
     restart: always
     env_file: .env
     volumes:
@@ -29,3 +32,8 @@ services:
       timeout: 10s
       retries: 10
       start_period: 120s
+
+secrets:
+  github_pat:
+    # Read from GITHUB_PAT in the '.env' file (or the shell environment)
+    environment: GITHUB_PAT
