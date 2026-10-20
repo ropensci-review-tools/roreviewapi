@@ -161,17 +161,17 @@ nano .env
 chmod 600 .env
 ```
 
-  | Variable                    | Description                                                                               |
-  | ---                         | ---                                                                                       |
-  | `GITHUB_PAT`                | GitHub personal access token (also used as `GITHUB_TOKEN`)                                |
-  | `PKGCHECK_TOKEN`            | pkgcheck authentication token                                                             |
-  | `GMAIL_SENDER`              | Sender address used for outgoing emails                                                   |
-  | `GMAIL_OAUTH_CLIENT_SECRET` | Path to the Google OAuth client secret JSON file, e.g. `/data/email/<client_secret>.json` |
-  | `GMAIL_TOKEN_CACHE`         | Path to the cached Gmail token, e.g. `/data/email/gmailr_token`                           |
-  | `GMAIL_AUTH_EMAIL`          | Google account used to authenticate with Gmail                                            |
-  | `AIRTABLE_API_KEY`          | AirTable personal access token                                                            |
-  | `AIRTABLE_BASE_ID`          | ID of the AirTable base containing the EiC rotation table                                 |
-  | `ROREVIEWAPI_BASE_URL`      | Public HTTPS base URL of the deployed API (`https://reviewbot.ropensci.org`)              |
+  | Variable                    | Description                                                                                    |
+  | ---                         | ---                                                                                            |
+  | `GITHUB_PAT`                | GitHub personal access token (also used as `GITHUB_TOKEN`)                                     |
+  | `PKGCHECK_TOKEN`            | pkgcheck authentication token: a secret password shared by the Digital Ocean droplet and buffy |
+  | `GMAIL_SENDER`              | Sender address used for outgoing emails                                                        |
+  | `GMAIL_OAUTH_CLIENT_SECRET` | Path to the Google OAuth client secret JSON file, e.g. `/data/email/<client_secret>.json`      |
+  | `GMAIL_TOKEN_CACHE`         | Path to the cached Gmail token, e.g. `/data/email/gmailr_token`                                |
+  | `GMAIL_AUTH_EMAIL`          | Google account used to authenticate with Gmail                                                 |
+  | `AIRTABLE_API_KEY`          | AirTable personal access token                                                                 |
+  | `AIRTABLE_BASE_ID`          | ID of the AirTable base containing the EiC rotation table                                      |
+  | `ROREVIEWAPI_BASE_URL`      | Public HTTPS base URL of the deployed API (`https://reviewbot.ropensci.org`)                   |
 
 When the container starts, `docker-entrypoint.sh` writes these values to
 `~/.Renviron` (setting `GITHUB_TOKEN` from `GITHUB_PAT`, and
@@ -441,8 +441,8 @@ To change a secret, edit `.env` on the droplet and restart. No change to the
 ### Backing up the data and secrets
 
 The data directory (`/srv/roreviewapi/data/`) and the `.env` file are the only
-things on the droplet that cannot be recreated from GitHub or Cloudflare. Keep
-a copy of them off the droplet, and refresh it before risky changes such as an
+things on the droplet that cannot be recreated from GitHub or Cloudflare. Keep a
+copy of them off the droplet, and refresh it before risky changes such as an
 [operating system update](#updating-the-operating-system), and after changing
 `.env` or redoing the Gmail authorization.
 
@@ -478,8 +478,8 @@ The backup contains secrets, so store it somewhere safe, such as rOpenSci's
    scp <user>@<droplet-ip>:roreviewapi-backup.tar.gz .
    ```
 
-4. Back on the droplet, delete the archive, so that no extra copy of the
-   secrets is left behind:
+4. Back on the droplet, delete the archive, so that no extra copy of the secrets
+   is left behind:
 
    ```bash
    rm ~/roreviewapi-backup.tar.gz
@@ -501,8 +501,8 @@ code](#get-the-code), and before [starting the service](#start-the-service).
    ```
 
 2. On the droplet, unpack it, which puts the files back in
-   `/srv/roreviewapi/data/` and `/home/shared/roreviewapi/.env`, then delete
-   the archive:
+   `/srv/roreviewapi/data/` and `/home/shared/roreviewapi/.env`, then delete the
+   archive:
 
    ```bash
    sudo tar -xzf ~/roreviewapi-backup.tar.gz -C /
