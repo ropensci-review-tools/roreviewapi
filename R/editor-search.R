@@ -470,7 +470,7 @@ send_search <- function (repourl, repo, issue_id,
     message ("[send_search] stats=", stats, "; fetching editor emails")
 
     if (gsub ("\\/.*$", "", repo) == "ropenscilabs") {
-        emails <- "mark.padgham@email.com"
+        emails <- "reviewtools@ropensci.org"
     } else {
         emails <- fetcher (Sys.getenv ("AIRTABLE_BASE_ID"), stats = stats)
         message ("[send_search] fetched ", length (emails), " email(s)")
