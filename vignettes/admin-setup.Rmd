@@ -9,7 +9,10 @@ vignette: >
   %\VignetteEncoding{UTF-8}
 ---
 
-```{r setup, include=FALSE}
+```{r}
+#| label: setup
+#| include: false
+
 knitr::opts_chunk$set (
     collapse = TRUE,
     warning = TRUE,
@@ -23,7 +26,7 @@ knitr::opts_chunk$set (
 
 This vignette describes the one-time infrastructure steps required to deploy
 `roreviewapi` on a Digital Ocean droplet, including the editor volunteer search
-feature introduced in v0.2.  Endpoints for that feature are described in the
+feature introduced in v0.2. Endpoints for that feature are described in the
 [editor search
 vignette](https://docs.ropensci.org/roreviewapi/articles/editorsearch.html).
 
@@ -54,13 +57,14 @@ That should then be regularly called, for example by calling it within a
 - SSH access to the Digital Ocean droplet
 - Access to the AirTable base containing the editor-in-chief rotation table
 - Ability to request DNS records for your institution's domain
+- Access to the Cloudflare account that manages the domain
 
 ## Environment variables
 
 Secrets are **not** stored in the `Dockerfile` or anywhere else in the git
-repository.  They live in a `.env` file that exists only on the droplet, is
+repository. They live in a `.env` file that exists only on the droplet, is
 listed in `.gitignore` and `.dockerignore`, and is injected into the `plumber`
-container at runtime via `env_file: .env` in `docker-compose.yml`.  Because the
+container at runtime via `env_file: .env` in `docker-compose.yml`. Because the
 file is untracked, `git pull` never overwrites it, and the values never end up
 in an image layer.
 
@@ -71,36 +75,36 @@ entry per line (no quotes and no `export`), and restrict its permissions:
 chmod 600 .env
 ```
 
-| Variable | Description |
-|---|---|
-| `GITHUB_PAT` | GitHub personal access token (also used as `GITHUB_TOKEN`) |
-| `PKGCHECK_TOKEN` | pkgcheck authentication token |
-| `GMAIL_SENDER` | Sender address used for outgoing emails |
-| `GMAIL_OAUTH_CLIENT_SECRET` | Path to the Google OAuth client secret JSON file, e.g. `/data/email/<client_secret>.json` |
-| `GMAIL_TOKEN_CACHE` | Path to the cached Gmail token, e.g. `/data/email/gmailr_token` |
-| `GMAIL_AUTH_EMAIL` | Google account used to authenticate with Gmail |
-| `AIRTABLE_API_KEY` | AirTable personal access token |
-| `AIRTABLE_BASE_ID` | ID of the AirTable base containing the EiC rotation table |
-| `ROREVIEWAPI_BASE_URL` | Public HTTPS base URL of the deployed API (`https://reviewbot.ropensci.org`) |
+  | Variable                    | Description                                                                               |
+  | ---                         | ---                                                                                       |
+  | `GITHUB_PAT`                | GitHub personal access token (also used as `GITHUB_TOKEN`)                                |
+  | `PKGCHECK_TOKEN`            | pkgcheck authentication token                                                             |
+  | `GMAIL_SENDER`              | Sender address used for outgoing emails                                                   |
+  | `GMAIL_OAUTH_CLIENT_SECRET` | Path to the Google OAuth client secret JSON file, e.g. `/data/email/<client_secret>.json` |
+  | `GMAIL_TOKEN_CACHE`         | Path to the cached Gmail token, e.g. `/data/email/gmailr_token`                           |
+  | `GMAIL_AUTH_EMAIL`          | Google account used to authenticate with Gmail                                            |
+  | `AIRTABLE_API_KEY`          | AirTable personal access token                                                            |
+  | `AIRTABLE_BASE_ID`          | ID of the AirTable base containing the EiC rotation table                                 |
+  | `ROREVIEWAPI_BASE_URL`      | Public HTTPS base URL of the deployed API (`https://reviewbot.ropensci.org`)              |
 
 At container start, `docker-entrypoint.sh` writes these values to `~/.Renviron`
 (setting `GITHUB_TOKEN` from `GITHUB_PAT`, and `ROREV_CONTAINER=true`), so that
-R can read them, and then starts the API.  To change a secret, edit `.env` on
-the droplet and re-run `restart.sh`; no change to the `Dockerfile` is needed.
+R can read them, and then starts the API. To change a secret, edit `.env` on the
+droplet and re-run `restart.sh`; no change to the `Dockerfile` is needed.
 
 The two `GMAIL_*` file paths must be inside `/data/email/`, which is the
-container side of the bind-mounted data directory (see
-[Droplet preparation](#droplet-preparation)).  Place the corresponding files in
-`/srv/roreviewapi/data/` on the droplet.  That mount must remain read-write,
+container side of the bind-mounted data directory (see [Droplet
+preparation](#droplet-preparation)). Place the corresponding files in
+`/srv/roreviewapi/data/` on the droplet. That mount must remain read-write,
 because the Gmail token cache is written back during authentication.
 
 ## AirTable
 
 1. Generate a personal access token at <https://airtable.com/create/tokens> with
-   at least `data.records:read` scope on the relevant base.  Set this as
+   at least `data.records:read` scope on the relevant base. Set this as
    `AIRTABLE_API_KEY`.
 2. Open the AirTable base and copy the base ID from the URL
-   (`https://airtable.com/appXXXXXXXX/...`).  Set this as `AIRTABLE_BASE_ID`.
+   (`https://airtable.com/appXXXXXXXX/...`). Set this as `AIRTABLE_BASE_ID`.
 
 The `editor-in-chief-rotation` table within that base must have `period_start`,
 `period_end`, and `acting_eic_email` fields.
@@ -108,7 +112,7 @@ The `editor-in-chief-rotation` table within that base must have `period_start`,
 ## Droplet preparation
 
 Create the persistent data directory that will be bind-mounted into the
-container.  This directory holds the SQLite database, the notify-email cache
+container. This directory holds the SQLite database, the notify-email cache
 file, and the Gmail OAuth client secret and token cache files, and must survive
 container rebuilds.
 
@@ -119,49 +123,117 @@ sudo chmod 700 /srv/roreviewapi/data
 
 ## DNS
 
-Ask your DNS administrator to add an `A` record pointing your chosen subdomain
-to the droplet's IP address, for example:
+The domain's DNS is managed in Cloudflare. Ask your DNS administrator to add an
+`A` record pointing your chosen subdomain to the droplet's IP address, for
+example:
 
 ```
 review.example.org.  IN  A  <droplet-ip>
 ```
 
-Allow up to 24 hours for propagation, though it is usually much faster.
+The record must be **proxied** (orange cloud in the Cloudflare dashboard), not
+"DNS only". The TLS certificate below is a Cloudflare Origin Certificate, which
+only Cloudflare trusts, so visitors must reach the droplet through Cloudflare.
 
 ## TLS certificate
 
-Once the DNS record is live, obtain a Let's Encrypt certificate on the droplet.
-The `--standalone` method requires port 80 to be free (stop the running stack
-first if necessary):
+TLS uses a [Cloudflare Origin
+Certificate](https://developers.cloudflare.com/ssl/origin-configuration/origin-ca/).
+It secures the connection between Cloudflare and the droplet, is valid for up to
+15 years, and needs no renewal on the droplet, so certbot is not needed.
+
+1. In the Cloudflare dashboard for the domain, go to **SSL/TLS → Origin Server →
+   Create Certificate**. Keep the default key type, list the hostname (for
+   example `review.example.org`), and choose a validity period.
+
+2. Cloudflare shows the certificate and the private key. Cloudflare does not
+   store the private key, so it is only shown once: save it straight away. A
+   copy of the current key is stored in rOpenSci's 1Password. On the droplet,
+   save them as `/etc/ssl/cloudflare/origin.pem` and
+   `/etc/ssl/cloudflare/origin.key`.
+
+   Create the directory and the certificate file. `tee` waits for input: paste
+   the certificate, press **Enter**, then **Ctrl+D** to save:
+
+   ```bash
+   sudo mkdir -p /etc/ssl/cloudflare
+   sudo tee /etc/ssl/cloudflare/origin.pem > /dev/null
+   ```
+
+   Do the same for the private key, then make it readable only by root:
+
+   ```bash
+   sudo tee /etc/ssl/cloudflare/origin.key > /dev/null
+   sudo chmod 600 /etc/ssl/cloudflare/origin.key
+   ```
+
+   `sudo tee` is needed because in `sudo echo ... > file` the redirection runs
+   as the current user, not as root. Sending the output to `/dev/null` keeps the
+   pasted key from being printed back to the terminal.
+
+   Check that both files are valid:
+
+   ```bash
+   sudo openssl x509 -in /etc/ssl/cloudflare/origin.pem -noout -subject -enddate
+   sudo openssl pkey -in /etc/ssl/cloudflare/origin.key -noout && echo "key OK"
+   ```
+
+   The first command shows the hostname and the expiry date. The second prints
+   "key OK" if the key can be read.
+
+3. In **SSL/TLS → Overview**, set the encryption mode to [Full
+   (strict)](https://developers.cloudflare.com/ssl/origin-configuration/ssl-modes/full-strict/).
+
+These files are not part of the repository, and they are lost if the droplet is
+rebuilt. If that happens, copy the key back from 1Password, and the certificate
+from the Cloudflare dashboard (**SSL/TLS → Origin Server**), where it can be
+downloaded again.
+
+### Recreating the certificate
+
+Create a new certificate when the current one is about to expire, when the key
+is lost, or when it may have been exposed. Nothing renews the certificate
+automatically, so check its expiry date with the `openssl x509` command above.
+Currently Oct 16 08:20:00 2041 GMT.
+
+1. Create a new certificate and install it on the droplet, following steps 1 and
+   2 above. Replace the key in 1Password with the new one.
+
+2. Restart nginx so that it loads the new files, and check that the site
+   responds:
+
+   ```bash
+   docker compose restart nginx
+   curl -s -o /dev/null -w "%{http_code}\n" https://reviewbot.ropensci.org/mean
+   ```
+
+3. Revoke the old certificate in **SSL/TLS → Origin Server**, so that the old
+   key can no longer be used.
+
+Cloudflare's [Origin CA
+documentation](https://developers.cloudflare.com/ssl/origin-configuration/origin-ca/)
+describes creating, installing and revoking origin certificates in more detail.
+
+### Troubleshooting
+
+Cloudflare reports problems with the droplet as 5xx status codes:
+
+  | Status | Likely cause                                                                                                                 |
+  | ---    | ---                                                                                                                          |
+  | 521    | Nothing answers on port 443: nginx or the whole stack is down, or nginx cannot find the certificate files and exits on start |
+  | 522    | The droplet is unreachable, for example a firewall blocks port 443                                                           |
+  | 526    | The certificate is invalid, expired, or does not match the hostname                                                          |
+  | 502    | nginx is up but plumber is not                                                                                               |
+
+For 521, check the containers and the nginx logs on the droplet:
 
 ```bash
-sudo apt install certbot
-sudo certbot certonly --standalone -d reviewbot.ropensci.org
+docker compose ps
+docker compose logs --tail=50 nginx
+sudo ls /etc/ssl/cloudflare/
 ```
 
-The certificate and key are written to
-`/etc/letsencrypt/live/review.example.org/`.  Certbot installs a systemd timer
-that renews certificates automatically; confirm it is active:
-
-```bash
-systemctl status certbot.timer
-```
-
-### Troubleshooting: HTTP-01 challenge failed
-
-The HTTP-01 challenge works by certbot binding a temporary server to port 80.
-Two things can prevent this:
-
-**Port 80 occupied.** The Docker stack must be stopped before running certbot,
-otherwise nginx holds port 80 and the challenge fails immediately:
-
-```bash
-docker-compose down
-sudo certbot certonly --standalone -d review.example.org
-docker-compose up -d
-```
-
-**Port 80 blocked by a firewall.** There are two independent firewalls to check:
+For 522, there are two independent firewalls to check:
 
 *Droplet firewall (ufw):*
 
@@ -169,29 +241,26 @@ docker-compose up -d
 sudo ufw status
 ```
 
-If ufw is active and port 80 is not listed, open it:
+If ufw is active and port 443 is not listed, open it:
 
 ```bash
 sudo ufw allow 80/tcp
 sudo ufw allow 443/tcp
 ```
 
-*Digital Ocean cloud firewall:* in the DO console under
-**Networking → Firewalls**, confirm there is an inbound rule allowing TCP
-port 80 from all sources.  The cloud firewall sits in front of the droplet and
-blocks traffic before it reaches ufw, so both layers must allow port 80.
+*Digital Ocean cloud firewall:* in the DO console under **Networking →
+Firewalls**, confirm there is an inbound rule allowing TCP port 443. The cloud
+firewall sits in front of the droplet and blocks traffic before it reaches ufw,
+so both layers must allow it.
 
-To confirm DNS has propagated before retrying certbot, check that the A record
-resolves to the droplet IP:
-
-```bash
-dig +short review.example.org
-```
+Optionally, [Authenticated Origin
+Pulls](https://developers.cloudflare.com/ssl/origin-configuration/authenticated-origin-pull/)
+make nginx accept only connections that come through Cloudflare.
 
 ## Deployment
 
-Set `NGINX_SERVER_NAME` in the environment before starting the stack — this
-value is substituted into `nginx.conf` at container startup.  Ensure `.env`
+Set `NGINX_SERVER_NAME` in the environment before starting the stack --- this
+value is substituted into `nginx.conf` at container startup. Ensure `.env`
 exists (see [Environment variables](#environment-variables)), then:
 
 ```bash
@@ -199,10 +268,10 @@ export NGINX_SERVER_NAME=review.example.org
 docker-compose up -d --build
 ```
 
-Routine redeployment is handled by `restart.sh`, which runs `git pull
---ff-only`, tears down and rebuilds the stack, and brings it back up.  It is
-intended to be called from cron.  It locates the project directory from its own
-path, so it needs no editing, but `.env` must sit alongside it.  Since `.env`
+Routine redeployment is handled by `restart.sh`, which runs
+`git pull --ff-only`, tears down and rebuilds the stack, and brings it back up.
+It is intended to be called from cron. It locates the project directory from its
+own path, so it needs no editing, but `.env` must sit alongside it. Since `.env`
 is untracked, secrets persist across pulls.
 
 The compose file:
@@ -211,24 +280,25 @@ The compose file:
   and sets `ROREVIEWAPI_EMAIL_DB=/data/email/searches.sqlite` so the SQLite
   database persists across rebuilds.
 - Reads secrets from `.env` via `env_file`.
-- Mounts `/etc/letsencrypt` read-only into the nginx container so the
+- Mounts `/etc/ssl/cloudflare` read-only into the nginx container so the origin
   certificate is available.
 - Exposes ports 80 (HTTP → HTTPS redirect) and 443 (HTTPS).
 
 ### Cron job
 
 `restart.sh` is run on a schedule so that the droplet picks up new commits and
-rebuilds fresh images without manual intervention.  One authorized admin of the
+rebuilds fresh images without manual intervention. One authorized admin of the
 Digital Ocean droplet needs to configure the cron job.
 
 The job must run as a user that can run `docker-compose` (either root or a
-member of the `docker` group).  The following uses root's crontab, so that the
+member of the `docker` group). The following uses root's crontab, so that the
 log file below can be written to `/var/log`.
 
 #### Initial setup
 
 1. Check whether a job already exists (see "Viewing current jobs" below), to
    avoid creating a duplicate.
+
 2. Open the crontab for editing; if prompted, choose an editor (`nano` is the
    easiest):
 
@@ -243,18 +313,18 @@ log file below can be written to `/var/log`.
    0 0 * * 2 /bin/bash /<path>/<to>/roreviewapi/restart.sh >> /var/log/roreviewapi-restart.log 2>&1
    ```
 
-   This runs the script at 00:00 every Tuesday.  The five leading fields are
+   This runs the script at 00:00 every Tuesday. The five leading fields are
    minute, hour, day of month, month, and day of week (0--7, where both 0 and 7
-   are Sunday).  [crontab.guru](https://crontab.guru) is useful for checking
-   a schedule.  The trailing redirect appends all output, including errors, to a
+   are Sunday). [crontab.guru](https://crontab.guru) is useful for checking a
+   schedule. The trailing redirect appends all output, including errors, to a
    log file.
 
-4. Save and exit.  Cron picks up the change automatically; no restart of the
-   cron service is needed.
+4. Save and exit. Cron picks up the change automatically; no restart of the cron
+   service is needed.
 
-An absolute path is required because cron does not run in the project
-directory.  `restart.sh` finds the project directory (and thus `.env`) from its
-own location, so it needs no other configuration.
+An absolute path is required because cron does not run in the project directory.
+`restart.sh` finds the project directory (and thus `.env`) from its own
+location, so it needs no other configuration.
 
 #### Viewing current jobs
 
@@ -264,16 +334,16 @@ List the jobs in root's crontab with:
 sudo crontab -l
 ```
 
-Omit `sudo` to list the current user's own crontab instead.  Each user has a
-separate crontab, so if nothing appears, check the other user (or root) that
-may have been used to set the job up.
+Omit `sudo` to list the current user's own crontab instead. Each user has a
+separate crontab, so if nothing appears, check the other user (or root) that may
+have been used to set the job up.
 
 #### Modifying or removing the job
 
 Re-open the crontab with `sudo crontab -e`, edit the line (for example, change
-the schedule fields), and save.  To disable the job without deleting it,
-comment the line out by prefixing it with `#`; to remove it, delete the line.
-Confirm the result with `sudo crontab -l`.
+the schedule fields), and save. To disable the job without deleting it, comment
+the line out by prefixing it with `#`; to remove it, delete the line. Confirm
+the result with `sudo crontab -l`.
 
 #### Checking that it ran
 
@@ -283,7 +353,7 @@ Inspect the log file written by the job:
 tail -n 50 /var/log/roreviewapi-restart.log
 ```
 
-and confirm the containers are up with `docker ps`.  To test the job without
+and confirm the containers are up with `docker ps`. To test the job without
 waiting for the schedule, run the same command by hand:
 
 ```bash
@@ -294,12 +364,11 @@ sudo /bin/bash /<path>/<to>/roreviewapi/restart.sh
 
 Maintenance falls into two parts with very different transfer costs:
 
-- **Operations** (deploying, debugging, restarting): needs access only.
-  Nothing in `.env` changes.
-- **Credentials tied to an individual**: the Gmail authorization, and the
-  GitHub and AirTable tokens, belong to whoever created them.  These must be
-  re-created by the new maintainer if the outgoing person's accounts will be
-  closed.
+- **Operations** (deploying, debugging, restarting): needs access only. Nothing
+  in `.env` changes.
+- **Credentials tied to an individual**: the Gmail authorization, and the GitHub
+  and AirTable tokens, belong to whoever created them. These must be re-created
+  by the new maintainer if the outgoing person's accounts will be closed.
 
 ### Operations only
 
@@ -309,28 +378,30 @@ account stays active:
 1. Add their SSH key and `sudo` access on the droplet.
 2. Add them to the `roreviewapi` GitHub repository.
 3. Add them to the `ro-auto-email` Google Cloud project's IAM.
-4. Hand over this document and the contents of `.env` (securely, for example
-   via a password manager rather than email or chat).
+4. Hand over this document and the contents of `.env` (securely, for example via
+   a password manager rather than email or chat).
 
 ### Transferring credentials
 
-This is required if the outgoing maintainer's accounts will become unusable,
-for example on leaving the organization.  The values in `.env` that are tied to
-a person are:
+This is required if the outgoing maintainer's accounts will become unusable, for
+example on leaving the organization. The values in `.env` that are tied to a
+person are:
 
-| Variable | Tied to | Action on transfer |
-|---|---|---|
-| `GITHUB_PAT` | GitHub account that created it | Replace with a token created by the new maintainer |
-| `AIRTABLE_API_KEY` | AirTable account that created it | Replace with a token created by the new maintainer (see [AirTable](#airtable) for the required scope) |
-| `GMAIL_AUTH_EMAIL`, `GMAIL_TOKEN_CACHE` | Google account that authorized `gmailr` | Replace, following the [Gmail transfer steps](https://docs.ropensci.org/roreviewapi/articles/editorsearch.html#transfer-maintenance) in the editor search vignette |
-| `GMAIL_OAUTH_CLIENT_SECRET`, `GMAIL_SENDER` | Google Cloud project and the `reviewbot@ropensci.org` alias | Unchanged if the same Cloud project and alias are kept |
-| `AIRTABLE_BASE_ID`, `ROREVIEWAPI_BASE_URL`, `PKGCHECK_TOKEN` | Not tied to a person | Unchanged unless the base, URL or pkgcheck service changes |
+  | Variable                                                     | Tied to                                                     | Action on transfer                                                                                                                                                 |
+  | ---                                                          | ---                                                         | ---                                                                                                                                                                |
+  | `GITHUB_PAT`                                                 | GitHub account that created it                              | Replace with a token created by the new maintainer                                                                                                                 |
+  | `AIRTABLE_API_KEY`                                           | AirTable account that created it                            | Replace with a token created by the new maintainer (see [AirTable](#airtable) for the required scope)                                                              |
+  | `GMAIL_AUTH_EMAIL`, `GMAIL_TOKEN_CACHE`                      | Google account that authorized `gmailr`                     | Replace, following the [Gmail transfer steps](https://docs.ropensci.org/roreviewapi/articles/editorsearch.html#transfer-maintenance) in the editor search vignette |
+  | `GMAIL_OAUTH_CLIENT_SECRET`, `GMAIL_SENDER`                  | Google Cloud project and the `reviewbot@ropensci.org` alias | Unchanged if the same Cloud project and alias are kept                                                                                                             |
+  | `AIRTABLE_BASE_ID`, `ROREVIEWAPI_BASE_URL`, `PKGCHECK_TOKEN` | Not tied to a person                                        | Unchanged unless the base, URL or pkgcheck service changes                                                                                                         |
 
 The steps are then:
 
 1. The new maintainer creates their own GitHub and AirTable personal access
    tokens, and completes the Gmail steps in the editor search vignette.
+
 2. Update `.env` on the droplet with the new values.
+
 3. Run `restart.sh` (or wait for the next scheduled run) so that the container
    picks up the new `.env` and credentials:
 
@@ -340,14 +411,15 @@ The steps are then:
 
 4. Verify that the editor search workflow still sends and receives emails (see
    the editor search vignette).
+
 5. Once the new setup works, the outgoing maintainer should revoke their old
    GitHub and AirTable tokens, and the old Google grant.
 
 ### Other items to update
 
 - **Cron job.** If the cron job was set up under the outgoing maintainer's
-  account, move it to root's crontab (see [Cron job](#cron-job)), or recreate
-  it under the new account.
+  account, move it to root's crontab (see [Cron job](#cron-job)), or recreate it
+  under the new account.
 - **Git identity.** The `git config` lines in the `Dockerfile` hold the
   `user.name` and `user.email` used for commits made inside the container.
 - **Uptime alert.** Whoever receives the deployment-status alert at the top of
