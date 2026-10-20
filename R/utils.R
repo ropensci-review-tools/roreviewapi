@@ -16,15 +16,14 @@ symbol_crs <- function () {
 
 #' Get GitHub user name from token.
 #'
-#' @description This is only intended to be used within the main docker
-#' container, in which token is always hard-coded in precisely the way assumed
-#' here.
+#' @description By default, this uses the token hard-coded in the main docker
+#' container, in precisely the way assumed here.
 #'
-#' @return User name ("login") associated with specified token
+#' @param gh_tok GitHub token for which to get the user name.
+#' @return User name ("login") associated with specified token, or empty string
+#' if the token is invalid or the request fails.
 #' @noRd
-get_github_user <- function () {
-
-    gh_tok <- gh::gh_token ()
+get_github_user <- function (gh_tok = gh::gh_token ()) {
 
     # Check corresponding user name:
     u <- "https://api.github.com/user"
@@ -35,10 +34,14 @@ get_github_user <- function () {
         "Content-Type" = "application/json"
     )
 
-    resp <- httr2::req_perform (req)
-    httr2::resp_check_status (resp)
-
-    x <- httr2::resp_body_json (resp)
+    x <- tryCatch (
+        {
+            resp <- httr2::req_perform (req)
+            httr2::resp_check_status (resp)
+            httr2::resp_body_json (resp)
+        },
+        error = function (e) list ()
+    )
     login <- ""
     if ("login" %in% names (x)) {
         login <- x$login
@@ -47,26 +50,33 @@ get_github_user <- function () {
     return (login)
 }
 
-#' Check whether a user, identified from GitHub API token, is authorized to call
-#' endpoints.
+#' Check whether a caller is authorized to call endpoints.
 #'
 #' @description This function is used only in the \pkg{plumber} endpoints, to
-#' prevent them being called by unauthorized users.
+#' prevent them being called by unauthorized users. Authorization is determined
+#' solely from the `secret` supplied by the caller, and never from the token
+#' hard-coded in the container. The `secret` is authorized if it either matches
+#' the environment variable `PKGCHECK_TOKEN`, or is a GitHub token belonging to
+#' one of the authorized users.
 #'
-#' @param secret Environment variable `PKGCHECK_TOKEN` sent from bot.
+#' @param secret Environment variable `PKGCHECK_TOKEN` sent from bot, or a
+#' GitHub token of an authorized user.
 #' @return Logical value indicating whether or not a user is authorized.
 #'
 #' @family ropensci
 #' @export
 is_user_authorized <- function (secret = NULL) {
 
-    user <- get_github_user ()
-    yes <- user %in% authorized_users
-    if (!yes & !is.null (secret)) {
-        yes <- identical (secret, Sys.getenv ("PKGCHECK_TOKEN"))
+    if (length (secret) != 1L || !is.character (secret) || !nzchar (secret)) {
+        return (FALSE)
     }
 
-    return (yes)
+    pkgcheck_token <- Sys.getenv ("PKGCHECK_TOKEN")
+    if (nzchar (pkgcheck_token) && identical (secret, pkgcheck_token)) {
+        return (TRUE)
+    }
+
+    return (get_github_user (secret) %in% authorized_users)
 }
 
 #' The users are currently only used to authorize opening issues on the

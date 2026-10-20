@@ -14,9 +14,25 @@ test_that ("utils gh user", {
     expect_type (g, "character")
     expect_length (g, 1L)
 
-    is_local <- identical (Sys.getenv ("RRT_TEST_ALL"), "true")
-    is_auth <- is_user_authorized ()
-    expect_equal (is_user_authorized (), is_auth)
+    expect_equal (get_github_user ("invalid-token"), "")
+})
+
+test_that ("utils authorization", {
+    # No secret is never authorized, whatever the token in the container:
+    expect_false (is_user_authorized ())
+    expect_false (is_user_authorized (NULL))
+    expect_false (is_user_authorized (""))
+    expect_false (is_user_authorized (c ("a", "b")))
+    expect_false (is_user_authorized ("invalid-token"))
+
+    withr::with_envvar (c (PKGCHECK_TOKEN = "abc"), {
+        expect_true (is_user_authorized ("abc"))
+        expect_false (is_user_authorized ("abd"))
+    })
+    # Empty PKGCHECK_TOKEN must not match an empty secret:
+    withr::with_envvar (c (PKGCHECK_TOKEN = ""), {
+        expect_false (is_user_authorized (""))
+    })
 })
 
 test_that ("utils gh branch", {
