@@ -24,54 +24,140 @@ knitr::opts_chunk$set (
 )
 ```
 
-This vignette describes the one-time infrastructure steps required to deploy
-`roreviewapi` on a Digital Ocean droplet, including the editor volunteer search
-feature introduced in v0.2. Endpoints for that feature are described in the
-[editor search
+This vignette describes how to run `roreviewapi` on a Digital Ocean droplet,
+including the editor volunteer search feature introduced in v0.2. Endpoints for
+that feature are described in the [editor search
 vignette](https://docs.ropensci.org/roreviewapi/articles/editorsearch.html).
 
-<div class="alert alert-info">
-The Software Peer Review Lead should set up a regular alert system to
-automatically check the deployment status. This bash script issues an
-alert if anything is wrong:
+It covers two cases:
 
-``` bash
-#!/usr/bin/env bash
+- [Starting from scratch](#starting-from-scratch): setting up a new droplet, or
+  a droplet that has been rebuilt.
+- [General maintenance](#general-maintenance): keeping a running droplet up, up
+  to date, and in the right hands.
 
-URL="https://reviewbot.ropensci.org"
-status=$(curl -s -o /dev/null -w "%{http_code}" "$URL")
+## How the pieces fit together
 
-if [[ "$status" != "404" ]]; then
-    echo -e "reviewbot is down"
-    exit 1
-fi
-```
+A few terms used throughout this vignette:
 
-That should then be regularly called, for example by calling it within a
-`~/.bashrc` file, or via a local cron job.
+- **Droplet**: a virtual server rented from Digital Ocean. It runs Linux, and
+  you work on it by connecting from your own computer with SSH
+  (`ssh <user>@<droplet-ip>`) or by using the web console button from Digital
+  Ocean interface.
+- **Docker** runs programs in isolated **containers**. Each container is started
+  from an **image**, which bundles the program with everything it needs.
+  **Docker Compose** starts several containers together, as described in
+  `docker-compose.yml`.
+- **DNS** turns a name such as `reviewbot.ropensci.org` into the droplet's IP
+  address. rOpenSci's DNS is managed in **Cloudflare**, which also sits between
+  visitors and the droplet.
+- **TLS certificate**: the file that lets a server prove its identity, so that
+  connections can use HTTPS. See [TLS certificate](#tls-certificate).
+- **Cron** runs commands on a schedule.
 
-</div>
+`docker-compose.yml` defines two containers:
 
-## Prerequisites
+- **`plumber`** is the API itself. It is built from the repository's
+  `Dockerfile`, and listens on port 8000, which is only reachable from the other
+  container.
+- **`nginx`** answers on ports 80 (HTTP) and 443 (HTTPS), handles HTTPS with the
+  certificate, redirects HTTP to HTTPS, and passes requests on to `plumber`.
 
-- SSH access to the Digital Ocean droplet
-- Access to the AirTable base containing the editor-in-chief rotation table
-- Ability to request DNS records for your institution's domain
-- Access to the Cloudflare account that manages the domain
+So a request travels: visitor → Cloudflare → `nginx` (port 443) → `plumber`
+(port 8000).
 
-## Environment variables
+## Starting from scratch
 
-Secrets are **not** stored in the `Dockerfile` or anywhere else in the git
-repository. They live in a `.env` file that exists only on the droplet, is
-listed in `.gitignore` and `.dockerignore`, and is injected into the `plumber`
-container at runtime via `env_file: .env` in `docker-compose.yml`. Because the
-file is untracked, `git pull` never overwrites it, and the values never end up
-in an image layer.
+Follow this section to set up a new droplet. It also applies when a droplet is
+**rebuilt**: Digital Ocean's "Rebuild" reinstalls the operating system and
+erases the whole disk. Everything that is not in the Git repository is then
+lost, in particular:
 
-Create `.env` in the project directory on the droplet, with one `KEY=value`
-entry per line (no quotes and no `export`), and restrict its permissions:
+- the `.env` file of secrets (see [Environment
+  variables](#environment-variables)),
+- the data directory `/srv/roreviewapi/data/`, which holds the database and the
+  Gmail credential files,
+- the TLS certificate and key in `/etc/ssl/cloudflare/`,
+- the cron job that redeploys the service every week.
+
+### Prerequisites
+
+You need:
+
+- SSH access to the Digital Ocean droplet, with `sudo` rights.
+- Access to the AirTable base containing the editor-in-chief rotation table.
+- Access to the Cloudflare account that manages the `ropensci.org` domain, or
+  someone who has it.
+- Access to rOpenSci's 1Password, where the certificate's private key is stored.
+
+All commands below are run on the droplet, unless stated otherwise.
+
+### Install Git and Docker
+
+Git downloads the code from GitHub. Install it with:
 
 ```bash
+sudo apt update
+sudo apt install git
+```
+
+Install Docker Engine and its Compose plugin by following [Docker's instructions
+for Ubuntu](https://docs.docker.com/engine/install/ubuntu/). Then check that
+both work:
+
+```bash
+docker --version
+docker compose version
+```
+
+Docker must start automatically when the droplet boots, otherwise the service
+stays down after every reboot:
+
+```bash
+sudo systemctl enable docker
+```
+
+### Set the Git user
+
+Git records a name and an email address with every commit. Set them to the bot
+account, for root (which runs the weekly redeploy, see [Cron job](#cron-job))
+and for your own user:
+
+```bash
+sudo git config --global user.name "ropensci-review-bot"
+sudo git config --global user.email "accounts@ropensci.org"
+git config --global user.name "ropensci-review-bot"
+git config --global user.email "accounts@ropensci.org"
+```
+
+### Get the code
+
+The project lives in `/home/shared/roreviewapi`. Download it there with:
+
+```bash
+sudo mkdir -p /home/shared
+cd /home/shared
+git clone https://github.com/ropensci-review-tools/roreviewapi.git
+cd roreviewapi
+```
+
+The remaining commands that refer to files such as `.env` or
+`docker-compose.yml` are run from this directory.
+
+### Environment variables
+
+Secrets are **not** stored in the `Dockerfile` or anywhere else in the Git
+repository. They live in a `.env` file that exists only on the droplet. It is
+listed in `.gitignore` and `.dockerignore`, and is passed to the `plumber`
+container when it starts, via `env_file: .env` in `docker-compose.yml`. Because
+the file is not tracked by Git, `git pull` never overwrites it, and the values
+never end up in an image.
+
+Create `.env` in the project directory, with one `KEY=value` entry per line (no
+quotes and no `export`), and make it readable only by its owner:
+
+```bash
+nano .env
 chmod 600 .env
 ```
 
@@ -87,21 +173,18 @@ chmod 600 .env
   | `AIRTABLE_BASE_ID`          | ID of the AirTable base containing the EiC rotation table                                 |
   | `ROREVIEWAPI_BASE_URL`      | Public HTTPS base URL of the deployed API (`https://reviewbot.ropensci.org`)              |
 
-At container start, `docker-entrypoint.sh` writes these values to `~/.Renviron`
-(setting `GITHUB_TOKEN` from `GITHUB_PAT`, and `ROREV_CONTAINER=true`), so that
-R can read them, and then starts the API. To change a secret, edit `.env` on the
-droplet and re-run `restart.sh`; no change to the `Dockerfile` is needed.
+When the container starts, `docker-entrypoint.sh` writes these values to
+`~/.Renviron` (setting `GITHUB_TOKEN` from `GITHUB_PAT`, and
+`ROREV_CONTAINER=true`), so that R can read them, and then starts the API.
 
-The two `GMAIL_*` file paths must be inside `/data/email/`, which is the
-container side of the bind-mounted data directory (see [Droplet
-preparation](#droplet-preparation)). Place the corresponding files in
-`/srv/roreviewapi/data/` on the droplet. That mount must remain read-write,
-because the Gmail token cache is written back during authentication.
+The two `GMAIL_*` file paths must be inside `/data/email/`. That is the
+container's view of the data directory (see [Data directory](#data-directory)).
+Place the corresponding files in `/srv/roreviewapi/data/` on the droplet.
 
-## AirTable
+### AirTable
 
 1. Generate a personal access token at <https://airtable.com/create/tokens> with
-   at least `data.records:read` scope on the relevant base. Set this as
+   at least the `data.records:read` scope on the relevant base. Set this as
    `AIRTABLE_API_KEY`.
 2. Open the AirTable base and copy the base ID from the URL
    (`https://airtable.com/appXXXXXXXX/...`). Set this as `AIRTABLE_BASE_ID`.
@@ -109,42 +192,54 @@ because the Gmail token cache is written back during authentication.
 The `editor-in-chief-rotation` table within that base must have `period_start`,
 `period_end`, and `acting_eic_email` fields.
 
-## Droplet preparation
+### Data directory
 
-Create the persistent data directory that will be bind-mounted into the
-container. This directory holds the SQLite database, the notify-email cache
-file, and the Gmail OAuth client secret and token cache files, and must survive
-container rebuilds.
+The data directory holds the SQLite database, the notify-email cache file, and
+the Gmail OAuth client secret and token cache files. It lives on the droplet,
+outside the containers, so that it survives when the containers are rebuilt
+every week. Create it with:
 
 ```bash
 sudo mkdir -p /srv/roreviewapi/data
 sudo chmod 700 /srv/roreviewapi/data
 ```
 
-## DNS
+`docker-compose.yml` makes it available inside the `plumber` container as
+`/data/email`. The container must be able to write to it, because the Gmail
+token cache is updated during authentication.
 
-The domain's DNS is managed in Cloudflare. Ask your DNS administrator to add an
-`A` record pointing your chosen subdomain to the droplet's IP address, for
-example:
+After a rebuild, restore its contents, and `.env`, from a backup (see [Backing
+up the data and secrets](#backing-up-the-data-and-secrets)). Without a backup,
+the database starts empty, and the Gmail authorization must be redone, following
+the [editor search
+vignette](https://docs.ropensci.org/roreviewapi/articles/editorsearch.html).
+
+### DNS
+
+The domain's DNS is managed in Cloudflare. It needs an `A` record pointing the
+subdomain to the droplet's IP address, for example:
 
 ```
-review.example.org.  IN  A  <droplet-ip>
+reviewbot.ropensci.org.  IN  A  <droplet-ip>
 ```
 
 The record must be **proxied** (orange cloud in the Cloudflare dashboard), not
 "DNS only". The TLS certificate below is a Cloudflare Origin Certificate, which
 only Cloudflare trusts, so visitors must reach the droplet through Cloudflare.
 
-## TLS certificate
+A rebuilt droplet keeps its IP address, so the record does not change. A new
+droplet has a new IP address, so the record must be updated.
+
+### TLS certificate
 
 TLS uses a [Cloudflare Origin
 Certificate](https://developers.cloudflare.com/ssl/origin-configuration/origin-ca/).
 It secures the connection between Cloudflare and the droplet, is valid for up to
-15 years, and needs no renewal on the droplet, so certbot is not needed.
+15 years, and needs no renewal on the droplet.
 
 1. In the Cloudflare dashboard for the domain, go to **SSL/TLS → Origin Server →
-   Create Certificate**. Keep the default key type, list the hostname (for
-   example `review.example.org`), and choose a validity period.
+   Create Certificate**. Keep the default key type, list the hostname
+   (`reviewbot.ropensci.org`), and choose a validity period.
 
 2. Cloudflare shows the certificate and the private key. Cloudflare does not
    store the private key, so it is only shown once: save it straight away. A
@@ -184,22 +279,272 @@ It secures the connection between Cloudflare and the droplet, is valid for up to
 3. In **SSL/TLS → Overview**, set the encryption mode to [Full
    (strict)](https://developers.cloudflare.com/ssl/origin-configuration/ssl-modes/full-strict/).
 
-These files are not part of the repository, and they are lost if the droplet is
-rebuilt. If that happens, copy the key back from 1Password, and the certificate
-from the Cloudflare dashboard (**SSL/TLS → Origin Server**), where it can be
-downloaded again.
+After a rebuild, there is no need to create a new certificate. Copy the key back
+from 1Password, and download the certificate again from the Cloudflare dashboard
+(**SSL/TLS → Origin Server**). Save both with the `tee` commands above.
+
+### Start the service
+
+From the project directory, build the images and start the containers in the
+background:
+
+```bash
+docker compose up -d --build
+```
+
+The first build takes a while. `nginx` only starts once `plumber` reports itself
+as healthy, which can take a few minutes.
+
+The compose file:
+
+- Mounts `/srv/roreviewapi/data` into the `plumber` container at `/data/email`,
+  and sets `ROREVIEWAPI_EMAIL_DB=/data/email/searches.sqlite`, so that the
+  SQLite database persists across rebuilds.
+- Reads secrets from `.env` via `env_file`.
+- Mounts `/etc/ssl/cloudflare` read-only into the `nginx` container, so that the
+  certificate is available.
+- Sets the domain name (`NGINX_SERVER_NAME`), which is substituted into
+  `nginx.conf` when the container starts.
+- Exposes ports 80 (HTTP → HTTPS redirect) and 443 (HTTPS).
+
+### Cron job
+
+`restart.sh` downloads new commits and rebuilds the service (see [Weekly
+redeploy](#weekly-redeploy)). A cron job runs it every week. One authorized
+admin of the droplet needs to set it up.
+
+The job must run as a user that can run `docker compose` (either root or a
+member of the `docker` group). The following uses root's crontab, so that the
+log file below can be written to `/var/log`.
+
+1. Check whether a job already exists (see [Viewing, changing and checking the
+   cron job](#viewing-changing-and-checking-the-cron-job)), to avoid creating a
+   duplicate.
+
+2. Open the crontab for editing. If prompted, choose an editor (`nano` is the
+   easiest):
+
+   ```bash
+   sudo crontab -e
+   ```
+
+3. Add the following line:
+
+   ```bash
+   0 0 * * 2 /bin/bash /home/shared/roreviewapi/restart.sh >> /var/log/roreviewapi-restart.log 2>&1
+   ```
+
+   This runs the script at 00:00 every Tuesday. The five leading fields are
+   minute, hour, day of month, month, and day of week (0--7, where both 0 and 7
+   are Sunday). [crontab.guru](https://crontab.guru) is useful for checking a
+   schedule. The trailing redirect appends all output, including errors, to a
+   log file.
+
+4. Save and exit. Cron picks up the change automatically; no restart of the cron
+   service is needed.
+
+An absolute path is required because cron does not run in the project directory.
+`restart.sh` finds the project directory (and thus `.env`) from its own
+location, so it needs no other configuration.
+
+### Check that it works
+
+```bash
+docker compose ps
+curl -s -o /dev/null -w "%{http_code}\n" https://reviewbot.ropensci.org/mean
+```
+
+Both containers should be running, with `plumber` marked `healthy`, and `curl`
+should print `200`. Otherwise, see [Troubleshooting](#troubleshooting).
+
+Finally, set up the [uptime alert](#uptime-alert) if it does not already exist.
+
+## General maintenance
+
+### Uptime alert
+
+The Software Peer Review Lead should set up a regular alert to check that the
+service is up. This bash script prints a message and fails if anything is wrong:
+
+```bash
+#!/usr/bin/env bash
+
+URL="https://reviewbot.ropensci.org"
+status=$(curl -s -o /dev/null -w "%{http_code}" "$URL")
+
+if [[ "$status" != "404" ]]; then
+    echo -e "reviewbot is down"
+    exit 1
+fi
+```
+
+It should then be run regularly, for example from a `~/.bashrc` file, or from a
+cron job.
+
+### Weekly redeploy
+
+The [cron job](#cron-job) runs `restart.sh` every Tuesday. The script:
+
+1. downloads new commits with `git pull --ff-only`,
+2. stops the containers,
+3. deletes old images,
+4. rebuilds the images from scratch,
+5. starts the containers again.
+
+So changes pushed to GitHub reach the droplet within a week, and the images pick
+up updated R packages. The service is down while the images rebuild.
+
+To redeploy straight away, for example after pushing a fix, run the script by
+hand:
+
+```bash
+sudo /bin/bash /home/shared/roreviewapi/restart.sh
+```
+
+#### Viewing, changing and checking the cron job
+
+List the jobs in root's crontab with:
+
+```bash
+sudo crontab -l
+```
+
+Omit `sudo` to list the current user's own crontab instead. Each user has a
+separate crontab, so if nothing appears, check the other user (or root) that may
+have been used to set the job up.
+
+To change the job, re-open the crontab with `sudo crontab -e`, edit the line
+(for example, change the schedule fields), and save. To disable the job without
+deleting it, comment the line out by prefixing it with `#`. To remove it, delete
+the line. Confirm the result with `sudo crontab -l`.
+
+To check that the job ran, read the end of its log file:
+
+```bash
+tail -n 50 /var/log/roreviewapi-restart.log
+```
+
+and confirm that the containers are up with `docker compose ps`.
+
+### Restarting the service
+
+To restart the containers without rebuilding them, for example after changing
+`.env` or installing a new certificate, run from the project directory:
+
+```bash
+docker compose up -d --force-recreate
+```
+
+To change a secret, edit `.env` on the droplet and restart. No change to the
+`Dockerfile` is needed.
+
+### Backing up the data and secrets
+
+The data directory (`/srv/roreviewapi/data/`) and the `.env` file are the only
+things on the droplet that cannot be recreated from GitHub or Cloudflare. Keep
+a copy of them off the droplet, and refresh it before risky changes such as an
+[operating system update](#updating-the-operating-system), and after changing
+`.env` or redoing the Gmail authorization.
+
+The backup contains secrets, so store it somewhere safe, such as rOpenSci's
+1Password, rather than in email, chat or a shared drive.
+
+#### Downloading a backup
+
+1. On the droplet, stop the API briefly, so that the database is not being
+   written to while it is copied:
+
+   ```bash
+   cd /home/shared/roreviewapi
+   docker compose stop plumber
+   ```
+
+2. Pack the data directory and `.env` into one archive in your home directory,
+   make it yours so that it can be downloaded, and start the API again:
+
+   ```bash
+   sudo tar -czf ~/roreviewapi-backup.tar.gz -C / srv/roreviewapi/data home/shared/roreviewapi/.env
+   sudo chown $USER ~/roreviewapi-backup.tar.gz
+   docker compose start plumber
+   ```
+
+   `-C /` makes the paths in the archive start from the root of the disk, so
+   that they can be restored to the same places.
+
+3. On your own computer, download the archive with `scp`, which copies files
+   over SSH. `<user>` and `<droplet-ip>` are the same as for `ssh`:
+
+   ```bash
+   scp <user>@<droplet-ip>:roreviewapi-backup.tar.gz .
+   ```
+
+4. Back on the droplet, delete the archive, so that no extra copy of the
+   secrets is left behind:
+
+   ```bash
+   rm ~/roreviewapi-backup.tar.gz
+   ```
+
+To check what an archive contains, without unpacking it, run
+`tar -tzf roreviewapi-backup.tar.gz`.
+
+#### Restoring a backup
+
+On a rebuilt droplet, restore the backup after [getting the
+code](#get-the-code), and before [starting the service](#start-the-service).
+
+1. On your own computer, upload the archive to your home directory on the
+   droplet:
+
+   ```bash
+   scp roreviewapi-backup.tar.gz <user>@<droplet-ip>:
+   ```
+
+2. On the droplet, unpack it, which puts the files back in
+   `/srv/roreviewapi/data/` and `/home/shared/roreviewapi/.env`, then delete
+   the archive:
+
+   ```bash
+   sudo tar -xzf ~/roreviewapi-backup.tar.gz -C /
+   rm ~/roreviewapi-backup.tar.gz
+   ```
+
+   Unpacking with `sudo` keeps the original owners and permissions, including
+   the restricted permissions of `.env` and of the data directory.
+
+3. If the service is already running, [restart it](#restarting-the-service) so
+   that it picks up the restored files.
+
+### Updating the operating system
+
+Update the droplet's operating system **every 2 years**. Ubuntu publishes a new
+long-term support (LTS) release every 2 years, and older releases eventually
+stop receiving security fixes. Check the current release with:
+
+```bash
+lsb_release -a
+```
+
+1. [Download a backup](#backing-up-the-data-and-secrets) of the data directory
+   and `.env` first, because rebuilding erases the whole disk.
+2. Use the rebuild feature in Settings of the droplet.
+3. Set the droplet up again by following [Starting from
+   scratch](#starting-from-scratch), and [restore the
+   backup](#restoring-a-backup).
 
 ### Recreating the certificate
 
 Create a new certificate when the current one is about to expire, when the key
 is lost, or when it may have been exposed. Nothing renews the certificate
-automatically, so check its expiry date with the `openssl x509` command above.
-Currently Oct 16 08:20:00 2041 GMT.
+automatically, so check its expiry date with the `openssl x509` command in [TLS
+certificate](#tls-certificate). The current certificate expires on 16 October
+2041.
 
 1. Create a new certificate and install it on the droplet, following steps 1 and
-   2 above. Replace the key in 1Password with the new one.
+   2 of [TLS certificate](#tls-certificate). Replace the key in 1Password with
+   the new one.
 
-2. Restart nginx so that it loads the new files, and check that the site
+2. Restart `nginx` so that it loads the new files, and check that the site
    responds:
 
    ```bash
@@ -216,7 +561,7 @@ describes creating, installing and revoking origin certificates in more detail.
 
 ### Troubleshooting
 
-Cloudflare reports problems with the droplet as 5xx status codes:
+Cloudflare reports problems with the droplet as status codes:
 
   | Status | Likely cause                                                                                                                 |
   | ---    | ---                                                                                                                          |
@@ -225,15 +570,16 @@ Cloudflare reports problems with the droplet as 5xx status codes:
   | 526    | The certificate is invalid, expired, or does not match the hostname                                                          |
   | 502    | nginx is up but plumber is not                                                                                               |
 
-For 521, check the containers and the nginx logs on the droplet:
+For 521 or 502, check the containers and their logs on the droplet:
 
 ```bash
 docker compose ps
 docker compose logs --tail=50 nginx
+docker compose logs --tail=50 plumber
 sudo ls /etc/ssl/cloudflare/
 ```
 
-For 522, there are two independent firewalls to check:
+For 522, there are two independent firewalls to check.
 
 *Droplet firewall (ufw):*
 
@@ -248,8 +594,8 @@ sudo ufw allow 80/tcp
 sudo ufw allow 443/tcp
 ```
 
-*Digital Ocean cloud firewall:* in the DO console under **Networking →
-Firewalls**, confirm there is an inbound rule allowing TCP port 443. The cloud
+*Digital Ocean cloud firewall:* in the Digital Ocean console under **Networking
+→ Firewalls**, confirm there is an inbound rule allowing TCP port 443. The cloud
 firewall sits in front of the droplet and blocks traffic before it reaches ufw,
 so both layers must allow it.
 
@@ -257,110 +603,7 @@ Optionally, [Authenticated Origin
 Pulls](https://developers.cloudflare.com/ssl/origin-configuration/authenticated-origin-pull/)
 make nginx accept only connections that come through Cloudflare.
 
-## Deployment
-
-Set `NGINX_SERVER_NAME` in the environment before starting the stack --- this
-value is substituted into `nginx.conf` at container startup. Ensure `.env`
-exists (see [Environment variables](#environment-variables)), then:
-
-```bash
-export NGINX_SERVER_NAME=review.example.org
-docker-compose up -d --build
-```
-
-Routine redeployment is handled by `restart.sh`, which runs
-`git pull --ff-only`, tears down and rebuilds the stack, and brings it back up.
-It is intended to be called from cron. It locates the project directory from its
-own path, so it needs no editing, but `.env` must sit alongside it. Since `.env`
-is untracked, secrets persist across pulls.
-
-The compose file:
-
-- Mounts `/srv/roreviewapi/data` into the plumber container at `/data/email`,
-  and sets `ROREVIEWAPI_EMAIL_DB=/data/email/searches.sqlite` so the SQLite
-  database persists across rebuilds.
-- Reads secrets from `.env` via `env_file`.
-- Mounts `/etc/ssl/cloudflare` read-only into the nginx container so the origin
-  certificate is available.
-- Exposes ports 80 (HTTP → HTTPS redirect) and 443 (HTTPS).
-
-### Cron job
-
-`restart.sh` is run on a schedule so that the droplet picks up new commits and
-rebuilds fresh images without manual intervention. One authorized admin of the
-Digital Ocean droplet needs to configure the cron job.
-
-The job must run as a user that can run `docker-compose` (either root or a
-member of the `docker` group). The following uses root's crontab, so that the
-log file below can be written to `/var/log`.
-
-#### Initial setup
-
-1. Check whether a job already exists (see "Viewing current jobs" below), to
-   avoid creating a duplicate.
-
-2. Open the crontab for editing; if prompted, choose an editor (`nano` is the
-   easiest):
-
-   ```bash
-   sudo crontab -e
-   ```
-
-3. Add the following line, replacing the path with the absolute path to the
-   project checkout on the droplet:
-
-   ```bash
-   0 0 * * 2 /bin/bash /<path>/<to>/roreviewapi/restart.sh >> /var/log/roreviewapi-restart.log 2>&1
-   ```
-
-   This runs the script at 00:00 every Tuesday. The five leading fields are
-   minute, hour, day of month, month, and day of week (0--7, where both 0 and 7
-   are Sunday). [crontab.guru](https://crontab.guru) is useful for checking a
-   schedule. The trailing redirect appends all output, including errors, to a
-   log file.
-
-4. Save and exit. Cron picks up the change automatically; no restart of the cron
-   service is needed.
-
-An absolute path is required because cron does not run in the project directory.
-`restart.sh` finds the project directory (and thus `.env`) from its own
-location, so it needs no other configuration.
-
-#### Viewing current jobs
-
-List the jobs in root's crontab with:
-
-```bash
-sudo crontab -l
-```
-
-Omit `sudo` to list the current user's own crontab instead. Each user has a
-separate crontab, so if nothing appears, check the other user (or root) that may
-have been used to set the job up.
-
-#### Modifying or removing the job
-
-Re-open the crontab with `sudo crontab -e`, edit the line (for example, change
-the schedule fields), and save. To disable the job without deleting it, comment
-the line out by prefixing it with `#`; to remove it, delete the line. Confirm
-the result with `sudo crontab -l`.
-
-#### Checking that it ran
-
-Inspect the log file written by the job:
-
-```bash
-tail -n 50 /var/log/roreviewapi-restart.log
-```
-
-and confirm the containers are up with `docker ps`. To test the job without
-waiting for the schedule, run the same command by hand:
-
-```bash
-sudo /bin/bash /<path>/<to>/roreviewapi/restart.sh
-```
-
-## Transferring maintenance
+### Transferring maintenance
 
 Maintenance falls into two parts with very different transfer costs:
 
@@ -370,7 +613,7 @@ Maintenance falls into two parts with very different transfer costs:
   and AirTable tokens, belong to whoever created them. These must be re-created
   by the new maintainer if the outgoing person's accounts will be closed.
 
-### Operations only
+#### Operations only
 
 When the new person only deploys and debugs, and the existing authorizing
 account stays active:
@@ -378,10 +621,10 @@ account stays active:
 1. Add their SSH key and `sudo` access on the droplet.
 2. Add them to the `roreviewapi` GitHub repository.
 3. Add them to the `ro-auto-email` Google Cloud project's IAM.
-4. Hand over this document and the contents of `.env` (securely, for example via
-   a password manager rather than email or chat).
+4. Hand over this document and the contents of `.env` securely, for example via
+   a password manager rather than email or chat.
 
-### Transferring credentials
+#### Transferring credentials
 
 This is required if the outgoing maintainer's accounts will become unusable, for
 example on leaving the organization. The values in `.env` that are tied to a
@@ -402,12 +645,8 @@ The steps are then:
 
 2. Update `.env` on the droplet with the new values.
 
-3. Run `restart.sh` (or wait for the next scheduled run) so that the container
-   picks up the new `.env` and credentials:
-
-   ```bash
-   sudo /bin/bash /<path>/<to>/roreviewapi/restart.sh
-   ```
+3. [Restart the service](#restarting-the-service) so that the container picks up
+   the new `.env` and credentials.
 
 4. Verify that the editor search workflow still sends and receives emails (see
    the editor search vignette).
@@ -415,12 +654,14 @@ The steps are then:
 5. Once the new setup works, the outgoing maintainer should revoke their old
    GitHub and AirTable tokens, and the old Google grant.
 
-### Other items to update
+#### Other items to update
 
 - **Cron job.** If the cron job was set up under the outgoing maintainer's
   account, move it to root's crontab (see [Cron job](#cron-job)), or recreate it
   under the new account.
 - **Git identity.** The `git config` lines in the `Dockerfile` hold the
   `user.name` and `user.email` used for commits made inside the container.
-- **Uptime alert.** Whoever receives the deployment-status alert at the top of
-  this document should be updated.
+- **Uptime alert.** Whoever receives the [uptime alert](#uptime-alert) should be
+  updated.
+- **1Password.** The new maintainer needs access to the certificate's private
+  key.
