@@ -1,6 +1,7 @@
 services:
   nginx:
     image: nginx
+    restart: always
     volumes:
       - $PWD/nginx.conf:/tmp/nginx.conf
       - /etc/letsencrypt:/etc/letsencrypt:ro
