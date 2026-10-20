@@ -1,7 +1,30 @@
 #!/bin/bash
 # Write ~/.Renviron from runtime environment variables (supplied by compose
 # 'env_file'), so that no secrets are baked into image layers.
-set -e
+set -eu
+
+required_vars=(
+    GITHUB_PAT
+    PKGCHECK_TOKEN
+    GMAIL_SENDER
+    GMAIL_OAUTH_CLIENT_SECRET
+    GMAIL_TOKEN_CACHE
+    GMAIL_AUTH_EMAIL
+    AIRTABLE_API_KEY
+    AIRTABLE_BASE_ID
+    ROREVIEWAPI_BASE_URL
+)
+missing=()
+for v in "${required_vars[@]}"; do
+    if [ -z "${!v:-}" ]; then
+        missing+=("$v")
+    fi
+done
+if [ ${#missing[@]} -gt 0 ]; then
+    echo "ERROR: missing required environment variables: ${missing[*]}" >&2
+    echo "Check that they are set in the '.env' file next to docker-compose.yml." >&2
+    exit 1
+fi
 
 : > ~/.Renviron
 echo "GITHUB_PAT='${GITHUB_PAT}'" >> ~/.Renviron
