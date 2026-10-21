@@ -2,20 +2,24 @@
 % Please edit documentation in R/utils.R
 \name{is_user_authorized}
 \alias{is_user_authorized}
-\title{Check whether a user, identified from GitHub API token, is authorized to call
-endpoints.}
+\title{Check whether a caller is authorized to call endpoints.}
 \usage{
 is_user_authorized(secret = NULL)
 }
 \arguments{
-\item{secret}{Environment variable \code{PKGCHECK_TOKEN} sent from bot.}
+\item{secret}{Environment variable \code{PKGCHECK_TOKEN} sent from bot, or a
+GitHub token of an authorized user.}
 }
 \value{
 Logical value indicating whether or not a user is authorized.
 }
 \description{
 This function is used only in the \pkg{plumber} endpoints, to
-prevent them being called by unauthorized users.
+prevent them being called by unauthorized users. Authorization is determined
+solely from the \code{secret} supplied by the caller, and never from the token
+hard-coded in the container. The \code{secret} is authorized if it either matches
+the environment variable \code{PKGCHECK_TOKEN}, or is a GitHub token belonging to
+one of the authorized users.
 }
 \seealso{
 Other ropensci:
