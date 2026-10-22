@@ -22,6 +22,7 @@ Other email:
 \code{\link[=deactivate_stale_searches]{deactivate_stale_searches()}},
 \code{\link[=handle_click]{handle_click()}},
 \code{\link[=list_searches]{list_searches()}},
-\code{\link[=send_search]{send_search()}}
+\code{\link[=send_search]{send_search()}},
+\code{\link[=send_search_and_post]{send_search_and_post()}}
 }
 \concept{email}

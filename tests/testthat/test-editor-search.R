@@ -134,6 +134,55 @@ test_that ("send_search rejects invalid inputs", {
     ))
 })
 
+test_that ("send_search removes the search when the sender fails", {
+    local_notify_cache ()
+
+    failing_sender <- function (emails, links, subject, repo, issue_id) {
+        stop ("Gmail is down")
+    }
+    expect_error (
+        send_search ("https://github.com/org/pkg", "ropensci/software-review", 123L,
+            fetcher = email_fetcher, stats_checker = stats_checker_false,
+            sender = failing_sender
+        ),
+        regexp = "Gmail is down"
+    )
+
+    con <- email_db_init ()
+    on.exit (DBI::dbDisconnect (con))
+    expect_equal (nrow (DBI::dbReadTable (con, "searches")), 0L)
+    expect_equal (nrow (DBI::dbReadTable (con, "recipients")), 0L)
+})
+
+test_that ("send_search_and_post posts the outcome to the issue", {
+    local_notify_cache ()
+
+    posted <- NULL
+    poster_mock <- function (cmt, repo, issue_id) posted <<- cmt
+
+    send_search_and_post (
+        "https://github.com/org/pkg", "ropensci/software-review", 123L,
+        poster = poster_mock,
+        fetcher = email_fetcher, stats_checker = stats_checker_false,
+        sender = gmail_send_batch_mock
+    )
+    expect_match (posted, "Editors have been notified \\(2 emails sent\\)")
+
+    failing_sender <- function (emails, links, subject, repo, issue_id) {
+        stop ("Gmail is down")
+    }
+    send_search_and_post (
+        "https://github.com/org/pkg", "ropensci/software-review", 123L,
+        poster = poster_mock,
+        fetcher = email_fetcher, stats_checker = stats_checker_false,
+        sender = failing_sender
+    )
+    expect_match (posted, "failed")
+    expect_match (posted, "Gmail is down")
+    # Must not trigger the bug-report branch of post_to_issue():
+    expect_false (grepl ("^Oops\\,\\ssomething went wrong", posted))
+})
+
 test_that ("list_searches returns correct totals and click counts", {
     local_notify_cache ()
 

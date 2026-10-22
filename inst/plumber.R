@@ -278,7 +278,7 @@ function (repourl = "", repo, issue_id, secret = NULL) {
     logfiles$stderr <- gsub ("\\_stderr$", "_send_search_stderr", logfiles$stderr)
 
     ps_send_search <<- callr::r_bg (
-        func = roreviewapi::send_search,
+        func = roreviewapi::send_search_and_post,
         args = list (
             repourl  = repourl,
             repo     = repo,
@@ -290,7 +290,8 @@ function (repourl = "", repo, issue_id, secret = NULL) {
         supervise = TRUE
     )
 
-    return (":rocket: Editors have been notified.")
+    # The outcome is posted to the issue by the background process:
+    return ("Sending editor search emails ...")
 }
 
 

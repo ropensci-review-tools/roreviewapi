@@ -7,11 +7,11 @@
 #'
 #' @return Absolute path as a character string.
 #' @noRd
-email_db_path <- function () {
-    p <- Sys.getenv ("ROREVIEWAPI_EMAIL_DB")
-    if (!nzchar (p)) {
-        p <- file.path (
-            rappdirs::user_data_dir ("roreviewapi"),
+email_db_path <- function() {
+    p <- Sys.getenv("ROREVIEWAPI_EMAIL_DB")
+    if (!nzchar(p)) {
+        p <- file.path(
+            rappdirs::user_data_dir("roreviewapi"),
             "searches.sqlite"
         )
     }
@@ -25,14 +25,15 @@ email_db_path <- function () {
 #'
 #' @return A \pkg{DBI} connection object.
 #' @noRd
-email_db_init <- function () {
+email_db_init <- function() {
+    path <- email_db_path()
+    dir.create(dirname(path), recursive = TRUE, showWarnings = FALSE)
 
-    path <- email_db_path ()
-    dir.create (dirname (path), recursive = TRUE, showWarnings = FALSE)
+    con <- DBI::dbConnect(RSQLite::SQLite(), path)
 
-    con <- DBI::dbConnect (RSQLite::SQLite (), path)
-
-    DBI::dbExecute (con, "
+    DBI::dbExecute(
+        con,
+        "
         CREATE TABLE IF NOT EXISTS searches (
             id           INTEGER PRIMARY KEY AUTOINCREMENT,
             created_at   TEXT NOT NULL,
@@ -40,9 +41,12 @@ email_db_init <- function () {
             notify_email TEXT NOT NULL,
             active       INTEGER NOT NULL DEFAULT 1
         )
-    ")
+    "
+    )
 
-    DBI::dbExecute (con, "
+    DBI::dbExecute(
+        con,
+        "
         CREATE TABLE IF NOT EXISTS recipients (
             id          INTEGER PRIMARY KEY AUTOINCREMENT,
             search_id   INTEGER NOT NULL REFERENCES searches(id),
@@ -50,7 +54,8 @@ email_db_init <- function () {
             token       TEXT NOT NULL UNIQUE,
             clicked_at  TEXT
         )
-    ")
+    "
+    )
 
     con
 }
@@ -59,8 +64,8 @@ email_db_init <- function () {
 #'
 #' @return Single character string of 64 hex characters.
 #' @noRd
-generate_email_token <- function () {
-    paste0 (as.character (openssl::rand_bytes (32L)), collapse = "")
+generate_email_token <- function() {
+    paste0(as.character(openssl::rand_bytes(32L)), collapse = "")
 }
 
 #' Fetch editor email addresses from AirTable and GitHub
@@ -74,18 +79,21 @@ generate_email_token <- function () {
 #' editors.
 #' @return Character vector of email addresses.
 #' @noRd
-get_editor_emails <- function (airtable_base_id, stats = FALSE) {
-
-    rev_prod <- airtabler::airtable (
-        base = airtable_base_id, table = "reviewers-prod"
+get_editor_emails <- function(airtable_base_id, stats = FALSE) {
+    rev_prod <- airtabler::airtable(
+        base = airtable_base_id,
+        table = "reviewers-prod"
     )
-    fields <- list ("github", "name", "email")
-    eds <- rev_prod$`reviewers-prod`$select_all (fields = fields)
+    fields <- list("github", "name", "email")
+    eds <- rev_prod$`reviewers-prod`$select_all(fields = fields)
 
-    team <- ifelse (stats, "stats-editors", "editors")
-    q <- paste0 ("{
+    team <- ifelse(stats, "stats-editors", "editors")
+    q <- paste0(
+        "{
         organization(login:\"ropensci\") {
-            team(slug: \"", team, "\") {
+            team(slug: \"",
+        team,
+        "\") {
                 members(first: 100, membership: IMMEDIATE) {
                     nodes {
                         login
@@ -93,25 +101,26 @@ get_editor_emails <- function (airtable_base_id, stats = FALSE) {
                 }
             }
         }
-    }")
-    dat <- gh::gh_gql (query = q)
+    }"
+    )
+    dat <- gh::gh_gql(query = q)
     nodes <- dat$data$organization$team$members$nodes
-    team_gh <- vapply (nodes, function (n) n$login, character (1L))
+    team_gh <- vapply(nodes, function(n) n$login, character(1L))
 
-    index <- which (tolower (eds$github) %in% tolower (team_gh))
-    eds <- eds [index, unlist (fields)]
-    index <- which (!is.na (eds$email) & !duplicated (eds))
-    eds$email [index]
+    index <- which(tolower(eds$github) %in% tolower(team_gh))
+    eds <- eds[index, unlist(fields)]
+    index <- which(!is.na(eds$email) & !duplicated(eds))
+    eds$email[index]
 }
 
 #' @noRd
-is_valid_email <- function (x) {
-    grepl ("^[^@[:space:]]+@[^@[:space:]]+\\.[^@[:space:]]+$", trimws (x))
+is_valid_email <- function(x) {
+    grepl("^[^@[:space:]]+@[^@[:space:]]+\\.[^@[:space:]]+$", trimws(x))
 }
 
 #' @noRd
-is_valid_base_url <- function (x) {
-    grepl ("^https://", x) || grepl ("^http://(localhost|127\\.0\\.0\\.1)", x)
+is_valid_base_url <- function(x) {
+    grepl("^https://", x) || grepl("^http://(localhost|127\\.0\\.0\\.1)", x)
 }
 
 #' Fetch the current editor-in-chief email address from AirTable
@@ -120,17 +129,17 @@ is_valid_base_url <- function (x) {
 #' var).
 #' @return Single email address as a character string.
 #' @noRd
-eic_email_address <- function (airtable_base_id) {
-
-    eic_table <- airtabler::airtable (
-        base = airtable_base_id, table = "editor-in-chief-rotation"
+eic_email_address <- function(airtable_base_id) {
+    eic_table <- airtabler::airtable(
+        base = airtable_base_id,
+        table = "editor-in-chief-rotation"
     )
-    eic <- eic_table$`editor-in-chief-rotation`$select_all ()
-    eic$period_start <- as.Date (eic$period_start)
-    eic$period_end <- as.Date (eic$period_end)
-    eic <- eic [order (eic$period_start), ]
-    i <- which (eic$period_start < Sys.Date () & eic$period_end > Sys.Date ())
-    eic$acting_eic_email [[i]]
+    eic <- eic_table$`editor-in-chief-rotation`$select_all()
+    eic$period_start <- as.Date(eic$period_start)
+    eic$period_end <- as.Date(eic$period_end)
+    eic <- eic[order(eic$period_start), ]
+    i <- which(eic$period_start < Sys.Date() & eic$period_end > Sys.Date())
+    eic$acting_eic_email[[i]]
 }
 
 #' Path to the cached notify email address file
@@ -139,23 +148,25 @@ eic_email_address <- function (airtable_base_id) {
 #'
 #' @return Absolute path as a character string.
 #' @noRd
-notify_email_cache_path <- function () {
-    file.path (dirname (email_db_path ()), "notify_email.txt")
+notify_email_cache_path <- function() {
+    file.path(dirname(email_db_path()), "notify_email.txt")
 }
 
 #' Read the cached notify email address
 #'
 #' @return Email address as a character string.
 #' @noRd
-notify_email_read <- function () {
-    path <- notify_email_cache_path ()
-    if (!file.exists (path)) {
-        stop (
-            "Notify email cache not found at '", path, "'. ",
+notify_email_read <- function() {
+    path <- notify_email_cache_path()
+    if (!file.exists(path)) {
+        stop(
+            "Notify email cache not found at '",
+            path,
+            "'. ",
             "Ensure serve_api() has completed its initial AirTable refresh."
         )
     }
-    trimws (readLines (path, warn = FALSE))
+    trimws(readLines(path, warn = FALSE))
 }
 
 #' Fetch the current EiC email from AirTable and write to cache
@@ -166,26 +177,25 @@ notify_email_read <- function () {
 #'   address. Defaults to \code{eic_email_address}; override in tests.
 #' @return The fetched email address, or \code{NULL} on failure, invisibly.
 #' @noRd
-notify_email_refresh <- function (fetcher = eic_email_address) {
-
-    base_id <- Sys.getenv ("AIRTABLE_BASE_ID")
-    email <- tryCatch (
-        fetcher (base_id),
-        error = function (e) {
-            message ("AirTable fetch failed: ", e$message)
+notify_email_refresh <- function(fetcher = eic_email_address) {
+    base_id <- Sys.getenv("AIRTABLE_BASE_ID")
+    email <- tryCatch(
+        fetcher(base_id),
+        error = function(e) {
+            message("AirTable fetch failed: ", e$message)
             NULL
         }
     )
-    if (!is.null (email) && nzchar (email)) {
-        cache_path <- notify_email_cache_path ()
-        dir.create (
-            dirname (cache_path),
+    if (!is.null(email) && nzchar(email)) {
+        cache_path <- notify_email_cache_path()
+        dir.create(
+            dirname(cache_path),
             recursive = TRUE,
             showWarnings = FALSE
         )
-        writeLines (email, cache_path)
+        writeLines(email, cache_path)
     }
-    invisible (email)
+    invisible(email)
 }
 
 #' Authorize gmailr from cached OAuth credentials
@@ -199,12 +209,12 @@ notify_email_refresh <- function (fetcher = eic_email_address) {
 #' @return The \pkg{gmailr} token, as returned by \code{gmailr::gm_auth},
 #' invisibly.
 #' @noRd
-gmail_auth <- function () {
-    gmailr::gm_auth_configure (path = Sys.getenv ("GMAIL_OAUTH_CLIENT_SECRET"))
-    invisible (gmailr::gm_auth (
-        email = Sys.getenv ("GMAIL_AUTH_EMAIL"),
-        scopes = c ("gmail.modify", "gmail.settings_basic"),
-        cache = Sys.getenv ("GMAIL_TOKEN_CACHE")
+gmail_auth <- function() {
+    gmailr::gm_auth_configure(path = Sys.getenv("GMAIL_OAUTH_CLIENT_SECRET"))
+    invisible(gmailr::gm_auth(
+        email = Sys.getenv("GMAIL_AUTH_EMAIL"),
+        scopes = c("gmail.modify", "gmail.settings_basic"),
+        cache = Sys.getenv("GMAIL_TOKEN_CACHE")
     ))
 }
 
@@ -215,17 +225,16 @@ gmail_auth <- function () {
 #' @param html_body HTML body of the email.
 #' @return The \pkg{gmailr} send response, invisibly.
 #' @noRd
-gmail_send <- function (to, subject, html_body) {
+gmail_send <- function(to, subject, html_body) {
+    gmail_auth()
 
-    gmail_auth ()
+    msg <- gmailr::gm_mime() |>
+        gmailr::gm_from(Sys.getenv("GMAIL_SENDER")) |>
+        gmailr::gm_to(to) |>
+        gmailr::gm_subject(subject) |>
+        gmailr::gm_html_body(html_body)
 
-    msg <- gmailr::gm_mime () |>
-        gmailr::gm_from (Sys.getenv ("GMAIL_SENDER")) |>
-        gmailr::gm_to (to) |>
-        gmailr::gm_subject (subject) |>
-        gmailr::gm_html_body (html_body)
-
-    invisible (gmailr::gm_send_message (msg))
+    invisible(gmailr::gm_send_message(msg))
 }
 
 #' Fetch package DESCRIPTION data from a submission issue body
@@ -238,55 +247,62 @@ gmail_send <- function (to, subject, html_body) {
 #' @return Named list with \code{package}, \code{auts}, and \code{desc_text},
 #' or \code{NULL} if the DESCRIPTION block could not be found or parsed.
 #' @noRd
-get_desc_data <- function (repo, issue_num) {
+get_desc_data <- function(repo, issue_num) {
+    org <- dirname(repo)
+    repo <- basename(repo)
 
-    org <- dirname (repo)
-    repo <- basename (repo)
-
-    q <- paste0 ("{
-        repository(owner:\"", org, "\", name:\"", repo, "\") {
-            issue(number:", issue_num, ") {
+    q <- paste0(
+        "{
+        repository(owner:\"",
+        org,
+        "\", name:\"",
+        repo,
+        "\") {
+            issue(number:",
+        issue_num,
+        ") {
                 body
             }
         }
-    }")
-    dat <- gh::gh_gql (query = q)
-    dat <- tryCatch (
-        strsplit (dat$data$repository$issue$body, "\\n") [[1]],
-        error = function (e) NULL
+    }"
     )
-    if (is.null (dat)) {
-        return (dat)
+    dat <- gh::gh_gql(query = q)
+    dat <- tryCatch(
+        strsplit(dat$data$repository$issue$body, "\\n")[[1]],
+        error = function(e) NULL
+    )
+    if (is.null(dat)) {
+        return(dat)
     }
-    desc_start <- grep ("Paste the full DESCRIPTION file", dat, fixed = TRUE)
-    if (length (desc_start) < 1) {
-        return (NULL)
+    desc_start <- grep("Paste the full DESCRIPTION file", dat, fixed = TRUE)
+    if (length(desc_start) < 1) {
+        return(NULL)
     }
-    delims <- grep ("^```", dat)
-    if (length (delims) < 2) {
-        return (NULL)
+    delims <- grep("^```", dat)
+    if (length(delims) < 2) {
+        return(NULL)
     }
-    delims <- delims [which (delims > desc_start)] [1:2]
-    if (length (delims) < 2 || diff (delims) < 2) {
-        return (NULL)
+    delims <- delims[which(delims > desc_start)][1:2]
+    if (length(delims) < 2 || diff(delims) < 2) {
+        return(NULL)
     }
 
-    desc_text <- dat [seq (delims [1] + 1L, delims [2] - 1L)]
-    f <- tempfile ()
-    writeLines (desc_text, f)
-    desc <- tryCatch (
-        data.frame (read.dcf (f)),
-        error = function (e) NULL
+    desc_text <- dat[seq(delims[1] + 1L, delims[2] - 1L)]
+    f <- tempfile()
+    writeLines(desc_text, f)
+    desc <- tryCatch(
+        data.frame(read.dcf(f)),
+        error = function(e) NULL
     )
-    if (is.null (desc)) {
-        return (NULL)
+    if (is.null(desc)) {
+        return(NULL)
     }
 
-    list (
+    list(
         package = desc$Package,
-        auts = tryCatch (
-            eval (parse (text = desc$Authors.R)),
-            error = function (e) NULL
+        auts = tryCatch(
+            eval(parse(text = desc$Authors.R)),
+            error = function(e) NULL
         ),
         desc_text = desc$Description
     )
@@ -307,29 +323,34 @@ get_desc_data <- function (repo, issue_num) {
 #' @param issue_id Integer issue number in the review repository.
 #' @return List of \pkg{gmailr} send responses, one per recipient, invisibly.
 #' @noRd
-gmail_send_batch <- function (emails, links, subject, repo, issue_id) {
+gmail_send_batch <- function(emails, links, subject, repo, issue_id) {
+    issue_url <- paste0("https://github.com/", repo, "/issues/", issue_id)
 
-    issue_url <- paste0 ("https://github.com/", repo, "/issues/", issue_id)
+    pkg_info <- get_desc_info_from_issue(repo, issue_id)
 
-    pkg_info <- get_desc_info_from_issue (repo, issue_id)
-
-    resps <- lapply (seq_along (emails), function (i) {
-        html_body <- paste0 (
+    resps <- lapply(seq_along(emails), function(i) {
+        html_body <- paste0(
             "<p>You have been invited to volunteer as an editor for an ",
             "rOpenSci software submission: ",
-            "<a href=\"", issue_url, "\">", issue_url, "</a></p>",
+            "<a href=\"",
+            issue_url,
+            "\">",
+            issue_url,
+            "</a></p>",
             pkg_info,
             "<p>Please click the link below to express your interest. ",
             "Clicking only expresses your potential interest; you won't ",
             "be assigned until the Editor-in-Chief has confirmed with you.</p>",
-            "<p><a href=\"", links [[i]], "\">Click here to respond</a></p>"
+            "<p><a href=\"",
+            links[[i]],
+            "\">Click here to respond</a></p>"
         )
-        resp <- gmail_send (emails [[i]], subject, html_body)
-        Sys.sleep (0.1)
+        resp <- gmail_send(emails[[i]], subject, html_body)
+        Sys.sleep(0.1)
         resp
     })
 
-    invisible (resps)
+    invisible(resps)
 }
 
 #' Helper function to extract data from the pasted "Description" field in the
@@ -340,54 +361,61 @@ gmail_send_batch <- function (emails, links, subject, repo, issue_id) {
 #' @return A formatted text string containing information on (package name,
 #' authors, description).
 #' @noRd
-get_desc_info_from_issue <- function (repo, issue_id) {
-
-    desc_dat <- tryCatch (
-        get_desc_data (repo, issue_id),
-        error = function (e) NULL
+get_desc_info_from_issue <- function(repo, issue_id) {
+    desc_dat <- tryCatch(
+        get_desc_data(repo, issue_id),
+        error = function(e) NULL
     )
-    if (is.null (desc_dat) || !"package" %in% names (desc_dat)) {
-        return ("")
+    if (is.null(desc_dat) || !"package" %in% names(desc_dat)) {
+        return("")
     }
 
-    pkg_info <- paste0 (
-        "<p><strong>Package:</strong> ", desc_dat$package, "<br>"
+    pkg_info <- paste0(
+        "<p><strong>Package:</strong> ",
+        desc_dat$package,
+        "<br>"
     )
 
     auts <- desc_dat$auts
-    desc_index <- function (auts, what = "aut") {
-        which (vapply (auts, function (i) {
-            what %in% i$role
-        }, logical (1L)))
+    desc_index <- function(auts, what = "aut") {
+        which(vapply(
+            auts,
+            function(i) {
+                what %in% i$role
+            },
+            logical(1L)
+        ))
     }
-    auts <- auts [desc_index (auts, "aut")]
-    cre_index <- desc_index (auts, "cre")
-    index <- c (cre_index, seq_along (auts) [-cre_index])
-    if (length (index) > 0L) {
-
-        auts_txt <- vapply (auts [index], function (i) {
-            paste (i$given, i$family)
-        }, character (1L))
-        pkg_info <- paste0 (
+    auts <- auts[desc_index(auts, "aut")]
+    cre_index <- desc_index(auts, "cre")
+    index <- c(cre_index, seq_along(auts)[-cre_index])
+    if (length(index) > 0L) {
+        auts_txt <- vapply(
+            auts[index],
+            function(i) {
+                paste(i$given, i$family)
+            },
+            character(1L)
+        )
+        pkg_info <- paste0(
             pkg_info,
             "<strong>Author",
-            ifelse (length (auts_txt) == 1L, "", "s"),
+            ifelse(length(auts_txt) == 1L, "", "s"),
             ":</strong> ",
-            paste0 (auts_txt, collapse = ", "),
+            paste0(auts_txt, collapse = ", "),
             "<br>"
         )
     }
 
-    if ("desc_text" %in% names (desc_dat)) {
-
-        pkg_info <- paste0 (
+    if ("desc_text" %in% names(desc_dat)) {
+        pkg_info <- paste0(
             pkg_info,
             "<strong>Description:</strong> ",
             desc_dat$desc_text
         )
     }
 
-    paste0 (pkg_info, "</p>")
+    paste0(pkg_info, "</p>")
 }
 
 #' Send a batch of editor search emails
@@ -417,68 +445,77 @@ get_desc_info_from_issue <- function (repo, issue_id) {
 #' @return Named list with \code{search_id} (integer) and \code{sent} (integer).
 #' @family email
 #' @export
-send_search <- function (repourl, repo, issue_id,
-                         subject = "Seeking editors for rOpenSci software submission",
-                         fetcher = NULL,
-                         stats_checker = roreviewapi::issue_is_stats,
-                         sender = NULL) {
-
+send_search <- function(
+    repourl,
+    repo,
+    issue_id,
+    subject = "Seeking editors for rOpenSci software submission",
+    fetcher = NULL,
+    stats_checker = roreviewapi::issue_is_stats,
+    sender = NULL
+) {
     get_editor_emails <-
-        utils::getFromNamespace ("get_editor_emails", "roreviewapi")
+        utils::getFromNamespace("get_editor_emails", "roreviewapi")
     is_valid_base_url <-
-        utils::getFromNamespace ("is_valid_base_url", "roreviewapi")
-    is_valid_email <- utils::getFromNamespace ("is_valid_email", "roreviewapi")
+        utils::getFromNamespace("is_valid_base_url", "roreviewapi")
+    is_valid_email <- utils::getFromNamespace("is_valid_email", "roreviewapi")
     notify_email_read <-
-        utils::getFromNamespace ("notify_email_read", "roreviewapi")
+        utils::getFromNamespace("notify_email_read", "roreviewapi")
     get_editor_emails <-
-        utils::getFromNamespace ("get_editor_emails", "roreviewapi")
-    email_db_init <- utils::getFromNamespace ("email_db_init", "roreviewapi")
-    email_db_path <- utils::getFromNamespace ("email_db_path", "roreviewapi")
+        utils::getFromNamespace("get_editor_emails", "roreviewapi")
+    email_db_init <- utils::getFromNamespace("email_db_init", "roreviewapi")
+    email_db_path <- utils::getFromNamespace("email_db_path", "roreviewapi")
     generate_email_token <-
-        utils::getFromNamespace ("generate_email_token", "roreviewapi")
+        utils::getFromNamespace("generate_email_token", "roreviewapi")
     gmail_send_batch <-
-        utils::getFromNamespace ("gmail_send_batch", "roreviewapi")
+        utils::getFromNamespace("gmail_send_batch", "roreviewapi")
     delete_search_rows <-
-        utils::getFromNamespace ("delete_search_rows", "roreviewapi")
+        utils::getFromNamespace("delete_search_rows", "roreviewapi")
 
-    if (is.null (fetcher)) fetcher <- get_editor_emails
-    if (is.null (sender)) sender <- gmail_send_batch
-
-    if (length (repourl) != 1L || !nzchar (repourl)) {
-        stop ("'repourl' must be a single non-empty string")
+    if (is.null(fetcher)) {
+        fetcher <- get_editor_emails
     }
-    if (length (repo) != 1L || !nzchar (repo)) {
-        stop ("'repo' must be a single non-empty string")
+    if (is.null(sender)) {
+        sender <- gmail_send_batch
     }
-    issue_id <- as.integer (issue_id) [[1L]]
 
-    base_url <- Sys.getenv ("ROREVIEWAPI_BASE_URL")
-    if (!is_valid_base_url (base_url)) {
-        stop (
+    if (length(repourl) != 1L || !nzchar(repourl)) {
+        stop("'repourl' must be a single non-empty string")
+    }
+    if (length(repo) != 1L || !nzchar(repo)) {
+        stop("'repo' must be a single non-empty string")
+    }
+    issue_id <- as.integer(issue_id)[[1L]]
+
+    base_url <- Sys.getenv("ROREVIEWAPI_BASE_URL")
+    if (!is_valid_base_url(base_url)) {
+        stop(
             "ROREVIEWAPI_BASE_URL must be set and start",
             " with https:// or http://localhost"
         )
     }
 
-    issue_ref <- paste0 (repo, "/issues/", issue_id)
-    message (
-        "[send_search] starting: issue_ref=", issue_ref,
-        " base_url=", base_url
+    issue_ref <- paste0(repo, "/issues/", issue_id)
+    message(
+        "[send_search] starting: issue_ref=",
+        issue_ref,
+        " base_url=",
+        base_url
     )
 
-    stats <- stats_checker (repo, issue_id)
-    message ("[send_search] stats=", stats, "; fetching editor emails")
+    stats <- stats_checker(repo, issue_id)
+    message("[send_search] stats=", stats, "; fetching editor emails")
 
-    if (gsub ("\\/.*$", "", repo) == "ropenscilabs") {
+    if (gsub("\\/.*$", "", repo) == "ropenscilabs") {
         emails <- "reviewtools@ropensci.org"
     } else {
-        emails <- fetcher (Sys.getenv ("AIRTABLE_BASE_ID"), stats = stats)
-        message ("[send_search] fetched ", length (emails), " email(s)")
+        emails <- fetcher(Sys.getenv("AIRTABLE_BASE_ID"), stats = stats)
+        message("[send_search] fetched ", length(emails), " email(s)")
 
-        emails <- emails [which (is_valid_email (emails))]
+        emails <- emails[which(is_valid_email(emails))]
     }
-    if (length (emails) == 0L) {
-        stop ("fetcher returned no valid email addresses")
+    if (length(emails) == 0L) {
+        stop("fetcher returned no valid email addresses")
     }
 
     # This condition will allow you to test 'ping editors' elsewhere with a
@@ -488,68 +525,139 @@ send_search <- function (repourl, repo, issue_id,
     #     notify_address <- "myname@ropensci.org"
     # } else { ...
 
-    notify_address <- notify_email_read ()
-    message ("[send_search] notify_address=", notify_address)
+    notify_address <- notify_email_read()
+    message("[send_search] notify_address=", notify_address)
 
-    con <- email_db_init ()
-    on.exit (DBI::dbDisconnect (con))
-    message ("[send_search] DB initialised at ", email_db_path ())
+    con <- email_db_init()
+    on.exit(DBI::dbDisconnect(con))
+    message("[send_search] DB initialised at ", email_db_path())
 
-    existing <- DBI::dbGetQuery (
+    existing <- DBI::dbGetQuery(
         con,
         "SELECT id FROM searches WHERE issue_ref = ?",
-        params = list (issue_ref)
+        params = list(issue_ref)
     )
-    if (nrow (existing) > 0L) {
-        message (
-            "[send_search] existing search for '", issue_ref,
-            "' (search_id=", existing [["id"]], "); deleting and starting new"
+    if (nrow(existing) > 0L) {
+        message(
+            "[send_search] existing search for '",
+            issue_ref,
+            "' (search_id=",
+            existing[["id"]],
+            "); deleting and starting new"
         )
-        delete_search_rows (con, existing [["id"]])
+        delete_search_rows(con, existing[["id"]])
     }
 
-    created_at <- strftime (Sys.time (), "%Y-%m-%dT%H:%M:%SZ", tz = "UTC")
-    DBI::dbExecute (
+    created_at <- strftime(Sys.time(), "%Y-%m-%dT%H:%M:%SZ", tz = "UTC")
+    DBI::dbExecute(
         con,
-        paste0 (
+        paste0(
             "INSERT INTO searches (created_at, issue_ref, notify_email) ",
             "VALUES (?, ?, ?)"
         ),
-        params = list (created_at, issue_ref, notify_address)
+        params = list(created_at, issue_ref, notify_address)
     )
-    search_id <- DBI::dbGetQuery (
+    search_id <- DBI::dbGetQuery(
         con,
         "SELECT last_insert_rowid() AS id"
-    ) [["id"]]
-    message ("[send_search] search row inserted: search_id=", search_id)
+    )[["id"]]
+    message("[send_search] search row inserted: search_id=", search_id)
 
-    tokens <- vapply (
-        seq_along (emails),
-        function (i) generate_email_token (),
-        character (1L)
+    tokens <- vapply(
+        seq_along(emails),
+        function(i) generate_email_token(),
+        character(1L)
     )
 
-    for (i in seq_along (emails)) {
-        DBI::dbExecute (
+    for (i in seq_along(emails)) {
+        DBI::dbExecute(
             con,
             "INSERT INTO recipients (search_id, email, token) VALUES (?, ?, ?)",
-            params = list (search_id, emails [[i]], tokens [[i]])
+            params = list(search_id, emails[[i]], tokens[[i]])
         )
     }
-    message ("[send_search] inserted ", length (emails), " recipient row(s)")
+    message("[send_search] inserted ", length(emails), " recipient row(s)")
 
-    links <- paste0 (base_url, "/click/", tokens)
-    message (
+    links <- paste0(base_url, "/click/", tokens)
+    message(
         "[send_search] GMAIL_SENDER=",
-        Sys.getenv ("GMAIL_SENDER")
+        Sys.getenv("GMAIL_SENDER")
     )
-    message ("[send_search] calling sender")
-    resp <- sender (emails, links, subject, repo, issue_id)
-    message (
-        "[send_search] sender: sent ", length (resp), " message(s)"
+    message("[send_search] calling sender")
+    # Remove the search on failure, so that no orphan rows are left, and the
+    # command can simply be re-run:
+    resp <- tryCatch(
+        sender(emails, links, subject, repo, issue_id),
+        error = function(e) {
+            delete_search_rows(con, search_id)
+            message(
+                "[send_search] sender failed; search_id=",
+                search_id,
+                " removed"
+            )
+            stop(e)
+        }
+    )
+    message(
+        "[send_search] sender: sent ",
+        length(resp),
+        " message(s)"
     )
 
-    list (search_id = search_id, sent = length (emails))
+    list(search_id = search_id, sent = length(emails))
+}
+
+#' Send a batch of editor search emails, and post the outcome to the issue
+#'
+#' Wrapper around \code{send_search()} intended to be run as a background
+#' process from the \code{send_search} endpoint, which returns before any emails
+#' are sent. The outcome, success or failure, is posted back to the GitHub
+#' issue from which the command was invoked.
+#'
+#' @inheritParams send_search
+#' @param poster Function used to post the outcome to the issue; injectable for
+#'   testing. Must accept \code{(cmt, repo, issue_id)}. Defaults to
+#'   \code{post_to_issue}.
+#' @param ... Further arguments passed to \code{send_search()}.
+#' @return The comment posted to the issue, invisibly.
+#' @family email
+#' @export
+send_search_and_post <- function(
+    repourl,
+    repo,
+    issue_id,
+    poster = roreviewapi::post_to_issue,
+    ...
+) {
+    cmt <- tryCatch(
+        {
+            res <- roreviewapi::send_search(
+                repourl = repourl,
+                repo = repo,
+                issue_id = issue_id,
+                ...
+            )
+            paste0(
+                ":rocket: Editors have been notified (",
+                res$sent,
+                " email",
+                ifelse(res$sent == 1L, "", "s"),
+                " sent)."
+            )
+        },
+        error = function(e) {
+            message("[send_search] error: ", conditionMessage(e))
+            paste0(
+                ":x: Sending the editor search emails failed:\n\n```\n",
+                conditionMessage(e),
+                "\n```\n\nPlease ask rOpenSci staff to check the server logs, then run the command again."
+            )
+        }
+    )
+
+    poster(cmt, repo, issue_id)
+
+    invisible(cmt)
 }
 
 #' List all volunteer searches with recipient and click counts
@@ -558,12 +666,13 @@ send_search <- function (repourl, repo, issue_id,
 #'   \code{notify_email}, \code{active}, \code{total}, \code{clicked}.
 #' @family email
 #' @export
-list_searches <- function () {
+list_searches <- function() {
+    con <- email_db_init()
+    on.exit(DBI::dbDisconnect(con))
 
-    con <- email_db_init ()
-    on.exit (DBI::dbDisconnect (con))
-
-    DBI::dbGetQuery (con, "
+    DBI::dbGetQuery(
+        con,
+        "
         SELECT
             s.id    AS search_id,
             s.created_at,
@@ -576,7 +685,8 @@ list_searches <- function () {
         LEFT JOIN recipients r ON r.search_id = s.id
         GROUP BY s.id
         ORDER BY s.id
-    ")
+    "
+    )
 }
 
 #' Handle a volunteer link click
@@ -593,56 +703,62 @@ list_searches <- function () {
 #'   \code{body} (character HTML string).
 #' @family email
 #' @export
-handle_click <- function (token, sender = NULL) {
-
-    if (is.null (sender)) {
-        sender <- utils::getFromNamespace ("gmail_send", "roreviewapi")
+handle_click <- function(token, sender = NULL) {
+    if (is.null(sender)) {
+        sender <- utils::getFromNamespace("gmail_send", "roreviewapi")
     }
 
-    con <- email_db_init ()
-    on.exit (DBI::dbDisconnect (con))
+    con <- email_db_init()
+    on.exit(DBI::dbDisconnect(con))
 
-    recipient <- DBI::dbGetQuery (
+    recipient <- DBI::dbGetQuery(
         con,
         "SELECT * FROM recipients WHERE token = ?",
-        params = list (token)
+        params = list(token)
     )
-    if (nrow (recipient) == 0L) {
-        return (list (status = 404L, body = "Link not found."))
+    if (nrow(recipient) == 0L) {
+        return(list(status = 404L, body = "Link not found."))
     }
 
-    search <- DBI::dbGetQuery (
+    search <- DBI::dbGetQuery(
         con,
         "SELECT * FROM searches WHERE id = ?",
-        params = list (recipient [["search_id"]])
+        params = list(recipient[["search_id"]])
     )
-    if (search [["active"]] == 0L) {
-        return (list (status = 200L, body = "This link has expired."))
+    if (search[["active"]] == 0L) {
+        return(list(status = 200L, body = "This link has expired."))
     }
 
-    if (!is.na (recipient [["clicked_at"]])) {
-        return (list (status = 200L, body = "You have already used this link."))
+    if (!is.na(recipient[["clicked_at"]])) {
+        return(list(status = 200L, body = "You have already used this link."))
     }
 
-    clicked_at <- strftime (Sys.time (), "%Y-%m-%dT%H:%M:%SZ", tz = "UTC")
-    DBI::dbExecute (
+    clicked_at <- strftime(Sys.time(), "%Y-%m-%dT%H:%M:%SZ", tz = "UTC")
+    DBI::dbExecute(
         con,
         "UPDATE recipients SET clicked_at = ? WHERE token = ?",
-        params = list (clicked_at, token)
+        params = list(clicked_at, token)
     )
 
-    sender (
-        to = search [["notify_email"]],
+    sender(
+        to = search[["notify_email"]],
         subject = "rOpenSci editor search: new response",
-        html_body = paste0 (
-            "<p><strong>", recipient [["email"]], "</strong>",
-            " responded at ", clicked_at, " for issue ",
-            "<a href=\"https://github.com/", search [["issue_ref"]], "\">",
-            search [["issue_ref"]], "</a>.</p>"
+        html_body = paste0(
+            "<p><strong>",
+            recipient[["email"]],
+            "</strong>",
+            " responded at ",
+            clicked_at,
+            " for issue ",
+            "<a href=\"https://github.com/",
+            search[["issue_ref"]],
+            "\">",
+            search[["issue_ref"]],
+            "</a>.</p>"
         )
     )
 
-    list (
+    list(
         status = 200L,
         body = "Thank you for your interest. We will be in touch."
     )
@@ -657,23 +773,23 @@ handle_click <- function (token, sender = NULL) {
 #' @param search_id Integer id of the row in \code{searches} to remove.
 #' @return Nothing; called for its side effect.
 #' @noRd
-delete_search_rows <- function (con, search_id) {
-    DBI::dbExecute (
+delete_search_rows <- function(con, search_id) {
+    DBI::dbExecute(
         con,
         "UPDATE searches SET active = 0 WHERE id = ?",
-        params = list (search_id)
+        params = list(search_id)
     )
-    DBI::dbExecute (
+    DBI::dbExecute(
         con,
         "DELETE FROM recipients WHERE search_id = ?",
-        params = list (search_id)
+        params = list(search_id)
     )
-    DBI::dbExecute (
+    DBI::dbExecute(
         con,
         "DELETE FROM searches WHERE id = ?",
-        params = list (search_id)
+        params = list(search_id)
     )
-    invisible ()
+    invisible()
 }
 
 #' Deactivate a volunteer search and delete all associated data
@@ -683,29 +799,28 @@ delete_search_rows <- function (con, search_id) {
 #' @return Named list with \code{deactivated} (logical) and \code{issue_ref}.
 #' @family email
 #' @export
-deactivate_search <- function (repo, issue_id) {
-
-    email_db_init <- utils::getFromNamespace ("email_db_init", "roreviewapi")
+deactivate_search <- function(repo, issue_id) {
+    email_db_init <- utils::getFromNamespace("email_db_init", "roreviewapi")
     delete_search_rows <-
-        utils::getFromNamespace ("delete_search_rows", "roreviewapi")
+        utils::getFromNamespace("delete_search_rows", "roreviewapi")
 
-    issue_ref <- paste0 (repo, "/issues/", as.integer (issue_id) [[1L]])
+    issue_ref <- paste0(repo, "/issues/", as.integer(issue_id)[[1L]])
 
-    con <- email_db_init ()
-    on.exit (DBI::dbDisconnect (con))
+    con <- email_db_init()
+    on.exit(DBI::dbDisconnect(con))
 
-    existing <- DBI::dbGetQuery (
+    existing <- DBI::dbGetQuery(
         con,
         "SELECT id FROM searches WHERE issue_ref = ?",
-        params = list (issue_ref)
+        params = list(issue_ref)
     )
-    if (nrow (existing) == 0L) {
-        stop ("No search found for '", issue_ref, "'")
+    if (nrow(existing) == 0L) {
+        stop("No search found for '", issue_ref, "'")
     }
 
-    delete_search_rows (con, existing [["id"]])
+    delete_search_rows(con, existing[["id"]])
 
-    list (deactivated = TRUE, issue_ref = issue_ref)
+    list(deactivated = TRUE, issue_ref = issue_ref)
 }
 
 #' Auto-deactivate and delete stale volunteer searches
@@ -722,29 +837,28 @@ deactivate_search <- function (repo, issue_id) {
 #' @return Integer count of searches deactivated, invisibly.
 #' @family email
 #' @export
-deactivate_stale_searches <- function (max_age_days = 100L) {
-
-    email_db_init <- utils::getFromNamespace ("email_db_init", "roreviewapi")
+deactivate_stale_searches <- function(max_age_days = 100L) {
+    email_db_init <- utils::getFromNamespace("email_db_init", "roreviewapi")
     delete_search_rows <-
-        utils::getFromNamespace ("delete_search_rows", "roreviewapi")
+        utils::getFromNamespace("delete_search_rows", "roreviewapi")
 
-    con <- email_db_init ()
-    on.exit (DBI::dbDisconnect (con))
+    con <- email_db_init()
+    on.exit(DBI::dbDisconnect(con))
 
-    cutoff <- strftime (
-        Sys.time () - as.numeric (max_age_days) * 86400,
+    cutoff <- strftime(
+        Sys.time() - as.numeric(max_age_days) * 86400,
         "%Y-%m-%dT%H:%M:%SZ",
         tz = "UTC"
     )
-    stale <- DBI::dbGetQuery (
+    stale <- DBI::dbGetQuery(
         con,
         "SELECT id FROM searches WHERE created_at < ?",
-        params = list (cutoff)
+        params = list(cutoff)
     )
 
-    for (search_id in stale [["id"]]) {
-        delete_search_rows (con, search_id)
+    for (search_id in stale[["id"]]) {
+        delete_search_rows(con, search_id)
     }
 
-    invisible (nrow (stale))
+    invisible(nrow(stale))
 }

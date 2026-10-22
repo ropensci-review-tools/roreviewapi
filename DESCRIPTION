@@ -60,4 +60,4 @@ Roxygen: list(markdown = TRUE)
 SystemRequirements: gh, dos2unix
 Config/testthat/edition: 3
 Config/ropensci/maintainer: staff
-Config/roxygen2/version: 8.1.0
+Config/roxygen2/version: 8.1.1
