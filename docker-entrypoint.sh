@@ -26,6 +26,17 @@ if [ ${#missing[@]} -gt 0 ]; then
     exit 1
 fi
 
+# Gmail credentials must be in the bind-mounted '/data/email' directory
+# (see vignettes/editorsearch.Rmd).
+if [ ! -f "$GMAIL_OAUTH_CLIENT_SECRET" ]; then
+    echo "ERROR: GMAIL_OAUTH_CLIENT_SECRET file not found: $GMAIL_OAUTH_CLIENT_SECRET" >&2
+    exit 1
+fi
+if [ ! -d "$GMAIL_TOKEN_CACHE" ] || [ -z "$(ls -A "$GMAIL_TOKEN_CACHE")" ]; then
+    echo "ERROR: GMAIL_TOKEN_CACHE directory missing or empty: $GMAIL_TOKEN_CACHE" >&2
+    exit 1
+fi
+
 : > ~/.Renviron
 echo "GITHUB_PAT='${GITHUB_PAT}'" >> ~/.Renviron
 echo "PKGCHECK_TOKEN='${PKGCHECK_TOKEN}'" >> ~/.Renviron
