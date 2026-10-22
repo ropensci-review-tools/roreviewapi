@@ -506,8 +506,13 @@ send_search <- function(
     stats <- stats_checker(repo, issue_id)
     message("[send_search] stats=", stats, "; fetching editor emails")
 
-    if (gsub("\\/.*$", "", repo) == "ropenscilabs") {
-        emails <- "reviewtools@ropensci.org"
+    # Searches from the 'ropenscilabs' test repos send both the search and the
+    # click notification emails to a test address, never to editors or the EiC:
+    test_address <- "reviewtools@ropensci.org"
+    is_test_repo <- gsub("\\/.*$", "", repo) == "ropenscilabs"
+
+    if (is_test_repo) {
+        emails <- test_address
     } else {
         emails <- fetcher(Sys.getenv("AIRTABLE_BASE_ID"), stats = stats)
         message("[send_search] fetched ", length(emails), " email(s)")
@@ -518,14 +523,11 @@ send_search <- function(
         stop("fetcher returned no valid email addresses")
     }
 
-    # This condition will allow you to test 'ping editors' elsewhere with a
-    # hard-coded email:
-    #
-    # if (gsub ("\\/.*$", "", repo) == "ropenscilabs") { # for example
-    #     notify_address <- "myname@ropensci.org"
-    # } else { ...
-
-    notify_address <- notify_email_read()
+    if (is_test_repo) {
+        notify_address <- test_address
+    } else {
+        notify_address <- notify_email_read()
+    }
     message("[send_search] notify_address=", notify_address)
 
     con <- email_db_init()

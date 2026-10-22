@@ -20,9 +20,8 @@ email_fetcher <- function (base_id, stats = FALSE) {
 }
 
 # Tests use repo = "ropensci/software-review" (not
-# "ropenscilabs/statistical-software-review") so the temporary live-testing
-# override in send_search() does not fire. Once that block is removed, this
-# comment can also be removed.
+# "ropenscilabs/statistical-software-review") so the test-repo override in
+# send_search() does not fire, except where that override is tested.
 
 stats_checker_false <- function (repo, issue_id) FALSE
 
@@ -132,6 +131,37 @@ test_that ("send_search rejects invalid inputs", {
     expect_error (send_search ("https://github.com/org/pkg", "ropensci/software-review", 123L,
         fetcher = email_fetcher, stats_checker = stats_checker_false
     ))
+})
+
+test_that ("send_search uses the test address for ropenscilabs repos", {
+    local_notify_cache ()
+
+    sent_to <- NULL
+    sender_mock <- function (emails, links, subject, repo, issue_id) {
+        sent_to <<- emails
+        gmail_send_batch_mock (emails, links, subject, repo, issue_id)
+    }
+    send_search (
+        repourl       = "https://github.com/org/pkg",
+        repo          = "ropenscilabs/statistical-software-review",
+        issue_id      = 36L,
+        fetcher       = email_fetcher,
+        stats_checker = stats_checker_false,
+        sender        = sender_mock
+    )
+    expect_equal (sent_to, "reviewtools@ropensci.org")
+
+    con <- email_db_init ()
+    on.exit (DBI::dbDisconnect (con))
+    searches <- DBI::dbReadTable (con, "searches")
+    expect_equal (searches$notify_email, "reviewtools@ropensci.org")
+
+    # The click notification goes to the search's notify address:
+    token <- DBI::dbReadTable (con, "recipients")$token [[1]]
+    notified <- NULL
+    notify_mock <- function (to, subject, html_body) notified <<- to
+    handle_click (token, sender = notify_mock)
+    expect_equal (notified, "reviewtools@ropensci.org")
 })
 
 test_that ("send_search removes the search when the sender fails", {
