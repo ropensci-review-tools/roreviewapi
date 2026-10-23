@@ -9,7 +9,10 @@ vignette: >
   %\VignetteEncoding{UTF-8}
 ---
 
-```{r setup, include=FALSE}
+```{r}
+#| label: setup
+#| include: false
+
 knitr::opts_chunk$set (
     collapse = TRUE,
     warning = TRUE,
@@ -21,10 +24,10 @@ knitr::opts_chunk$set (
 )
 ```
 
-This vignette describes how `roreviewapi` sends editor-search emails through
-the Gmail API, sending "from" the `reviewbot@ropensci.org` alias but
-authorized under a single Google account. Set that account once as an
-environment variable, and every later step refers back to it:
+This vignette describes how `roreviewapi` sends editor-search emails through the
+Gmail API, sending "from" the `reviewbot@ropensci.org` account and authorized
+from that same account. Set that account once as an environment variable, and
+every later step refers back to it:
 
 ```bash
 export USER_EMAIL=myname@ropensci.org
@@ -32,8 +35,7 @@ export USER_EMAIL=myname@ropensci.org
 
 This vignette complements the [admin setup
 vignette](https://docs.ropensci.org/roreviewapi/articles/admin-setup.html),
-covering only the Gmail-specific pieces of the editor volunteer search
-workflow.
+covering only the Gmail-specific pieces of the editor volunteer search workflow.
 
 ## Prerequisites
 
@@ -41,17 +43,18 @@ workflow.
   Identity org
 - A local machine with a browser, for the one-time OAuth authorization
 - SSH access to the Digital Ocean droplet
+- 1Password access to `reviewbot@ropensci.org`
 
 ## 1. Google Cloud Console
 
 In the `ro-auto-email` project:
 
 1. Enable the **Gmail API**.
-2. Configure the **OAuth consent screen** with **Audience: Internal**
-   (requires the project to be owned by the Workspace's Cloud Identity org).
-   Internal governs who can *authorize* the app, not who receives mail — it
-   skips Google verification and the 7-day refresh-token expiry that applies
-   to unverified External apps. Request scope
+2. Configure the **OAuth consent screen** with **Audience: Internal** (requires
+   the project to be owned by the Workspace's Cloud Identity org). Internal
+   governs who can *authorize* the app, not who receives mail --- it skips
+   Google verification and the 7-day refresh-token expiry that applies to
+   unverified External apps. Request scope
    `https://www.googleapis.com/auth/gmail.send`.
 3. Create an **OAuth 2.0 Client ID**, type **Desktop app**. Download
    `client_secret_<id>.apps.googleusercontent.com.json`.
@@ -61,7 +64,10 @@ In the `ro-auto-email` project:
 Run this on a local machine, not the droplet (it needs a browser and a
 `localhost` redirect):
 
-```{r auth, eval = FALSE}
+```{r}
+#| label: auth
+#| eval: false
+
 library (gmailr)
 gm_auth_configure (path = "client_secret_<id>.apps.googleusercontent.com.json")
 gm_auth (
@@ -71,67 +77,63 @@ gm_auth (
 )
 ```
 
-Log in as `$USER_EMAIL` and grant consent. This caches a refresh token
-to the `gmailr_token/` directory, which is portable to the droplet afterward
-since it is tied to the Google account, not the machine.
+Log in as `$USER_EMAIL` and grant consent. This caches a refresh token to the
+`gmailr_token/` directory, which is portable to the droplet afterward since it
+is tied to the Google account, not the machine.
 
-Always pass the same `scopes` used here in any later `gm_auth()` call — a
+Always pass the same `scopes` used here in any later `gm_auth()` call --- a
 mismatch forces a fresh interactive re-authorization, which does not work
 headless on the droplet.
 
-## 3. Send-as alias
-
-Add `reviewbot@ropensci.org` as a "Send mail as" address under
-`$USER_EMAIL`'s Gmail settings (Settings → Accounts → Send mail as). No
-separate authorization is needed, as the `gmail.send` scope already covers
-sending as any verified alias of that account. This is set via `gm_from()` on
-each outgoing message.
-
-## 4. Code
+## 3. Code
 
 [`R/editor-search.R`](https://github.com/ropensci-review-tools/roreviewapi/blob/main/R/editor-search.R):
 
-- `gmail_auth()` configures and authorizes `gmailr` from the cached
-  credentials.
+- `gmail_auth()` configures and authorizes `gmailr` from the cached credentials.
 - `gmail_send(to, subject, html_body)` builds and sends one message via
   `gm_mime()`/`gm_from()`/`gm_to()`/`gm_subject()`/`gm_html_body()`/
   `gm_send_message()`.
 - `gmail_send_batch(emails, links, subject, repo, issue_id)` loops
-  `gmail_send()` once per recipient with `Sys.sleep(0.1)` between sends,
-  since there is no Gmail equivalent of a batch-send endpoint for
-  personalized messages.
+  `gmail_send()` once per recipient with `Sys.sleep(0.1)` between sends, since
+  there is no Gmail equivalent of a batch-send endpoint for personalized
+  messages.
 
-The `send_search` and `handle_click` endpoints each take an injectable
-`sender` parameter (default `gmail_send_batch` / `gmail_send`) for testing.
+The `send_search` and `handle_click` endpoints each take an injectable `sender`
+parameter (default `gmail_send_batch` / `gmail_send`) for testing.
 
-## 5. Environment variables
+## 4. Environment variables
 
-| Variable | Value |
-|---|---|
-| `GMAIL_SENDER` | `reviewbot@ropensci.org` |
-| `GMAIL_OAUTH_CLIENT_SECRET` | `/data/email/client_secret_<id>.apps.googleusercontent.com.json` |
-| `GMAIL_TOKEN_CACHE` | `/data/email/gmailr_token` |
-| `GMAIL_AUTH_EMAIL` | `$USER_EMAIL` |
+  | Variable                    | Value                                                            |
+  | ---                         | ---                                                              |
+  | `GMAIL_SENDER`              | `reviewbot@ropensci.org`                                         |
+  | `GMAIL_OAUTH_CLIENT_SECRET` | `/data/email/client_secret_<id>.apps.googleusercontent.com.json` |
+  | `GMAIL_TOKEN_CACHE`         | `/data/email/gmailr_token`                                       |
+  | `GMAIL_AUTH_EMAIL`          | `$USER_EMAIL`                                                    |
 
 On the droplet, set these in the untracked `.env` file, as described in the
 [admin setup
 vignette](https://docs.ropensci.org/roreviewapi/articles/admin-setup.html#environment-variables);
-use a local `.env` file for local runs.  The two file paths are inside
+use a local `.env` file for local runs. The two file paths are inside
 `/data/email/`, the container side of the bind-mounted data directory, so the
-files themselves go in `/srv/roreviewapi/data/` on the droplet (Section 6).
+files themselves go in `/srv/roreviewapi/data/` on the droplet (Section 5).
 
-## 6. Deploy credentials to the droplet
+## 5. Deploy credentials to the droplet
 
 Copy `client_secret_<id>.apps.googleusercontent.com.json` and the
 `gmailr_token/` directory to `/srv/roreviewapi/data/` (bind-mounted into the
 container at `/data/email`). That directory is Docker/root-owned, so `scp` to
-your home directory first, then move into place:
+your home directory first, then move into place.
+
+Locally:
 
 ```bash
 scp client_secret_<id>.apps.googleusercontent.com.json youruser@droplet:~/
 scp -r gmailr_token youruser@droplet:~/
+```
 
-# on the droplet:
+On the droplet:
+
+```bash
 sudo mv ~/client_secret_<id>.apps.googleusercontent.com.json /srv/roreviewapi/data/
 sudo mv ~/gmailr_token /srv/roreviewapi/data/
 sudo chmod 600 /srv/roreviewapi/data/client_secret_<id>.apps.googleusercontent.com.json
@@ -139,12 +141,13 @@ sudo chmod 700 /srv/roreviewapi/data/gmailr_token
 sudo chmod 600 /srv/roreviewapi/data/gmailr_token/*
 ```
 
-## 7. Verify
+## 6. Verify
 
-- Call `send_search()` against a real/test issue; confirm delivery from
-  `reviewbot@ropensci.org`.
-- Click a tracking link; confirm the notify-email arrives via `gmail_send()`.
 - Run the test suite.
+- Add a `ping editors` comment in a [test
+  issue](https://github.com/ropenscilabs/statistical-software-review/issues/36);
+  confirm delivery from `reviewbot@ropensci.org`.
+- Click a tracking link; confirm the notify-email arrives via `gmail_send()`.
 
 ## 8. Transfer maintenance
 
@@ -153,62 +156,43 @@ Access, tokens for other services, the cron job, and the general redeployment
 steps are in the [admin setup
 vignette](https://docs.ropensci.org/roreviewapi/articles/admin-setup.html#transferring-maintenance).
 
-**Operations only** (a new person deploys/debugs, auth stays as
-`$USER_EMAIL`) — nothing about the token changes.  The only Google step is to
-add them to the `ro-auto-email` Google Cloud project's IAM.
-
-**Authorizing identity itself** (needed if `myname@ropensci.org` becomes
-unusable, e.g. leaving the org).  The `.env` values affected are
-`GMAIL_AUTH_EMAIL` (the new maintainer's address) and the contents of the
-`GMAIL_TOKEN_CACHE` directory (a new token).  `GMAIL_SENDER` stays
-`reviewbot@ropensci.org`, and `GMAIL_OAUTH_CLIENT_SECRET` is unchanged as long
-as the same Cloud project and OAuth client are kept.
+**Operations only** (a new person deploys/debugs, auth stays as `$USER_EMAIL`) ---
+nothing about the token changes. The only Google step is to add them to the
+`ro-auto-email` Google Cloud project's IAM; give them access through 1Password
+to `reviewbot@ropensci.org`.
 
 1. Add the new maintainer to the `ro-auto-email` Google Cloud project's IAM, so
-   they can download the `client_secret_....json`.  Because the consent screen
+   they can download the `client_secret_....json`. Because the consent screen
    audience is **Internal**, their account must belong to the rOpenSci Google
    Workspace; an account outside it cannot authorize the app.
-2. Add `reviewbot@ropensci.org` as a "Send mail as" alias under the new
-   maintainer's Gmail account (Section 3).
-3. They run the authorization in Section 2 as themselves (with
-   `USER_EMAIL` set to their own address), using the same
-   `client_secret_....json`, producing their own `gmailr_token/`.  The
-   `scopes` must be unchanged from those in `gmail_auth()`.
-4. Deploy their `gmailr_token/` (and `client_secret_....json`, if it changed)
-   to `/srv/roreviewapi/data/`, replacing the old ones (Section 6).  Remove the
-   old `gmailr_token` directory first, so that stale files do not remain.
-5. Update `GMAIL_AUTH_EMAIL` in the droplet's `.env` to their address.
-6. Redeploy by running `restart.sh`, then verify as in Section 7.
-7. Revoke the old grant from the departing account's Google Account →
-   Security → "Third-party apps with account access".
 
 ## Editor search endpoints
 
-Four endpoints support the volunteer editor search workflow.  All require the
+Four endpoints support the volunteer editor search workflow. All require the
 shared `secret` token.
 
 ### `GET /send_search`
 
 Fetches current editor email addresses from AirTable and GitHub, inserts a
 search record into the database, and dispatches personalised click-link emails
-via Gmail.  The submission type (standard vs. stats) is determined
-automatically from the GitHub issue template.
+via Gmail. The submission type (standard vs. stats) is determined automatically
+from the GitHub issue template.
 
 Parameters: `repourl`, `repo` (org/repo), `issue_id`, `secret`.
 
 ### `GET /click/<token>`
 
-Records a volunteer response.  Returns an HTTP 200 confirmation page, an
-"already used" page on duplicate clicks, or an "expired" page if the search
-has been deactivated.  Sends a notification email to the current
-editor-in-chief on the first valid click.
+Records a volunteer response. Returns an HTTP 200 confirmation page, an "already
+used" page on duplicate clicks, or an "expired" page if the search has been
+deactivated. Sends a notification email to the current editor-in-chief on the
+first valid click.
 
-No authentication required — the token itself is the credential.
+No authentication required --- the token itself is the credential.
 
 ### `GET /list_searches`
 
 Returns a data frame of all active and inactive searches with recipient totals
-and click counts.  Use this to find the `repourl` value needed to deactivate a
+and click counts. Use this to find the `repourl` value needed to deactivate a
 search.
 
 Parameters: `secret`.
@@ -222,11 +206,11 @@ Parameters: `repourl`, `secret`.
 
 ## Notify email cache
 
-At startup, `serve_api()` fetches the current editor-in-chief email address
-from AirTable and writes it to
-`/data/email/notify_email.txt` (alongside the SQLite database).  This cache is
-refreshed every 24 hours via a background timer.  If the AirTable call fails,
-the existing cached value is preserved and an error is logged.
+At startup, `serve_api()` fetches the current editor-in-chief email address from
+AirTable and writes it to `/data/email/notify_email.txt` (alongside the SQLite
+database). This cache is refreshed every 24 hours via a background timer. If the
+AirTable call fails, the existing cached value is preserved and an error is
+logged.
 
 The cached address is used as the notification recipient whenever a volunteer
 clicks a search link.
