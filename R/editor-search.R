@@ -254,7 +254,7 @@ extract_desc_block <- function(body) {
     xml <- xml2::read_xml(commonmark::markdown_xml(body))
     blocks <- xml2::xml_find_all(xml, ".//d1:code_block", xml2::xml_ns(xml))
     txt <- xml2::xml_text(blocks)
-    txt <- txt[grepl("^\\s*Package:", txt)]
+    txt <- grepv("^\\s*Package:", txt)
     if (length(txt) == 0L) {
         return(NULL)
     }
