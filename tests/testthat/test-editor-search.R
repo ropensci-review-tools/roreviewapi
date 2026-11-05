@@ -365,3 +365,74 @@ test_that ("notify_email_refresh preserves existing cache on error", {
     expect_message (notify_email_refresh (fetcher = bad_fetcher), "AirTable fetch failed")
     expect_equal (notify_email_read (), "existing@example.com")
 })
+
+test_that ("extract_desc_block finds DESCRIPTION block regardless of template wording", {
+    desc <- "Package: mypkg\nTitle: My Package\nDescription: Does things."
+    body_en <- paste0 (
+        "-   Paste the full DESCRIPTION file inside a code block below:\n\n",
+        "```\n", desc, "\n```\n"
+    )
+    body_es <- paste0 (
+        "-   Pega el archivo DESCRIPTION completo dentro del siguiente bloque de código.\n\n",
+        "```\n", desc, "\n```\n"
+    )
+    body_other <- paste0 (
+        "Some code first:\n\n```r\nlibrary(mypkg)\n```\n\n",
+        "-   FULL DESCRIPTION:\r\n\r\n~~~yaml\r\n",
+        gsub ("\n", "\r\n", desc), "\r\n~~~\r\n"
+    )
+    for (body in c (body_en, body_es, body_other)) {
+        res <- extract_desc_block (body)
+        expect_type (res, "character")
+        expect_match (res, "^Package: mypkg")
+        expect_match (res, "Description: Does things.", fixed = TRUE)
+    }
+
+    expect_null (extract_desc_block ("No code block here."))
+    expect_null (extract_desc_block ("```\nlibrary(mypkg)\n```"))
+    expect_null (extract_desc_block (""))
+    expect_null (extract_desc_block (NULL))
+})
+
+test_that ("parse_desc_data extracts fields and always keeps the title", {
+    body <- paste0 (
+        "```\n",
+        "Package: mypkg\n",
+        "Authors@R: person(\"Ada\", \"Lovelace\", role = c(\"aut\", \"cre\"))\n",
+        "Description: Does things.\n",
+        "```\n"
+    )
+    res <- parse_desc_data (body, "mypkg: my package")
+    expect_equal (res$title, "mypkg: my package")
+    expect_equal (res$package, "mypkg")
+    expect_equal (res$desc_text, "Does things.")
+    expect_s3_class (res$auts, "person")
+
+    res <- parse_desc_data ("No DESCRIPTION.", "mypkg: my package")
+    expect_equal (res$title, "mypkg: my package")
+    expect_null (res$package)
+})
+
+test_that ("format_desc_info falls back to the issue title", {
+    expect_equal (format_desc_info (NULL), "")
+    expect_equal (format_desc_info (list (title = NULL)), "")
+
+    res <- format_desc_info (list (title = "mypkg: my package"))
+    expect_equal (res, "<p><strong>Submission:</strong> mypkg: my package</p>")
+
+    res <- format_desc_info (list (
+        title = "mypkg: my package",
+        package = "mypkg",
+        desc_text = NULL
+    ))
+    expect_match (res, "<strong>Package:</strong> mypkg", fixed = TRUE)
+    expect_match (res, "<strong>Description:</strong> mypkg: my package", fixed = TRUE)
+
+    res <- format_desc_info (list (
+        title = "mypkg: my package",
+        package = "mypkg",
+        desc_text = "Does things."
+    ))
+    expect_match (res, "<strong>Description:</strong> Does things.", fixed = TRUE)
+    expect_no_match (res, "my package", fixed = TRUE)
+})

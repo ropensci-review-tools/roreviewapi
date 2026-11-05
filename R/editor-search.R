@@ -237,15 +237,76 @@ gmail_send <- function(to, subject, html_body) {
     invisible(gmailr::gm_send_message(msg))
 }
 
-#' Fetch package DESCRIPTION data from a submission issue body
+#' Extract the DESCRIPTION code block from an issue body
 #'
-#' Parses the GitHub issue body for the fenced DESCRIPTION file block and
-#' extracts the package name, authors, and description text.
+#' Parses the issue body as Markdown and returns the first code block whose
+#' first line starts with "Package:". This is independent of the template
+#' wording above the block, which varies between submissions and languages.
+#'
+#' @param body Issue body as a single string.
+#' @return Text of the DESCRIPTION code block, or \code{NULL} if there is
+#' none.
+#' @noRd
+extract_desc_block <- function(body) {
+    if (is.null(body) || length(body) != 1L || is.na(body) || !nzchar(body)) {
+        return(NULL)
+    }
+    xml <- xml2::read_xml(commonmark::markdown_xml(body))
+    blocks <- xml2::xml_find_all(xml, ".//d1:code_block", xml2::xml_ns(xml))
+    txt <- xml2::xml_text(blocks)
+    txt <- txt[grepl("^\\s*Package:", txt)]
+    if (length(txt) == 0L) {
+        return(NULL)
+    }
+    txt[1]
+}
+
+#' Parse package DESCRIPTION data from a submission issue body
+#'
+#' @param body Issue body as a single string.
+#' @param title Issue title, always returned so that callers can fall back to
+#' it when the DESCRIPTION is missing or has no description text.
+#' @return Named list with \code{title}, \code{package}, \code{auts}, and
+#' \code{desc_text}. All but \code{title} are \code{NULL} if the DESCRIPTION
+#' block could not be found or parsed.
+#' @noRd
+parse_desc_data <- function(body, title = NULL) {
+    out <- list(title = title, package = NULL, auts = NULL, desc_text = NULL)
+
+    desc_text <- extract_desc_block(body)
+    if (is.null(desc_text)) {
+        return(out)
+    }
+    f <- tempfile()
+    on.exit(unlink(f))
+    writeLines(desc_text, f)
+    desc <- tryCatch(
+        data.frame(read.dcf(f)),
+        error = function(e) NULL
+    )
+    if (is.null(desc)) {
+        return(out)
+    }
+
+    out$package <- desc$Package
+    out$auts <- tryCatch(
+        eval(parse(text = desc$Authors.R)),
+        error = function(e) NULL
+    )
+    out$desc_text <- desc$Description
+    out
+}
+
+#' Fetch package DESCRIPTION data from a submission issue
+#'
+#' Fetches the GitHub issue title and body, and parses the body for the
+#' fenced DESCRIPTION file block to extract the package name, authors, and
+#' description text.
 #'
 #' @param repo GitHub review repository in \code{org/repo} format.
 #' @param issue_num Integer issue number in the review repository.
-#' @return Named list with \code{package}, \code{auts}, and \code{desc_text},
-#' or \code{NULL} if the DESCRIPTION block could not be found or parsed.
+#' @return Named list as returned by \code{parse_desc_data()}, or \code{NULL}
+#' if the issue could not be fetched.
 #' @noRd
 get_desc_data <- function(repo, issue_num) {
     org <- dirname(repo)
@@ -261,51 +322,22 @@ get_desc_data <- function(repo, issue_num) {
             issue(number:",
         issue_num,
         ") {
+                title
                 body
             }
         }
     }"
     )
     dat <- gh::gh_gql(query = q)
-    dat <- tryCatch(
-        strsplit(dat$data$repository$issue$body, "\\n")[[1]],
+    issue <- tryCatch(
+        dat$data$repository$issue,
         error = function(e) NULL
     )
-    if (is.null(dat)) {
-        return(dat)
-    }
-    desc_start <- grep("Paste the full DESCRIPTION file", dat, fixed = TRUE)
-    if (length(desc_start) < 1) {
-        return(NULL)
-    }
-    delims <- grep("^```", dat)
-    if (length(delims) < 2) {
-        return(NULL)
-    }
-    delims <- delims[which(delims > desc_start)][1:2]
-    if (length(delims) < 2 || diff(delims) < 2) {
+    if (is.null(issue)) {
         return(NULL)
     }
 
-    desc_text <- dat[seq(delims[1] + 1L, delims[2] - 1L)]
-    f <- tempfile()
-    writeLines(desc_text, f)
-    desc <- tryCatch(
-        data.frame(read.dcf(f)),
-        error = function(e) NULL
-    )
-    if (is.null(desc)) {
-        return(NULL)
-    }
-
-    list(
-        package = desc$Package,
-        auts = tryCatch(
-            eval(parse(text = desc$Authors.R)),
-            error = function(e) NULL
-        ),
-        desc_text = desc$Description
-    )
+    parse_desc_data(issue$body, issue$title)
 }
 
 #' Send a batch of emails via the Gmail API
@@ -359,15 +391,34 @@ gmail_send_batch <- function(emails, links, subject, repo, issue_id) {
 #' @param repo Generally "ropensci/software-review"
 #' @param issue_id The issue number for the submitted package.
 #' @return A formatted text string containing information on (package name,
-#' authors, description).
+#' authors, description). If the DESCRIPTION could not be parsed, or has no
+#' description text, the issue title is used instead.
 #' @noRd
 get_desc_info_from_issue <- function(repo, issue_id) {
     desc_dat <- tryCatch(
         get_desc_data(repo, issue_id),
         error = function(e) NULL
     )
-    if (is.null(desc_dat) || !"package" %in% names(desc_dat)) {
-        return("")
+    format_desc_info(desc_dat)
+}
+
+#' Format package DESCRIPTION data as HTML for editor-search emails
+#'
+#' @param desc_dat Named list as returned by \code{parse_desc_data()}.
+#' @return HTML string, or \code{""} if there is neither DESCRIPTION data nor
+#' an issue title.
+#' @noRd
+format_desc_info <- function(desc_dat) {
+    is_empty <- function(x) {
+        is.null(x) || length(x) == 0L || all(is.na(x)) || !any(nzchar(trimws(x)))
+    }
+    title <- desc_dat$title
+
+    if (is_empty(desc_dat$package)) {
+        if (is_empty(title)) {
+            return("")
+        }
+        return(paste0("<p><strong>Submission:</strong> ", title, "</p>"))
     }
 
     pkg_info <- paste0(
@@ -407,11 +458,15 @@ get_desc_info_from_issue <- function(repo, issue_id) {
         )
     }
 
-    if ("desc_text" %in% names(desc_dat)) {
+    desc_text <- desc_dat$desc_text
+    if (is_empty(desc_text)) {
+        desc_text <- title
+    }
+    if (!is_empty(desc_text)) {
         pkg_info <- paste0(
             pkg_info,
             "<strong>Description:</strong> ",
-            desc_dat$desc_text
+            desc_text
         )
     }
 
