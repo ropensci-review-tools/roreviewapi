@@ -399,14 +399,16 @@ get_desc_info_from_issue <- function(repo, issue_id) {
         get_desc_data(repo, issue_id),
         error = function(e) NULL
     )
+    if (is.null(desc_dat)) {
+        return("")
+    }
     format_desc_info(desc_dat)
 }
 
 #' Format package DESCRIPTION data as HTML for editor-search emails
 #'
 #' @param desc_dat Named list as returned by \code{parse_desc_data()}.
-#' @return HTML string, or \code{""} if there is neither DESCRIPTION data nor
-#' an issue title.
+#' @return HTML string.
 #' @noRd
 format_desc_info <- function(desc_dat) {
     is_empty <- function(x) {
@@ -415,9 +417,6 @@ format_desc_info <- function(desc_dat) {
     title <- desc_dat$title
 
     if (is_empty(desc_dat$package)) {
-        if (is_empty(title)) {
-            return("")
-        }
         return(paste0("<p><strong>Submission:</strong> ", title, "</p>"))
     }
 

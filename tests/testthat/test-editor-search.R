@@ -414,9 +414,6 @@ test_that ("parse_desc_data extracts fields and always keeps the title", {
 })
 
 test_that ("format_desc_info falls back to the issue title", {
-    expect_equal (format_desc_info (NULL), "")
-    expect_equal (format_desc_info (list (title = NULL)), "")
-
     res <- format_desc_info (list (title = "mypkg: my package"))
     expect_equal (res, "<p><strong>Submission:</strong> mypkg: my package</p>")
 
