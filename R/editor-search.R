@@ -461,13 +461,11 @@ format_desc_info <- function(desc_dat) {
     if (is_empty(desc_text)) {
         desc_text <- title
     }
-    if (!is_empty(desc_text)) {
-        pkg_info <- paste0(
-            pkg_info,
-            "<strong>Description:</strong> ",
-            desc_text
-        )
-    }
+    pkg_info <- paste0(
+        pkg_info,
+        "<strong>Description:</strong> ",
+        desc_text
+    )
 
     paste0(pkg_info, "</p>")
 }
