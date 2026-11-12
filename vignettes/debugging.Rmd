@@ -44,12 +44,31 @@ any problems.
 
 Debugging generally requires stepping through the code as called by the main
 [`editorcheck`
-endpoint](https://github.com/ropensci-review-tools/roreviewapi/blob/main/R/plumber.R),
+endpoint](https://github.com/ropensci-review-tools/roreviewapi/blob/main/inst/plumber.R),
 and into the [`editor_check()`
 function](https://github.com/ropensci-review-tools/roreviewapi/blob/main/R/editor-check.R)
 called by the endpoint as a background process.
 
 # Debugging Procedure
+
+## Check that the bot received the command
+
+The bot itself runs on Heroku, so that is the first place to look when the bot
+fails to respond. The Heroku logs show whether commands were received. They
+can be viewed either:
+
+- from the [Heroku dashboard](https://heroku.com): click on the bot app
+  ("radiant-garden"), then on ["Logs"](https://devcenter.heroku.com/articles/logging#view-logs-with-the-heroku-dashboard)
+  under "More" at the top right. This shows the log from the moment you open
+  it, so you can open it, issue a command in a software-review issue, and
+  watch it arrive; or
+- with the [Heroku CLI](https://devcenter.heroku.com/articles/heroku-cli),
+  after [logging in](https://devcenter.heroku.com/articles/heroku-cli#get-started-with-the-heroku-cli),
+  by running [`heroku logs`](https://devcenter.heroku.com/articles/logging#view-logs-with-the-heroku-cli).
+
+If Heroku logged the command and passed it on, the problem lies within the
+`roreviewapi` service on the Digital Ocean droplet, which the following steps
+help to diagnose.
 
 ## Check that the API is online
 
@@ -66,7 +85,9 @@ httr2::request ("http://<ip-address>:8000/mean") |>
 The log entries are illustrated in the [endpoints
 vignette](https://docs.ropensci.org/roreviewapi/articles/endpoints.html#5-log),
 and can be used to ensure that all variables were successfully delivered in the
-request. Any missing or malformed variables most likely indicate problems with
+request. Requests passed on from the bot via Heroku always show the client
+"Faraday" (for example, `"Faraday v1.8.0"`), which distinguishes them from
+manual requests. Any missing or malformed variables most likely indicate problems with
 the submission template. These should be caught by the initial call make by the
 [`editorcheck` function to the `check_issue_template()`
 function](https://github.com/ropensci-review-tools/roreviewapi/blob/82c9724a712094e4ccabb3974cb952f68ad5180f/R/plumber.R#L23). Potential issues can be debugged by calling that function locally:
@@ -114,10 +135,38 @@ generated. In those cases, the return value may offer useful diagnostic
 insights into potential problems either with submitted packages, or the check
 system itself.
 
+Instead of using the endpoint, it is often easier to look at the logs directly
+on the Digital Ocean droplet, which can be accessed via the Digital Ocean web
+interface or via SSH (which requires your public SSH key to be registered on
+the droplet). Once on the droplet, list the Docker containers with
+
+```{bash docker-ps, eval = FALSE}
+docker ps -a
+```
+
+There should be a single container with a "STATUS" of "Up". Enter it with its
+"CONTAINER ID":
+
+```{bash docker-exec, eval = FALSE}
+docker exec -it <container-id> /bin/bash
+```
+
+All files are in `/home/` (not `~`), and files cached by the check services are
+in the pkgcheck cache directory (`PKGCHECK_CACHE_DIR`), by default
+`/home/.cache/R/pkgcheck/`. That directory should contain a clone of the
+repository being checked; if it does not, the download step failed. Logs are in
+its `templogs` sub-directory, where there should be two files prefixed with the
+name of the package being checked, one for `stdout` and one for `stderr`. If the
+bot failed to respond at all, the cause is most likely an internal error, which
+the `stderr` log should help to identify. The next step is then to try to
+reproduce the error locally, by cloning the package and stepping through the
+relevant [endpoint function](https://docs.ropensci.org/roreviewapi/articles/endpoints.html).
+
 # Manually running checks
 
-If all else fails, checks can be manually run directly from the Digital Ocean
-server, and sent straight to the relevant issue. The following procedure
+If all else fails, for example if a request appears in the log but no
+`stdout`/`stderr` logs were generated, checks can be manually run directly from
+the Digital Ocean server, and sent straight to the relevant issue. The following procedure
 describe how, generally following the main [`editor_check()`
 function](https://github.com/ropensci-review-tools/roreviewapi/blob/main/R/editor-check.R).
 
@@ -144,7 +193,9 @@ function](https://github.com/ropensci-review-tools/roreviewapi/blob/main/R/edito
    checks look okay before posting them to `ropensci/software-review`.
 
 These steps can be run in two code chunks, the first directly in the shell
-environment of the Digital Ocean droplet:
+environment of the Digital Ocean droplet. Note that `docker run --rm` starts a
+fresh, temporary container from the `roreviewapi` image, rather than entering
+the running one with `docker exec` as above:
 
 ```{bash, eval = FALSE}
 docker run -it --rm roreviewapi /bin/bash

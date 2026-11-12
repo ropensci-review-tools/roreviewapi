@@ -59,7 +59,8 @@ A few terms used throughout this vignette:
 
 - **`plumber`** is the API itself. It is built from the repository's
   `Dockerfile`, and listens on port 8000, which is only reachable from the other
-  container.
+  container. See [The base Docker image](#the-base-docker-image) for what that
+  image is built on.
 - **`nginx`** answers on ports 80 (HTTP) and 443 (HTTPS), handles HTTPS with the
   certificate, redirects HTTP to HTTPS, and passes requests on to `plumber`.
 
@@ -514,6 +515,89 @@ code](#get-the-code), and before [starting the service](#start-the-service).
 
 3. If the service is already running, [restart it](#restarting-the-service) so
    that it picks up the restored files.
+
+### The base Docker image
+
+The `Dockerfile` of `roreviewapi` starts from
+[`ghcr.io/ropensci-review-tools/pkgcheck`](https://ghcr.io/ropensci-review-tools/pkgcheck),
+which contains most of the system libraries needed to check packages: most of
+those on GitHub's Ubuntu runner, plus a selection of R packages. That image is
+built by [a GitHub
+Action](https://github.com/ropensci-review-tools/pkgcheck/blob/main/.github/workflows/docker.yaml)
+in the `pkgcheck` repository, on every push and as a weekly cron job, and is
+stored on the GitHub Container Registry. The `roreviewapi` image mainly adds the
+latest GitHub versions of the R packages in the [`ropensci-review-tools`
+organization](https://github.com/ropensci-review-tools), and configures the
+GitHub credentials of `ropensci-review-bot`.
+
+The `pkgcheck` image uses [`bspm`](https://github.com/cran4linux/bspm) (Bridge
+to System Package Manager), explained in [this arXiv
+manuscript](https://arxiv.org/abs/2103.08069). `bspm` installs R packages as
+binaries through the system package manager, so system libraries are installed
+once and properly shared between all the packages that need them. This makes
+installation both fast and robust, which matters because the service installs
+the dependencies of every submitted package.
+
+### Updating system packages
+
+Every few months, install the operating system's package updates and reboot:
+
+```bash
+sudo apt-get update
+sudo apt-get upgrade
+sudo reboot
+```
+
+The reboot closes the SSH connection. Reconnect after a few minutes, once the
+droplet has restarted. Docker starts on boot, and both containers have `restart:
+always` in `docker-compose.yml`, so they come back up by themselves. Confirm
+with `docker compose ps`, and [restart the service](#restarting-the-service) if
+needed.
+
+### Disk usage
+
+Docker stores images in `/var/lib/docker/overlay2`, which can grow over time.
+Check disk usage with `df -h`: the "Use%" column for the main disk (generally
+`/dev/vda1`) should stay below 50%. The [weekly redeploy](#weekly-redeploy)
+runs `docker system prune --all --volumes --force`, which should usually be
+enough.
+
+If the disk still fills up, remove the whole Docker installation and rebuild
+everything from scratch. These commands delete everything in `/var/lib/docker`,
+so check the path carefully:
+
+```bash
+COMPOSE_FILE=/home/shared/roreviewapi/docker-compose.yml
+docker compose -f $COMPOSE_FILE down
+sudo systemctl stop docker.service
+sudo rm -rf /var/lib/docker/*
+sudo systemctl start docker.service
+sudo /bin/bash /home/shared/roreviewapi/restart.sh
+```
+
+### Controlling which checks are reported
+
+The checks posted by the bot are everything returned by `pkgcheck`. New checks
+are added in `pkgcheck` itself, as described in [the "Extending or modifying
+checks"
+vignette](https://docs.ropensci.org/pkgcheck/articles/extending-checks.html).
+
+To post fewer checks without changing `pkgcheck`, remove them from the result
+in the [`editor_check()`
+function](https://github.com/ropensci-review-tools/roreviewapi/blob/main/R/editor-check.R),
+right after `pkgcheck::pkgcheck()` is called. The individual check results are
+in the `checks` item of the returned object, named after the `pkgchk_*`
+functions in `pkgcheck` without that prefix. Any item set to `NULL` is left out
+when the checks are printed or summarized. For example, this drops the check for
+"scrap" files that should not be included in a repository:
+
+```r
+checks <- tryCatch (
+    pkgcheck::pkgcheck (path_dl),
+    error = function (e) e
+)
+checks$checks$has_scrap <- NULL
+```
 
 ### Updating the operating system
 
