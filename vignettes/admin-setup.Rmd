@@ -396,10 +396,11 @@ So changes pushed to GitHub reach the droplet within a week, and the images pick
 up updated R packages. The service is down while the images rebuild.
 
 To redeploy straight away, for example after pushing a fix, run the script by
-hand:
+hand from the project directory:
 
 ```bash
-sudo /bin/bash /home/shared/roreviewapi/restart.sh
+cd /home/shared/roreviewapi
+sudo bash restart.sh
 ```
 
 #### Viewing, changing and checking the cron job
@@ -567,12 +568,12 @@ everything from scratch. These commands delete everything in `/var/lib/docker`,
 so check the path carefully:
 
 ```bash
-COMPOSE_FILE=/home/shared/roreviewapi/docker-compose.yml
-docker compose -f $COMPOSE_FILE down
+cd /home/shared/roreviewapi
+docker compose down
 sudo systemctl stop docker.service
 sudo rm -rf /var/lib/docker/*
 sudo systemctl start docker.service
-sudo /bin/bash /home/shared/roreviewapi/restart.sh
+sudo bash restart.sh
 ```
 
 ### Controlling which checks are reported
