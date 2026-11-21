@@ -1,6 +1,6 @@
 services:
   nginx:
-    image: nginx
+    image: nginx:1.31.9
     restart: always
     volumes:
       - $PWD/nginx.conf:/tmp/nginx.conf
