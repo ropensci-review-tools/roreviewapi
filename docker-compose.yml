@@ -1,6 +1,7 @@
 services:
   nginx:
     image: nginx
+    pull_policy: always
     restart: always
     volumes:
       - $PWD/nginx.conf:/tmp/nginx.conf
