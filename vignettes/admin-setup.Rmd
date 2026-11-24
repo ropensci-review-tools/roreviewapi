@@ -1,7 +1,5 @@
 ---
 title: "Admin Setup"
-author:
-  - "Mark Padgham"
 date: "`r Sys.Date()`"
 vignette: >
   %\VignetteIndexEntry{Admin setup}
@@ -164,7 +162,7 @@ chmod 600 .env
 
   | Variable                    | Description                                                                                    |
   | ---                         | ---                                                                                            |
-  | `GITHUB_PAT`                | GitHub personal access token (also used as `GITHUB_TOKEN`)                                     |
+  | `GITHUB_PAT`                | GitHub personal access token (also used as `GITHUB_TOKEN`) -- `public_repo` scope                                     |
   | `PKGCHECK_TOKEN`            | pkgcheck authentication token: a secret password shared by the Digital Ocean droplet and buffy |
   | `GMAIL_SENDER`              | Sender address used for outgoing emails                                                        |
   | `GMAIL_OAUTH_CLIENT_SECRET` | Path to the Google OAuth client secret JSON file, e.g. `/data/email/<client_secret>.json`      |
@@ -186,7 +184,7 @@ Place the corresponding files in `/srv/roreviewapi/data/` on the droplet.
 
 1. Generate a personal access token at <https://airtable.com/create/tokens> with
    at least the `data.records:read` scope on the relevant base. Set this as
-   `AIRTABLE_API_KEY`.
+   `AIRTABLE_API_KEY`. Use shared account.
 2. Open the AirTable base and copy the base ID from the URL
    (`https://airtable.com/appXXXXXXXX/...`). Set this as `AIRTABLE_BASE_ID`.
 
@@ -695,8 +693,7 @@ Maintenance falls into two parts with very different transfer costs:
 - **Operations** (deploying, debugging, restarting): needs access only. Nothing
   in `.env` changes.
 - **Credentials tied to an individual**: the Gmail authorization, and the GitHub
-  and AirTable tokens, belong to whoever created them. These must be re-created
-  by the new maintainer if the outgoing person's accounts will be closed.
+  and AirTable tokens, belong to shared accounts. 
 
 #### Operations only
 
@@ -717,18 +714,17 @@ person are:
 
   | Variable                                                     | Tied to                                                     | Action on transfer                                                                                                                                                 |
   | ---                                                          | ---                                                         | ---                                                                                                                                                                |
-  | `GITHUB_PAT`                                                 | GitHub account that created it                              | Replace with a token created by the new maintainer                                                                                                                 |
-  | `AIRTABLE_API_KEY`                                           | AirTable account that created it                            | Replace with a token created by the new maintainer (see [AirTable](#airtable) for the required scope)                                                              |
-  | `GMAIL_AUTH_EMAIL`, `GMAIL_TOKEN_CACHE`                      | Google account that authorized `gmailr`                     | Replace, following the [Gmail transfer steps](https://docs.ropensci.org/roreviewapi/articles/editorsearch.html#transfer-maintenance) in the editor search vignette |
+  | `GITHUB_PAT`  (`public_repo, read:org` scope)                                               | ropensci-review-bot                              | Have the new maintainer try to update it                                                                                       |
+  | `AIRTABLE_API_KEY` (read records)                                          | AirTable ropensci account                           | Have the new maintainer try to update it                                                          |
+  | `GMAIL_AUTH_EMAIL`, `GMAIL_TOKEN_CACHE`                      | reviewbot                     | Have the new maintainer try to update |
   | `GMAIL_OAUTH_CLIENT_SECRET`, `GMAIL_SENDER`                  | Google Cloud project and the `reviewbot@ropensci.org` alias | Unchanged if the same Cloud project and alias are kept                                                                                                             |
   | `AIRTABLE_BASE_ID`, `ROREVIEWAPI_BASE_URL`, `PKGCHECK_TOKEN` | Not tied to a person                                        | Unchanged unless the base, URL or pkgcheck service changes                                                                                                         |
 
 The steps are then:
 
-1. The new maintainer creates their own GitHub and AirTable personal access
-   tokens, and completes the Gmail steps in the editor search vignette.
+1. The new maintainer ensures they have access to what's needed.
 
-2. Update `.env` on the droplet with the new values.
+2. Update `.env` on the droplet with the new values if relevant.
 
 3. [Restart the service](#restarting-the-service) so that the container picks up
    the new `.env` and credentials.
